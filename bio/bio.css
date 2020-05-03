@@ -1,47 +1,48 @@
 :root {
-    --main-color: #4b88b0;
-  }
-  
-  body, html {
-      font-size: 18px;
-    }
-    
-    p {
-      color: lightGray;
-      text-align: left;
-    }
+  --main-color: #4b88b0;
+}
 
-    img {
-      max-width: 100%;
-      height: auto;
-      padding-left: 10px;
-    }
-    
-    ul {
-      text-align: right;
-      list-style-type: none;
-    }
-  
-    ul li a {
-      color: var(--main-color);
-      text-decoration:none;
-    }
-  
-    ul li a:hover{
-      color:white;
-      cursor: default;
-      text-decoration:none;
-} 
-    
-    #defaultCanvas0 {
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      pointer-events: none;
-      z-index: -100;
-    }
+body,
+html {
+  font-size: 18px;
+}
+
+p {
+  color: lightGray;
+  text-align: left;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  padding-left: 10px;
+}
+
+ul {
+  text-align: right;
+  list-style-type: none;
+}
+
+ul li a {
+  color: var(--main-color);
+  text-decoration: none;
+}
+
+ul li a:hover {
+  color: white;
+  cursor: default;
+  text-decoration: none;
+}
+
+#defaultCanvas0 {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  z-index: -100;
+}

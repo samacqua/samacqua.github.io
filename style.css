@@ -1,48 +1,47 @@
 :root {
-    --main-color: #4b88b0;
-  }
-  
-  body, html {
-      font-size: 18px;
-    }
-    
-    h1 {
-      text-align: right;
-      color: white;
-    }
-    
-    p {
-      color: lightGray;
-      text-align: right;
-    }
-    
-    ul {
-      text-align: right;
-      list-style-type: none;
-    }
-  
-    ul li a {
-      color: var(--main-color);
-      text-decoration:none;
-    }
-  
-    ul li a:hover{
-      color:white;
-      cursor: default;
-      text-decoration:none;
-    }
+  --main-color: #4b88b0;
+}
 
-    
-    
-    #defaultCanvas0 {
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      pointer-events: none;
-      z-index: -100;
-    }
+body,
+html {
+  font-size: 18px;
+}
+
+h1 {
+  text-align: right;
+  color: white;
+}
+
+p {
+  color: lightGray;
+  text-align: right;
+}
+
+ul {
+  text-align: right;
+  list-style-type: none;
+}
+
+ul li a {
+  color: var(--main-color);
+  text-decoration: none;
+}
+
+ul li a:hover {
+  color: white;
+  cursor: default;
+  text-decoration: none;
+}
+
+#defaultCanvas0 {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  z-index: -100;
+}
