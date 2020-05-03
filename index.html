@@ -1,11 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
 <html>
-  <head>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.1/p5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.1/addons/p5.dom.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.1/addons/p5.sound.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
-  </head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- p5 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.1/p5.min.js"></script>
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+  <link rel="stylesheet" type="text/css" href="style.css">
+
+  <title>Sam Acquaviva</title>
+</head>
+
+<body>
+
   <body>
-    <script src="sketch.js"></script>
+    <div class="w-75 p-3">
+      <ul id="navbar">
+        <li><a class="nav-current" title="Home">Home</a></li>
+        <li><a href="/bio" title="Bio">Bio</a></li>
+        <li><a href="/projects" title="Projects">Projects</a></li>
+        <li><a href="/readings" title="Readings">Readings</a></li>
+      </ul>
+      <div class="clear"></div>
+
+      <div class="index-intro">
+        <h1>Sam Acquaviva</h1>
+        <p>mit student and researcher</p>
+        <ul id="index">
+          <li>
+            <script type="text/javascript" language="javascript">
+              <!--
+              // Email obfuscator script 2.1 by Tim Williams, University of Arizona
+              // Random encryption key feature coded by Andrew Moulden
+              // This code is freeware provided these four comment lines remain intact
+              // A wizard to generate this code is at http://www.jottings.com/obfuscator/
+              {
+                coded = "hPsPKcbP@sLd.YAb"
+                key = "eEo280IgNpKH3UAQYTFvZ14mCOj7DiJ59uRXlazsqVwntLxrMbyS6PBhcfWkdG"
+                shift = coded.length
+                link = ""
+                for (i = 0; i < coded.length; i++) {
+                  if (key.indexOf(coded.charAt(i)) == -1) {
+                    ltr = coded.charAt(i)
+                    link += (ltr)
+                  } else {
+                    ltr = (key.indexOf(coded.charAt(i)) - shift + key.length) % key.length
+                    link += (key.charAt(ltr))
+                  }
+                }
+                document.write("<a href='mailto:" + link + "'>email</a>")
+              }
+              //
+              -->
+            </script><noscript>Sorry, you need Javascript on to email me.</noscript>
+          </li>
+          <li>
+            <a href="https://github.com/samacqua" title="Github">Github</a>
+          </li>
+          <li>
+            <a href="http://samacqua.github.io/assets/samacquaviva_cv.pdf" title="CV">CV</a>
+          </li>
+        </ul>
+      </div>
+
+      <script src="sketch.js"></script>
+
+      <!-- Optional JavaScript -->
+      <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+      <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+      <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
   </body>
+
 </html>
