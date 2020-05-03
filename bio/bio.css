@@ -7,15 +7,14 @@ html {
   font-size: 18px;
 }
 
-p {
-  color: lightGray;
-  text-align: left;
+h1 {
+  text-align: right;
+  color: white;
 }
 
-img {
-  max-width: 100%;
-  height: auto;
-  padding-left: 10px;
+p {
+  color: lightGray;
+  text-align: right;
 }
 
 ul {
