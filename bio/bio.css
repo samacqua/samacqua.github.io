@@ -1,20 +1,23 @@
 :root {
   --main-color: #4b88b0;
+  --back-color: #323232;
 }
-
+* {background-color: var(--back-color)}
 body,
 html {
   font-size: 18px;
-}
-
-h1 {
-  text-align: right;
-  color: white;
+  background-color: var(--back-color);
 }
 
 p {
   color: lightGray;
-  text-align: right;
+  text-align: left;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  padding-left: 10px;
 }
 
 ul {
