@@ -10,11 +10,11 @@ new p5(function(p) {
     }
   
     p.draw = function() {
-      p.background(50, 15);
+      p.background(50, 30);
       p.beginShape();
       for (var i = -1; i <= d; i++) {
         var x = p.map(i, 0, d, 0, p.width);
-        var y = p.map(p.noise(i * 0.01, t * 0.006), 0, 1, 0, p.height) + p.map(i, 0, d, -p.height/4, p.height/2);
+        var y = p.map(p.noise(i * 0.01, t * 0.007), 0, 1, 0, p.height) + p.map(i, 0, d, -p.height/4, p.height/2);
         p.curveVertex(x, y);
       }
       p.endShape(p.OPEN);
