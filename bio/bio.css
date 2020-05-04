@@ -2,7 +2,6 @@
   --main-color: #4b88b0;
   --back-color: #323232;
 }
-* {background-color: var(--back-color)}
 body,
 html {
   font-size: 18px;

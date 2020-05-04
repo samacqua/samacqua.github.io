@@ -1,10 +1,12 @@
 :root {
   --main-color: #4b88b0;
+  --back-color: #323232;
 }
 
 body,
 html {
-  font-size: 18px;
+  font-size: 20px;
+  color: var(--back-color)
 }
 
 h1 {
