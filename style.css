@@ -47,3 +47,7 @@ ul li a:hover {
   pointer-events: none;
   z-index: -100;
 }
+
+body {
+  background-color: var(--back-color);
+}

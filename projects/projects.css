@@ -1,34 +1,77 @@
 :root {
-    --main-color: #4b88b0;
-    --back-color: #323232;
-  }
-  * {background-color: var(--back-color)}
-  body,
-  html {
-    font-size: 18px;
-    background-color: var(--back-color);
-  }
-  
-  h2 {
-    color: white;
-    text-align: left;
-  }
-  
-  p {
-    color: lightGray;
-    text-align: left;
-  }
-  
-  img {
-    max-width: 400px;
-    height: 100px;
-    padding-left: 10px;
-  }
+  --main-color: #4b88b0;
+  --back-color: #323232;
+}
+
+* {
+  background-color: var(--back-color)
+}
+
+body,
+html {
+  font-size: 20px;
+  background-color: var(--back-color);
+}
+
+h2 {
+  color: white;
+  text-align: left;
+}
+
+p {
+  color: lightGray;
+  text-align: left;
+}
 
 div.row {
-  padding:20px;
+  padding: 20px;
 }
 
 div.col {
-  padding:20px;
+  padding: 20px;
+}
+
+#beta_mark {
+  font-size: 20px;
+}
+
+body {
+  background-color: var(--back-color);
+}
+
+ul {
+  text-align: right;
+  list-style-type: none;
+}
+
+ul li a {
+  color: var(--main-color);
+  text-decoration: none;
+}
+
+ul li a:hover {
+  color: white;
+  cursor: default;
+  text-decoration: none;
+}
+
+img {
+  max-width: 600px;
+  height: 150px;
+
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+
+  filter: drop-shadow(15px 15px 15px #222);
+
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.shadowed {
+  -webkit-filter: drop-shadow(12px 12px 25px rgba(0, 0, 0, 0.5));
+  filter: url(#drop-shadow);
+  -ms-filter: "progid:DXImageTransform.Microsoft.Dropshadow(OffX=12, OffY=12, Color='#444')";
+  filter: "progid:DXImageTransform.Microsoft.Dropshadow(OffX=12, OffY=12, Color='#444')";
 }
