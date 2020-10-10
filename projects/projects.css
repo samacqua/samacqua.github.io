@@ -23,11 +23,7 @@ p {
   text-align: left;
 }
 
-div.row {
-  padding: 20px;
-}
-
-div.col {
+.project {
   padding: 20px;
 }
 
