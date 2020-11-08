@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chess</title>
+    <link rel="stylesheet" href="css/chessboard-1.0.0.css">
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
+
+    <link rel="stylesheet" type="text/css" href="css/acquacchi.css" />
+    <script src="js/chessboard-1.0.0.js"></script>
+    <script src="js/chess.js"></script>
+    <script src="js/a.out.js"></script>
+  </head>
+  <body>
+
+    <div class="container">
+
+      <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <div style="padding: 15px;">
+          <h1>Acquacchi</h1>
+          <p>Welcome to playing against Acquacchi!</p>
+          <p>This is a simple chess interface, where you have unlimited time and acquacchi
+            has around 3 seconds per move. If you want to play against a stronger version (not compiled
+            to web assembly), using any other time control, or using a <i>much</i> better interface,
+            challenge Acquacchi <a href="https://lichess.org/@/acquacchi">on lichess.com</a>.</p>
+          <p>Good luck!</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col"></div>
+        <div class="col-10">
+          <nav class="navbar navbar-expand-sm">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="../../index.html">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="../../bio/bio.html">Bio</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link disabled" href="../projects.html">Projects</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div class="col"></div>
+      </div>
+      <div style="width: 50vh; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div id="myBoard" style="width: 100%;"></div>
+        <button class="btn new_game_btn" onclick="new_game()">new game</button>
+        </div>
+
+    </div>
+
+    </div>
+    <script src="js/index.js"></script>
+
+  </body>
+</html>
+
+<!-- TODO:
+1. multi-threading/web workers ✅
+2. choose sides
+3. start game over
+4. piece odds
+5. check/checkmate message
+6. welcome message
+ -->

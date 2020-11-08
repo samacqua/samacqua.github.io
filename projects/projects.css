@@ -27,8 +27,16 @@ p {
   padding: 20px;
 }
 
-#beta_mark {
+code {
   font-size: 20px;
+}
+
+.github_link {
+  color: #1fa9ff;
+}
+
+.try_link {
+  color: #bb00e6;
 }
 
 body {
