@@ -1,81 +1,199 @@
-// https://codepen.io/NomNom99/pen/RGNPwG
+// https://codepen.io/alexzaworski/pen/mEkvAG
+var c = document.getElementById("c");
+var ctx = c.getContext("2d");
+var cH;
+var cW;
+var bgColor = "#f0f0f0";
+var animations = [];
+var circles = [];
 
-var al = [];
-function setup() {
-  createCanvas( windowWidth, windowHeight );
-}
-
-function draw() {
-  background( '#F0F0F0' );
-  
-  strokeWeight( 1 ); // Restore strokeWeight 
-  
-  /*
-  * Array to store reference to each Rays() object 
-  */
-  al.push( new Rays() );
-  
-  for( var i = 0; i < al.length; i++ ) {
-    var r = al[i];
-    r.applyForce( new p5.Vector( random( -0.5, 0.5 ), random( 0.01, 0.05 ) ) );
-    r.update();
-    r.render();
-    if( r.isDead() )
-      al.shift();
+var colorPicker = (function() {
+  var colors = ["#9b59c2", "#f27657", "#FFBE53", "#38a3eb"];
+  var index = 0;
+  function next() {
+    index = index++ < colors.length-1 ? index : 0;
+    return colors[index];
   }
+  function current() {
+    return colors[index]
+  }
+  return {
+    next: next,
+    current: current
+  }
+})();
+
+function removeAnimation(animation) {
+  var index = animations.indexOf(animation);
+  if (index > -1) animations.splice(index, 1);
 }
 
-function windowResized() {
-  resizeCanvas( windowWidth, windowHeight );
+function calcPageFillRadius(x, y) {
+  var l = Math.max(x - 0, cW - x);
+  var h = Math.max(y - 0, cH - y);
+  return Math.sqrt(Math.pow(l, 2) + Math.pow(h, 2));
 }
 
-function Rays() {
-  this.counter = 0;
-  this.position = new p5.Vector( mouseX, mouseY );
-  this.velocity = new p5.Vector( 0, 0 );
-  this.acceleration = new p5.Vector( 0, 0 );
-  this.lifeSpan = 1;
+function addClickListeners() {
+  document.addEventListener("touchstart", handleEvent);
+  document.addEventListener("mousedown", handleEvent);
+};
+
+function handleEvent(e) {
+    if (e.touches) { 
+      e.preventDefault();
+      e = e.touches[0];
+    }
+    var currentColor = colorPicker.current();
+    var nextColor = colorPicker.next();
+    var targetR = calcPageFillRadius(e.pageX, e.pageY);
+    var rippleSize = Math.min(200, (cW * .4));
+    var minCoverDuration = 750;
+    
+    var pageFill = new Circle({
+      x: e.pageX,
+      y: e.pageY,
+      r: 0,
+      fill: nextColor
+    });
+    var fillAnimation = anime({
+      targets: pageFill,
+      r: targetR,
+      duration:  Math.max(targetR / 2 , minCoverDuration ),
+      easing: "easeOutQuart",
+      complete: function(){
+        bgColor = pageFill.fill;
+        removeAnimation(fillAnimation);
+      }
+    });
+    
+    var ripple = new Circle({
+      x: e.pageX,
+      y: e.pageY,
+      r: 0,
+      fill: currentColor,
+      stroke: {
+        width: 3,
+        color: currentColor
+      },
+      opacity: 1
+    });
+    var rippleAnimation = anime({
+      targets: ripple,
+      r: rippleSize,
+      opacity: 0,
+      easing: "easeOutExpo",
+      duration: 900,
+      complete: removeAnimation
+    });
+    
+    var particles = [];
+    for (var i=0; i<32; i++) {
+      var particle = new Circle({
+        x: e.pageX,
+        y: e.pageY,
+        fill: currentColor,
+        r: anime.random(24, 48)
+      })
+      particles.push(particle);
+    }
+    var particlesAnimation = anime({
+      targets: particles,
+      x: function(particle){
+        return particle.x + anime.random(rippleSize, -rippleSize);
+      },
+      y: function(particle){
+        return particle.y + anime.random(rippleSize * 1.15, -rippleSize * 1.15);
+      },
+      r: 0,
+      easing: "easeOutExpo",
+      duration: anime.random(1000,1300),
+      complete: removeAnimation
+    });
+    animations.push(fillAnimation, rippleAnimation, particlesAnimation);
 }
 
-/*
-* Takes p5.Vector object as the initial force 
-* This force provides the required acceleration
-*/
-Rays.prototype.applyForce = function( force ) {
-  acceleration = force;
+function extend(a, b){
+  for(var key in b) {
+    if(b.hasOwnProperty(key)) {
+      a[key] = b[key];
+    }
+  }
+  return a;
 }
 
-/*
-* Calculates and updates
-*
-* 1. Velocity
-* 2. Position
-*/
-Rays.prototype.update = function() {
-  this.velocity.add( this.acceleration );
-  this.position.add( this.velocity );
-  this.lifeSpan -= 0.04;
+var Circle = function(opts) {
+  extend(this, opts);
 }
 
-/*
-* Displays line on the document
-*/
-Rays.prototype.render = function() {
-  var c = color( 'rgba(237, 34, 93, ' + this.lifeSpan + ')' );
-  stroke( c ); 
-  line( this.position.x, this.position.y, pmouseX, pmouseY );
+Circle.prototype.draw = function() {
+  ctx.globalAlpha = this.opacity || 1;
+  ctx.beginPath();
+  ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI, false);
+  if (this.stroke) {
+    ctx.strokeStyle = this.stroke.color;
+    ctx.lineWidth = this.stroke.width;
+    ctx.stroke();
+  }
+  if (this.fill) {
+    ctx.fillStyle = this.fill;
+    ctx.fill();
+  }
+  ctx.closePath();
+  ctx.globalAlpha = 1;
 }
 
-/*
-* Helps in determining whether the shift()
-* method should be called or not
-*
-* [This method is important, if not used the array will
-* be filled infinitely]
-*/
-Rays.prototype.isDead = function() {
-  if( this.lifeSpan < 0.1 )
-    return true;
-  else
-    return false;
+var animate = anime({
+  duration: Infinity,
+  update: function() {
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, cW, cH);
+    animations.forEach(function(anim) {
+      anim.animatables.forEach(function(animatable) {
+        animatable.target.draw();
+      });
+    });
+  }
+});
+
+var resizeCanvas = function() {
+  cW = window.innerWidth;
+  cH = window.innerHeight;
+  c.width = cW * devicePixelRatio;
+  c.height = cH * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+};
+
+(function init() {
+  resizeCanvas();
+  if (window.CP) {
+    // CodePen's loop detection was causin' problems
+    // and I have no idea why, so...
+    window.CP.PenTimer.MAX_TIME_IN_LOOP_WO_EXIT = 6000; 
+  }
+  window.addEventListener("resize", resizeCanvas);
+  addClickListeners();
+  handleInactiveUser();
+})();
+
+function handleInactiveUser() {
+  var inactive = setTimeout(function(){
+    fauxClick(cW/2, cH/2);
+  }, 4500);
+  
+  function clearInactiveTimeout() {
+    clearTimeout(inactive);
+    document.removeEventListener("mousedown", clearInactiveTimeout);
+    document.removeEventListener("touchstart", clearInactiveTimeout);
+  }
+  
+  document.addEventListener("mousedown", clearInactiveTimeout);
+  document.addEventListener("touchstart", clearInactiveTimeout);
+}
+
+function fauxClick(x, y) {
+  var fauxClick = new Event("mousedown");
+  fauxClick.pageX = x;
+  fauxClick.pageY = y;
+  document.dispatchEvent(fauxClick);
 }

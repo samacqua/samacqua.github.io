@@ -3,7 +3,7 @@ body {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: #F0F0F0;
+  background-color: #f0f0f0;
   font-family: Courier, monospace;
   font-style: normal;
   font-weight: 100;
@@ -33,13 +33,13 @@ a {
 }
 
 body * {
-    -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-     -khtml-user-select: none; /* Konqueror HTML */
-       -moz-user-select: none; /* Old versions of Firefox */
-        -ms-user-select: none; /* Internet Explorer/Edge */
-            user-select: none; /* Non-prefixed version, currently
-                                  supported by Chrome, Edge, Opera and Firefox */
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+     -moz-user-select: none; /* Old versions of Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+          user-select: none; /* Non-prefixed version, currently
+                                supported by Chrome, Edge, Opera and Firefox */
 }
 
 h1 a {
@@ -126,13 +126,11 @@ hr {
 .pages a {
     display: inline-block;
     overflow: hidden;
-    opacity: 0;
+    opacity: 1;
     line-height: 2em;
     margin: 0.7em;
-    color: #555;
+    color: #f0f0f0;
     font-size: 1.5em;
-    transition: background-color .2s ease-in-out;
-    animation: icons .2s ease-out 0s 1 normal forwards;
 }
 
 .contact {
@@ -144,35 +142,19 @@ hr {
 .contact a {
   display: inline-block;
   overflow: hidden;
-  opacity: 0;
+  opacity: 1;
   width: 2em;
   line-height: 2em;
   margin: 0 .20em;
-  color: #555;
+  color: #f0f0f0;
   font-size: 1.5em;
   transition: background-color .2s ease-in-out;
   border-radius: 50%;
-  animation: icons .2s ease-out 0s 1 normal forwards;
-  animation-delay: 4.65s;
 }
 
-@keyframes icons {
-  0%    { transform: translateY(3em); opacity: 0; }
-  70%   { transform: translateY(-.5em); opacity: 1; }
-  100%  { transform: translateY(0em); opacity: 1; }
-}
+.contact a:hover { color: rgb(92, 92, 92); }
 
-.contact a:nth-child(1) { animation-delay: 4.5s; }
-.contact a:nth-child(2) { animation-delay: 4.55s; }
-.contact a:nth-child(3) { animation-delay: 4.6s; }
-
-.contact a:hover { color: #39F; }
-
-.pages a:nth-child(1) { animation-delay: 4.5s; }
-.pages a:nth-child(2) { animation-delay: 4.55s; }
-.pages a:nth-child(3) { animation-delay: 4.6s; }
-
-.pages a:hover { color: #39F; }
+.pages a:hover { color: rgb(92, 92, 92); }
 
 canvas {
   display: block;
