@@ -2,15 +2,12 @@
 <html>
   <head>
     <title>Chess</title>
-    <link rel="stylesheet" href="css/chessboard-1.0.0.css">
+
+    <link rel="stylesheet" href="css/chessboard-1.0.0.min.css">
     <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
-
     <link rel="stylesheet" type="text/css" href="css/acquacchi.css" />
-    <script src="js/chessboard-1.0.0.js"></script>
+    <script src="js/chessboard-1.0.0.min.js"></script>
     <script src="js/chess.js"></script>
     <script src="js/a.out.js"></script>
 
@@ -18,8 +15,53 @@
   </head>
   <body>
 
-    <div class="container">
+    <div class="lg-container">
+      <div class="pages">
+        <a href="../../index.html">home</a>
+        <a href="../projects.html">projects</a>
+        <a href="../../assets/[Resume] Fall 2020.pdf" target="_blank">resume</a>
+        <a href="../../bio/bio.html">bio</a>
+      </div>
 
+      <div id="mySidenav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <div style="padding: 15px">
+          <h2 class="sidenav-title">Overview</h2>
+          <p>Welcome to playing against Acquacchi!
+            <br>
+          This is a simple chess interface, where you have unlimited time and Acquacchi
+            has around 3 seconds per move. To make Acquacchi run in your browser, it had to lose some features.
+            If you want to play against the full strength version or play against Acquacchi using any sort of time control,
+            challenge Acquacchi <a class="vis_link" href="http://lichess.org/?user=acquacchi#friend">on lichess.com</a>.
+            To send a challenge, you have to be logged in. Also, Acquacchi will only accept "Standard"
+            and "From Position" variants with "Real time" time control.
+            <br>
+          Good luck!</p>
+
+          <h2 class="sidenav-title">Features</h2>
+          <p>If every chess game ended after 3 moves, there would still be 121 million possible games. Because of this,
+            a chess engine has to be very careful with which positions it analyzes and it has to analyze every position quickly.
+            On my laptop, which has very bad computing power, Acquacchi searches over 1.5 million positions per second.
+            <br>
+            It does this through a simple Mini-max search and <b>a lot</b> of optimisations, such as alpha-beta pruning, null move pruning,
+            bit-board representations, killer heuristic, and history heuristic. Acquacchi also uses a transposition table, quiescence search, 
+            and iterative deepening.
+            <br>
+          The source code (which can be compiled and run on your computer) can be <a class="vis_link" href="https://github.com/samacqua/Acquacchi">found here</a>.</p>
+
+          <h2 class="sidenav-title">Why?</h2>
+          <p>Quarantine.</p>
+        </div>
+      </div>
+  
+      <div class="container">
+        
+        <h2>Acquacchi</h2>
+        <div id="myBoard" style="width: 100%;"></div>
+      </div>
+    </div>
+
+    <!-- <div class="container">
       <div id="mySidenav" class="sidenav">
         <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
         <div style="padding: 15px;">
@@ -61,9 +103,9 @@
         <button class="btn new_game_btn" onclick="new_game()">new game</button>
         </div>
 
-    </div>
+    </div> -->
 
-    </div>
+    <!-- </div> -->
     <script src="js/index.js"></script>
 
   </body>

@@ -1,4 +1,143 @@
-:root {
+* { box-sizing: border-box; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; margin: 0; padding: 0;}
+body {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #f0f0f0;
+  font-family: Courier, monospace;
+  font-style: normal;
+  font-weight: 100;
+  color: #202020;
+}
+.lg-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+  }
+.container {
+  position: relative;
+  margin: 0 auto;
+  width: 40em;
+  max-width: 100%;
+  height: 10em;
+  text-align: center;
+}
+a { 
+  text-decoration: none;
+  color: inherit;
+}
+h1 {
+  font-size: 3em;
+  text-align: left;
+}
+h2 {
+  font-size: 2em;
+  text-align: left;
+}
+.pages {
+  position: relative;
+  width: 100%;
+  margin: 0em 0em 1.5em auto;
+  padding-right: 1.5em;
+  text-align: right;
+  background-color: #f27657;
+  box-shadow: 0 0 5px rgb(138, 72, 72);
+}
+.sidenav-title {
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+
+#myBoard {
+  margin-top: 2em;
+}
+
+.pages a {
+    display: inline-block;
+    overflow: hidden;
+    opacity: 1;
+    line-height: 2em;
+    margin: 0.7em;
+    color: #f0f0f0;
+    font-size: 1.5em;
+}
+
+.contact {
+  position: relative;
+  width: 20em;
+  max-width: 100%;
+  margin: -1em auto 1.5em auto;
+}
+
+.contact a {
+  display: inline-block;
+  overflow: hidden;
+  opacity: 1;
+  width: 2em;
+  line-height: 2em;
+  margin: 0 .20em;
+  color: #f0f0f0;
+  font-size: 1.5em;
+  transition: background-color .2s ease-in-out;
+  border-radius: 50%;
+}
+
+.contact a:hover { color: rgb(92, 92, 92); }
+
+.pages a:hover { color: rgb(92, 92, 92); }
+
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+p {
+  text-align: left;
+}
+
+br {
+  display: block;
+  content: "";
+  border-bottom: 10px solid transparent;
+}
+@-moz-document url-prefix() {
+  br {
+    margin-bottom: 10px;
+  }
+}
+
+.disabled_a { 
+  color: rgb(92, 92, 92) !important;
+  pointer-events: none;
+  cursor: default;
+}
+
+img {
+  object-fit: cover;
+  width: 100%;
+  /* float: right;
+  margin-bottom: 5px; */
+}
+
+.projects {
+  margin-top: 1em;
+  margin-bottom: 2em;
+}
+
+.project-links {
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+#typer {
+  margin: 10px 8px 0px 0px;
+}
+
+/* :root {
   --main-color: #4b88b0;
   --back-color: #323232;
 }
@@ -53,6 +192,13 @@ body {
   background-color: var(--back-color);
 }
 
+*/
+
+.vis_link {
+  color: #c44525 !important;
+  text-decoration: underline !important;
+}
+
 /* The side navigation menu */
 .sidenav {
   height: 100%; /* 100% Full-height */
@@ -60,11 +206,12 @@ body {
   position: fixed; /* Stay in place */
   z-index: 1; /* Stay on top */
   top: 0; /* Stay at the top */
-  right: 0;
-  background-color: #111; /* Black*/
+  left: 0;
+  background-color: rgb(219, 219, 219); /* Black*/
   overflow-x: hidden; /* Disable horizontal scroll */
-  padding-top: 60px; /* Place content 60px from the top */
+  padding-top: 20px; /* Place content 60px from the top */
   transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
+  box-shadow: 0 0 5px rgb(90, 90, 90);
 }
 
 /* The navigation menu links */
@@ -97,4 +244,4 @@ body {
   color: white;
   padding: 5px;
   margin: 15px;
-}
+} 
