@@ -4,13 +4,6 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- p5 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.1/p5.min.js"></script>
-
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
-
   <!-- CSS file-->
   <link rel="stylesheet" type="text/css" href="projects.css" />
 
@@ -20,7 +13,58 @@
 </head>
 
 <body>
-  <div class="container">
+
+  <div class="lg-container">
+    <div class="pages">
+      <a href="../index.html">home</a>
+      <a href="#" class="disabled_a">projects</a>
+      <a href="../assets/[Resume] Fall 2020.pdf" target="_blank">resume</a>
+      <a href="../bio/bio.html">bio</a>
+    </div>
+
+    <div class="container">
+      <h1>Projects</h1>
+      <div class="projects">
+        <div class="project">
+          <img src="../assets/acquacchi.png" alt="Acquacchi"/>
+          <h2>Acquacchi</h2>
+          <div class="project-links">
+            <a class="github_link" href="https://github.com/samacqua/Acquacchi">github</a>
+            <a class="try_link" href="acquacchi/acquacchi.html">play!</a>
+          </div>
+          <p>A strong chess engine written in C, ported to Javascript. 
+            It expands alpha-beta search with heuristics and bit-level
+            manipulations. Acquacchi evaluates
+            over 1.5 million positions every second.</p>
+        </div>
+  
+        <div class="project">
+          <img src="../assets/kandula.jpg" alt="Acquacchi" />
+          <h2>Kandula</h2>
+          <div class="project-links">
+            <p class="beta_tag">beta</p>
+          </div>
+          <p>API and app that enables anyone to create and customize stock-trading algorithms without code, just by tuning
+            parameters. The program runs a plethora of trading algorithms on the cloud involving quantitative analysis,
+            sentiment analysis, and GRU.</p>
+        </div>
+  
+        <div class="project">
+          <img src="../assets/arc.png" alt="Acquacchi"/>
+          <h2>ARC Dataset</h2>
+          <div class="project-links">
+            <a class="try_link" href="https://samacqua.github.io/ARC-Turks?dev=true">try it!</a>
+          </div>
+          <p>An interface to collect data about how people communicate and interprate descriptions of abstract patterns.
+            This data will be used to inform a Bayesian program learner with the goal of solving the Abstraction and
+            Reasoning Challenge--a benchmark for abstract thinking ability in programs developed by Google’s François
+            Chollet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- <div class="container">
     <div class="row">
       <div class="col"></div>
       <div class="col-10">
@@ -90,7 +134,7 @@
       </div>
       <div class="col"></div>
     </div>
-  </div>
+  </div> -->
 </body>
 
 </html>
