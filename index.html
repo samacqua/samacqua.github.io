@@ -6,19 +6,14 @@
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no"
     />
-    <!-- p5 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.1/p5.min.js"></script>
 
-    <!-- Bootstrap CSS -->
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
-      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
-      crossorigin="anonymous"
-    />
-
-    <!-- CSS file-->
     <link rel="stylesheet" type="text/css" href="style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css"/>
+
+    <script src="https://cdn.jsdelivr.net/npm/typeit@7.0.4/dist/typeit.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.2/p5.js"></script>
+    <script src="sketch.js"></script>
 
     <title>Sam Acquaviva</title>
 
@@ -26,88 +21,72 @@
   </head>
 
   <body>
-    <div class="container">
-      <div class="row">
-        <div class="col"></div>
-        <div class="col-10">
+    <div class="lg-container">
 
-          <nav class="navbar navbar-expand-sm">
-            <ul class="navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link disabled" href="#">Home</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="bio/bio.html">Bio</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="projects/projects.html">Projects</a>
-              </li>
-            </ul>
-          </nav>
-
-          <h1>Sam Acquaviva</h1>
-          <p>mit student and researcher</p>
-          <ul>
-            <li>
-              <script type="text/javascript" language="javascript">
-                // Email obfuscator script 2.1 by Tim Williams, University of Arizona
-                // Random encryption key feature coded by Andrew Moulden
-                // This code is freeware provided these four comment lines remain intact
-                // A wizard to generate this code is at http://www.jottings.com/obfuscator/
-                {
-                  coded = "hPsPKcbP@sLd.YAb";
-                  key =
-                    "eEo280IgNpKH3UAQYTFvZ14mCOj7DiJ59uRXlazsqVwntLxrMbyS6PBhcfWkdG";
-                  shift = coded.length;
-                  link = "";
-                  for (i = 0; i < coded.length; i++) {
-                    if (key.indexOf(coded.charAt(i)) == -1) {
-                      ltr = coded.charAt(i);
-                      link += ltr;
-                    } else {
-                      ltr =
-                        (key.indexOf(coded.charAt(i)) - shift + key.length) %
-                        key.length;
-                      link += key.charAt(ltr);
-                    }
-                  }
-                  document.write("<a href='mailto:" + link + "'>email</a>");
-                }
-              </script>
-              <noscript>Sorry, you need Javascript on to email me.</noscript>
-            </li>
-            <li>
-              <a href="https://github.com/samacqua" title="github">github</a>
-            </li>
-            <li>
-              <a href="assets/[Resume] Fall 2020.pdf" title="resume">resume</a>
-            </li>
-          </ul>
-
-        </div>
-        <div class="col"></div>
+      <div class="pages">
+          <a href="projects/projects.html">projects</a>
+          <a href="assets/[Resume] Fall 2020.pdf" target="_blank">resume</a>
+          <a href="bio/bio.html" target="_blank">bio</a>
       </div>
-    </div>
+  
+      <div class="container">
+          <h1><a href="http://www.samacquaviva.com"><em>S</em>am <em>A</em>acquaviva</a></h1>
+          <p class="slogan"><span id="typer"></span></p>
+          <div class="contact">
+            <script type="text/javascript" language="javascript">
+              // Email obfuscator script 2.1 by Tim Williams, University of Arizona
+              // Random encryption key feature coded by Andrew Moulden
+              // This code is freeware provided these four comment lines remain intact
+              // A wizard to generate this code is at http://www.jottings.com/obfuscator/
+              {
+                coded = "hPsPKcbP@sLd.YAb";
+                key =
+                  "eEo280IgNpKH3UAQYTFvZ14mCOj7DiJ59uRXlazsqVwntLxrMbyS6PBhcfWkdG";
+                shift = coded.length;
+                link = "";
+                for (i = 0; i < coded.length; i++) {
+                  if (key.indexOf(coded.charAt(i)) == -1) {
+                    ltr = coded.charAt(i);
+                    link += ltr;
+                  } else {
+                    ltr =
+                      (key.indexOf(coded.charAt(i)) - shift + key.length) %
+                      key.length;
+                    link += key.charAt(ltr);
+                  }
+                }
+                document.write("<a target='_blank' href='mailto:" + link + "'><i class='icon-envelope'></i></a>");
+              }
+          </script>
+          <noscript>Sorry, you need Javascript on to email me.</noscript>
+            <a href="https://linkedin.com/in/sam-acquaviva" target="_blank"><i class="icon-linkedin"></i></a>
+            <a href="https://github.com/samacqua" target="_blank"><i class="icon-github"></i></a>
+            <a href="https://instagram.com/s.acqua/" target="_blank"><i class="icon-instagram"></i></a>
+          </div>
+        </div>
+  
+  
+        <script>
+          new TypeIt("#typer", {
+              speed: 50,
+              waitUntilVisible: true,
+              afterComplete: function (step, instance) {
+                setTimeout(() => {
+                  instance.destroy();
+                }, 3000);
+              }
+          })
+          .type("hi", {delay: 500})
+          .delete(2)
+          .type("i'm sam", {delay: 800})
+          .type(" :)", {delay: 600})
+          .delete(10)
+          .type('welcome to my website', {delay: 2500})
+          .type(' :)')
+          .go();
+        </script>
 
-    <!-- background animation file-->
-    <script src="sketch.js"></script>
+  </div>
 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script
-      src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
-      integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
-      integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
-      integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
-      crossorigin="anonymous"
-    ></script>
-  </body>
+</body>
 </html>

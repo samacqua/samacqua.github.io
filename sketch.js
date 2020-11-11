@@ -1,36 +1,81 @@
-new p5(function (p) {
-  var t = 0;
-  var d = 250;
+// https://codepen.io/NomNom99/pen/RGNPwG
 
-  p.setup = function () {
-    var canvas = p.createCanvas(p.windowWidth, p.windowHeight);
-    p.stroke(p.color('#4b88b0'), 120);
-    // p.stroke(random(0, 255));
-    p.noFill();
-    p.frameRate(30);
-  }
+var al = [];
+function setup() {
+  createCanvas( windowWidth, windowHeight );
+}
 
-  function CurveLine(t) {
-    d = 250;
-    this.display = function() {
-      p.beginShape();
-      for (var i = -1; i <= d; i++) {
-        var x = p.map(i, 0, d, 0, p.width);
-        var y = p.map(p.noise(i * 0.01, t * 0.007), 0, 1, 0, p.height) + p.map(i, 0, d, -p.height / 4, p.height / 2);
-        p.curveVertex(x, y);
-      }
-      p.endShape(this.OPEN);
-    }
+function draw() {
+  background( '#F0F0F0' );
+  
+  strokeWeight( 1 ); // Restore strokeWeight 
+  
+  /*
+  * Array to store reference to each Rays() object 
+  */
+  al.push( new Rays() );
+  
+  for( var i = 0; i < al.length; i++ ) {
+    var r = al[i];
+    r.applyForce( new p5.Vector( random( -0.5, 0.5 ), random( 0.01, 0.05 ) ) );
+    r.update();
+    r.render();
+    if( r.isDead() )
+      al.shift();
   }
+}
 
-  p.draw = function () {
-    p.background(p.color('rgba(50,50,50,0.2)'));
-    var l = new CurveLine(t);
-    l.display();
-    t += 1;
-  }
+function windowResized() {
+  resizeCanvas( windowWidth, windowHeight );
+}
 
-  p.windowResized = function () {
-    p.resizeCanvas(p.windowWidth, p.windowHeight);
-  }
-}, document.querySelector('body'));
+function Rays() {
+  this.counter = 0;
+  this.position = new p5.Vector( mouseX, mouseY );
+  this.velocity = new p5.Vector( 0, 0 );
+  this.acceleration = new p5.Vector( 0, 0 );
+  this.lifeSpan = 1;
+}
+
+/*
+* Takes p5.Vector object as the initial force 
+* This force provides the required acceleration
+*/
+Rays.prototype.applyForce = function( force ) {
+  acceleration = force;
+}
+
+/*
+* Calculates and updates
+*
+* 1. Velocity
+* 2. Position
+*/
+Rays.prototype.update = function() {
+  this.velocity.add( this.acceleration );
+  this.position.add( this.velocity );
+  this.lifeSpan -= 0.04;
+}
+
+/*
+* Displays line on the document
+*/
+Rays.prototype.render = function() {
+  var c = color( 'rgba(237, 34, 93, ' + this.lifeSpan + ')' );
+  stroke( c ); 
+  line( this.position.x, this.position.y, pmouseX, pmouseY );
+}
+
+/*
+* Helps in determining whether the shift()
+* method should be called or not
+*
+* [This method is important, if not used the array will
+* be filled infinitely]
+*/
+Rays.prototype.isDead = function() {
+  if( this.lifeSpan < 0.1 )
+    return true;
+  else
+    return false;
+}
