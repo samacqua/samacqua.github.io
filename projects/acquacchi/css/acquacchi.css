@@ -36,6 +36,7 @@ h1 {
 h2 {
   font-size: 2em;
   text-align: left;
+  width: 100%;
 }
 .pages {
   position: relative;
@@ -58,7 +59,7 @@ h2 {
 
 #board-container {
   margin-top: 1.5em;
-  margin-bottom: 0.5em;
+  /* margin-bottom: 0.25em; */
   overflow: auto;
 }
 
@@ -68,10 +69,15 @@ h2 {
   text-align: left;
 }
 
-#texter {
+#board-right {
   padding-left: 0.5em;
   overflow: auto;
-  /* flex-direction: column-reverse; */
+}
+
+.comment-head {
+  font-size: 1.2em;
+  text-align: left;
+  text-decoration: underline;
 }
 
 #moves-container {

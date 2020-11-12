@@ -1,15 +1,6 @@
 var board = null
 var game = new Chess()
 
-var texter = new TypeIt("#texter", {
-  speed: 50,
-  waitUntilVisible: true,
-});
-// .type("make a move")
-// .go();
-
-type_line("make a move");
-
 function new_game() {
   game = new Chess();
   board.position('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
@@ -69,8 +60,10 @@ Module.onRuntimeInitialized = async _ => {
       type_line("three-fold repitition--draw");
     } else if (game.in_stalemate()) {
       type_line("Stalemate >:)");
-    } else if (game.history().length < 2) {
-      type_line("thinking...");    
+    } else {
+      let move_phrases = ["thinking...", "hm...", "beep boop"];
+      let phrase = move_phrases[Math.floor(Math.random() * move_phrases.length)];
+      type_line(phrase);    
     }
 
     console.log("make move...");
@@ -160,24 +153,29 @@ function set_move_history(history) {
   $("#moves").text(hist_string);
 }
 
+// custom event trigger: https://stackoverflow.com/a/23344816/5416200
+function on_write_new_line(state) {
+  var evt = $.Event('writing_new_line');
+  evt.state = state;
+
+  $(window).trigger(evt);
+}
+
+var last_line = ""; // used to make sure settimeout is correct amount
+type_line("make a move");
+
 function type_line(line) {
+  on_write_new_line(line);
 
-  function makeid(length) {
-    var result           = '';
-    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-    var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
-       result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
- }
+//  set timeout to give func enough time for delete animation (very jank)
+ setTimeout(() => {
+  last_line = line;
 
-  texter.destroy();
-  let id = makeid(5);
-  var e = $('<div id="' + id + '" class="texter"></div>');
+  var e = $('<div id="acquacchi-text" class="texter"></div>');
+  $("#texter").empty();
   $("#texter").append(e)
-  texter = new TypeIt(`#${id}`, {
-    speed: 5,
+  new TypeIt(`#acquacchi-text`, {
+    speed: 50,
     waitUntilVisible: true,
     afterComplete: () => {
       // make latest message visible
@@ -185,6 +183,16 @@ function type_line(line) {
     }
   })
   .type(line)
-  .break()
+  .exec(async () => {
+    await new Promise((resolve, reject) => {
+      // jank solution to make line delete itself bc typeit.js only allows direct chaining
+      // wait for custom even (type_line is called to write next line), then delete self
+      $(window).on('writing_new_line', function (e) {
+        return resolve();
+      });
+    });
+  })
+  .delete(line.length)
   .go();
+ }, 50*last_line.length+1);
 }
