@@ -7,20 +7,16 @@
 
   <!-- CSS file-->
   <link rel="stylesheet" type="text/css" href="bio.css" />
+  <script src="https://cdn.jsdelivr.net/npm/typeit@7.0.4/dist/typeit.min.js"></script>
 
   <title>Bio</title>
+  <meta name="Description" content="About me page for my personal website.">
   <link rel="icon" type="image/x-icon" href="../favicon.ico?"/>
   
-
-  <script src="https://cdn.jsdelivr.net/npm/typeit@7.0.4/dist/typeit.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.js"></script>
-  <link href="https://codepen.io/juliangarnier/pen/EWxgGx" rel="stylesheet" />
-
 </head>
 
 <body>
   <canvas class="fireworks"></canvas>
-  <script src="bio.js"></script>
 
   <div class="lg-container">
     <div class="pages">
@@ -34,37 +30,38 @@
       <img src="../assets/profilephoto.jpg" alt="Sam Acquaviva" width="300" height="300" />
       <h1>About me</h1>
       <p id="typer"></p>
-      <script>
-        new TypeIt("#typer", {
-            speed: 30,
-            waitUntilVisible: true,
-            afterComplete: function (step, instance) {
-              setTimeout(() => {
-                instance.destroy();
-              }, 3000);
-            }
-        })
-        .type("My name is Sam Acquaviva.", {delay: 200})
-        .break()
-        .type(" I'm an undergrad at MIT studying Computation and Cognition (Course 6-9), which is a blend of computer science and cognitive science.", {delay: 200})
-        .type(" I'm also minoring in design (Course 4).", {delay: 200})
-        .type(" My goal is to build AI that can learn like a human.", {delay: 200})
-        .break()
-        .type("I graduated from Newburyport High School in 2019 where I ran cross country, was Class President, and Valedictorian.", {delay: 200})
-        .type(" Now, I compete for MIT as a cross-country and track distance runner.", {delay: 200})
-        .type(" Freshman year, I was Vice President of my Class.", {delay: 200})
-        .type(" Now, I am the tech chair for the MIT Ethical Technology Initiative.", {delay: 200})
-        .break()
-        .type("Currently, I am working in the Computer Science and Artificial Intelligence Laboratory at MIT,", {delay: 100})
-        .type(" where I am working towards teaching computers to solve abstract grid patterns.", {delay: 100})
-        .go();
-      </script>
     </div>
 
   </div>
 
-  <!-- background animation file-->
+  <link href="https://codepen.io/juliangarnier/pen/EWxgGx" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.js"></script>
   <script src="bio.js"></script>
+  <script>
+    new TypeIt("#typer", {
+        speed: 30,
+        waitUntilVisible: true,
+        afterComplete: function (step, instance) {
+          setTimeout(() => {
+            instance.destroy();
+          }, 3000);
+        }
+    })
+    .type("My name is Sam Acquaviva.", {delay: 200})
+    .break()
+    .type(" I'm an undergrad at MIT studying Computation and Cognition (Course 6-9), which is a blend of computer science and cognitive science.", {delay: 200})
+    .type(" I'm also minoring in design (Course 4).", {delay: 200})
+    .type(" My goal is to build AI that can learn like a human.", {delay: 200})
+    .break()
+    .type("I graduated from Newburyport High School in 2019 where I ran cross country, was Class President, and Valedictorian.", {delay: 200})
+    .type(" Now, I compete for MIT as a cross-country and track distance runner.", {delay: 200})
+    .type(" Freshman year, I was Vice President of my Class.", {delay: 200})
+    .type(" Now, I am the tech chair for the MIT Ethical Technology Initiative.", {delay: 200})
+    .break()
+    .type("Currently, I am working in the Computer Science and Artificial Intelligence Laboratory at MIT,", {delay: 100})
+    .type(" where I am working towards teaching computers to solve abstract grid patterns.", {delay: 100})
+    .go();
+  </script>
 </body>
 
 </html>

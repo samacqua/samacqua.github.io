@@ -69,7 +69,7 @@ Module.onRuntimeInitialized = async _ => {
       type_line("three-fold repitition--draw");
     } else if (game.in_stalemate()) {
       type_line("Stalemate >:)");
-    } else {
+    } else if (game.history().length < 2) {
       type_line("thinking...");    
     }
 
