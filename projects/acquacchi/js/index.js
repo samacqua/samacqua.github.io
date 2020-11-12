@@ -4,9 +4,11 @@ var game = new Chess()
 var texter = new TypeIt("#texter", {
   speed: 50,
   waitUntilVisible: true,
-})
-.type("make a move")
-.go();
+});
+// .type("make a move")
+// .go();
+
+type_line("make a move");
 
 function new_game() {
   game = new Chess();
@@ -85,7 +87,7 @@ Module.onRuntimeInitialized = async _ => {
       // TODO: promotion
 
 
-      let move_phrases = [["Aha, I'll move ", ""], ["Your trash... ", ""], ["", " is winning"]];
+      let move_phrases = [["Aha, I'll move ", ""], ["You're trash... ", ""], ["", " is winning"]];
       let phrase = move_phrases[Math.floor(Math.random() * move_phrases.length)];
       
       let move_str = from + '-' + to;
@@ -142,6 +144,9 @@ Module.onRuntimeInitialized = async _ => {
     showErrors: 'console',
   }
   board = Chessboard('myBoard', config);
+
+  $("#texter").css("height", $("#myBoard").height());
+  // console.log()
 };
 
 function set_move_history(history) {
@@ -172,9 +177,14 @@ function type_line(line) {
   var e = $('<div id="' + id + '" class="texter"></div>');
   $("#texter").append(e)
   texter = new TypeIt(`#${id}`, {
-    speed: 50,
+    speed: 5,
     waitUntilVisible: true,
+    afterComplete: () => {
+      // make latest message visible
+      $("#" + id)[0].scrollIntoView();
+    }
   })
   .type(line)
+  .break()
   .go();
 }
