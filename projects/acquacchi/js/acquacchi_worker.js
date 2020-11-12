@@ -43,7 +43,6 @@ self.addEventListener('message', function(e) {
     api.init_engine();
     api.set_board(board_pointer);
 
-    console.log(fen);
     let move = api.engine_go(board_pointer, info_pointer, "position fen " + fen);
     api.print_engine_board_stats(board_pointer);
     self.postMessage(move);

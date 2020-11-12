@@ -10,6 +10,7 @@
     <script src="js/chessboard-1.0.0.min.js"></script>
     <script src="js/chess.js"></script>
     <script src="js/a.out.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typeit@7.0.4/dist/typeit.min.js"></script>
 
     <link rel="icon" type="image/x-icon" href="../../favicon.ico?"/>
   </head>
@@ -57,55 +58,16 @@
       <div class="container">
         
         <h2>Acquacchi</h2>
-        <div id="myBoard" style="width: 100%;"></div>
+        <div id="board-container">
+          <div id="myBoard"></div>
+          <div id="texter" style="text-align: left"></div>
+        </div>
+        <div id="moves-container">
+          <p id="moves"></p>
+        </div>
       </div>
     </div>
 
-    <!-- <div class="container">
-      <div id="mySidenav" class="sidenav">
-        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-        <div style="padding: 15px;">
-          <h1>Acquacchi</h1>
-          <p>Welcome to playing against Acquacchi!</p>
-          <p>This is a simple chess interface, where you have unlimited time and acquacchi
-            has around 3 seconds per move. If you want to play against a stronger version (not compiled
-            to web assembly), using any other time control, or using a <i>much</i> better interface,
-            challenge Acquacchi <a href="http://lichess.org/?user=acquacchi#friend">on lichess.com</a>.
-            To send a challenge, you have to be logged in. Also, Acquacchi will only accept "Standard"
-            and "From Position" variants with "Real time" time control.</p>
-
-          <p></p>
-          <p>Good luck!</p>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col"></div>
-        <div class="col-10">
-          <nav class="navbar navbar-expand-sm">
-            <ul class="navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link" href="../../index.html">Home</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="../../bio/bio.html">Bio</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link disabled" href="../projects.html">Projects</a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-        <div class="col"></div>
-      </div>
-      <div style="width: 50vh; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-        <div id="myBoard" style="width: 100%;"></div>
-        <button class="btn new_game_btn" onclick="new_game()">new game</button>
-        </div>
-
-    </div> -->
-
-    <!-- </div> -->
     <script src="js/index.js"></script>
 
   </body>

@@ -1,6 +1,13 @@
 var board = null
 var game = new Chess()
 
+var texter = new TypeIt("#texter", {
+  speed: 50,
+  waitUntilVisible: true,
+})
+.type("make a move")
+.go();
+
 function new_game() {
   game = new Chess();
   board.position('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
@@ -45,12 +52,30 @@ Module.onRuntimeInitialized = async _ => {
   }
 
   function onMoveEnd (old_pos, new_pos) {
+
+    if (game.in_checkmate()) {
+      type_line("you checkmated me! :("); 
+    } else if (game.in_check()) {
+      type_line("uh oh, i'm in check");  
+    } else if (game.in_draw()) {
+      if (game.insufficient_material()) {
+        type_line("neither side has enough pieces to checkmate--it's a draw.");
+      } else {
+        type_line("it's a draw! We've gone 50 moves without any captures or pawn moves.");
+      }
+    } else if (game.in_threefold_repetition()) {
+      type_line("three-fold repitition--draw");
+    } else if (game.in_stalemate()) {
+      type_line("Stalemate >:)");
+    } else {
+      type_line("thinking...");    
+    }
+
     console.log("make move...");
     let fen = game.fen();
     var worker = new Worker('js/acquacchi_worker.js');
     worker.postMessage({'fen': fen});
     worker.addEventListener('message', function(e) {
-      console.log("WORKER MOVE: ", e.data);
       let move = e.data;
 
       game.move(move, { sloppy: true })
@@ -59,12 +84,32 @@ Module.onRuntimeInitialized = async _ => {
       let to = move.slice(2,4);
       // TODO: promotion
 
-      console.log(from + '-' + to);
-      board.move(from + '-' + to);
+
+      let move_phrases = [["Aha, I'll move ", ""], ["Your trash... ", ""], ["", " is winning"]];
+      let phrase = move_phrases[Math.floor(Math.random() * move_phrases.length)];
+      
+      let move_str = from + '-' + to;
+
+      if (game.in_checkmate()) {
+        type_line("checkmate! :)"); 
+      } else if (game.in_check()) {
+        type_line("check!");  
+      }  else if (game.in_draw()) {
+        if (game.insufficient_material()) {
+          type_line("neither side has enough pieces to checkmate--it's a draw.");
+        } else {
+          type_line("it's a draw! We've gone 50 moves without any captures or pawn moves.");
+        }
+      } else if (game.in_threefold_repetition()) {
+        type_line("three-fold repitition--draw");
+      } else if (game.in_stalemate()) {
+        type_line("Stalemate :/");
+      } else {
+        type_line(phrase[0] + move_str + phrase[1]);      
+      }
+      board.move(move_str);
+      set_move_history(game.history());
     }, false);
-
-    // let move = api.engine_go(board_pointer, info_pointer, "position fen " + fen);
-
   }
 
   function onDrop (source, target) {
@@ -78,6 +123,7 @@ Module.onRuntimeInitialized = async _ => {
     // illegal move
     if (move === null) return 'snapback'
 
+    set_move_history(game.history());
     onMoveEnd(4,4);
   }
 
@@ -95,6 +141,40 @@ Module.onRuntimeInitialized = async _ => {
     onSnapEnd: onSnapEnd,
     showErrors: 'console',
   }
-  board = Chessboard('myBoard', config)
-
+  board = Chessboard('myBoard', config);
 };
+
+function set_move_history(history) {
+  let hist_string = "";
+  for (i=0;i<history.length;i++) {
+    if (i%2 == 0) {
+      hist_string += i/2+1 + ". ";
+    }
+    hist_string += history[i] + "  ";
+  }
+  $("#moves").text(hist_string);
+}
+
+function type_line(line) {
+
+  function makeid(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+ }
+
+  texter.destroy();
+  let id = makeid(5);
+  var e = $('<div id="' + id + '" class="texter"></div>');
+  $("#texter").append(e)
+  texter = new TypeIt(`#${id}`, {
+    speed: 50,
+    waitUntilVisible: true,
+  })
+  .type(line)
+  .go();
+}
