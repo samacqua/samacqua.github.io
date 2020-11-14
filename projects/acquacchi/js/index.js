@@ -28,6 +28,8 @@ Module.onRuntimeInitialized = async _ => {
     init_engine: Module.cwrap('init_engine', '', []),
     print_engine_board_stats: Module.cwrap('print_pos', '', ['board']),
     update_FEN: Module.cwrap('update_FEN', '', ['string', 'string']),
+    eval_position: Module.cwrap('eval_position', 'int', ['board']),
+    get_material: Module.cwrap('get_material', 'string', ['board']),
   };
 
   // initialize pointers and engine
@@ -46,62 +48,31 @@ Module.onRuntimeInitialized = async _ => {
 
   function onMoveEnd (old_pos, new_pos) {
 
-    if (game.in_checkmate()) {
-      type_line("you checkmated me! :("); 
-    } else if (game.in_check()) {
-      type_line("uh oh, i'm in check");  
-    } else if (game.in_draw()) {
-      if (game.insufficient_material()) {
-        type_line("neither side has enough pieces to checkmate--it's a draw.");
-      } else {
-        type_line("it's a draw! We've gone 50 moves without any captures or pawn moves.");
-      }
-    } else if (game.in_threefold_repetition()) {
-      type_line("three-fold repitition--draw");
-    } else if (game.in_stalemate()) {
-      type_line("Stalemate >:)");
-    } else {
-      let move_phrases = ["thinking...", "hm...", "beep boop"];
-      let phrase = move_phrases[Math.floor(Math.random() * move_phrases.length)];
-      type_line(phrase);    
-    }
+    let comment = get_think_comment(game);
+    type_line(comment);
 
-    console.log("make move...");
     let fen = game.fen();
     var worker = new Worker('js/acquacchi_worker.js');
     worker.postMessage({'fen': fen});
     worker.addEventListener('message', function(e) {
-      let move = e.data;
+      let data = e.data;
+      let move = data.move;
 
-      game.move(move, { sloppy: true })
+      game.move(move, { sloppy: true });
 
       let from = move.slice(0,2);
       let to = move.slice(2,4);
       // TODO: promotion
 
-
-      let move_phrases = [["Aha, I'll move ", ""], ["You're trash... ", ""], ["", " is winning"]];
-      let phrase = move_phrases[Math.floor(Math.random() * move_phrases.length)];
-      
       let move_str = from + '-' + to;
 
-      if (game.in_checkmate()) {
-        type_line("checkmate! :)"); 
-      } else if (game.in_check()) {
-        type_line("check!");  
-      }  else if (game.in_draw()) {
-        if (game.insufficient_material()) {
-          type_line("neither side has enough pieces to checkmate--it's a draw.");
-        } else {
-          type_line("it's a draw! We've gone 50 moves without any captures or pawn moves.");
-        }
-      } else if (game.in_threefold_repetition()) {
-        type_line("three-fold repitition--draw");
-      } else if (game.in_stalemate()) {
-        type_line("Stalemate :/");
-      } else {
-        type_line(phrase[0] + move_str + phrase[1]);      
-      }
+      let material = data.material;
+      let eval = data.eval;
+      let move_comment = get_move_comment(game, move_str, material, eval);
+      type_line(move_comment);
+      last_material = material;
+      last_eval = eval;
+
       board.move(move_str);
       set_move_history(game.history());
     }, false);
@@ -139,7 +110,6 @@ Module.onRuntimeInitialized = async _ => {
   board = Chessboard('myBoard', config);
 
   $("#texter").css("height", $("#myBoard").height());
-  // console.log()
 };
 
 function set_move_history(history) {
@@ -195,4 +165,69 @@ function type_line(line) {
   .delete(line.length)
   .go();
  }, 50*last_line.length+1);
+}
+
+let BLACK = -1;
+let WHITE = 1;
+let ENGINE_SIDE = BLACK;
+
+var last_material = [8,8,2,2,2,2,2,2,1,1];
+var last_eval = 0;
+function get_move_comment(game_board, move_str, material, eval) {
+  if (game_board.in_checkmate()) {
+    return "checkmate! :)";
+  } else if (game_board.in_check()) {
+    return "check!";
+  }  else if (game_board.in_draw()) {
+    if (game_board.insufficient_material()) {
+      return "neither side has enough pieces to checkmate--it's a draw.";
+    } else {
+      return "it's a draw! We've gone 50 moves without any captures or pawn moves.";
+    }
+  } else if (game_board.in_threefold_repetition()) {
+    return "three-fold repitition--draw";
+  } else if (game_board.in_stalemate()) {
+    return "Stalemate :/";
+  } else {
+    let eval_delta = (eval - last_eval) * ENGINE_SIDE;
+    let material_delta = material.map(function (num, idx) {
+      return num - last_material[idx];
+    });
+    console.log(eval_delta, material_delta);
+
+    if (eval_delta < -100) {
+      return "Great move! I'll move " + move_str;
+    } else if (eval_delta < 50) {
+      return "Good move! I'll move " + move_str;
+    } else if (eval_delta < 100) {
+      return "Okay move. I'll move " + move_str;
+    } else if (eval_delta < 300) {
+      return "That was a mistake. " + move_str;
+    } else {
+      return "That was a big blunder... " + move_str;
+    }
+
+  }
+}
+
+function get_think_comment(game_board) {
+  if (game_board.in_checkmate()) {
+    return "you checkmated me! :(";
+  } else if (game_board.in_check()) {
+    return "uh oh, i'm in check";
+  } else if (game_board.in_draw()) {
+    if (game_board.insufficient_material()) {
+      return "neither side has enough pieces to checkmate--it's a draw.";
+    } else {
+      return "it's a draw! We've gone 50 moves without any captures or pawn moves.";
+    }
+  } else if (game_board.in_threefold_repetition()) {
+    return "three-fold repitition--draw";
+  } else if (game_board.in_stalemate()) {
+    return "Stalemate >:)";
+  } else {
+    let move_phrases = ["thinking...", "hm...", "beep boop"];
+    let phrase = move_phrases[Math.floor(Math.random() * move_phrases.length)];
+    return phrase;
+  }
 }
