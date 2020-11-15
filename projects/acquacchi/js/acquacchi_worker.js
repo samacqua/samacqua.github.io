@@ -30,11 +30,10 @@ self.addEventListener('message', function(e) {
       });
     }
 
-    let move = api.engine_go(board_pointer, info_pointer, "position fen " + fen);
+    let search_result = JSON.parse(api.engine_go(board_pointer, info_pointer, "position fen " + fen));
+    search_result['material'] = parse_material(api.get_material(board_pointer));
     api.print_engine_board_stats(board_pointer);
-    let material = parse_material(api.get_material(board_pointer));
-    let eval = api.eval_position(board_pointer);
-    self.postMessage({"move": move, "material": material, "eval": eval});
+    self.postMessage(search_result);
   };
 
 }, false);

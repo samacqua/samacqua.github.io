@@ -67,7 +67,7 @@ Module.onRuntimeInitialized = async _ => {
       let move_str = from + '-' + to;
 
       let material = data.material;
-      let eval = data.eval;
+      let eval = data.score;
       let move_comment = get_move_comment(game, move_str, material, eval);
       type_line(move_comment);
       last_material = material;
@@ -167,10 +167,6 @@ function type_line(line) {
  }, 50*last_line.length+1);
 }
 
-let BLACK = -1;
-let WHITE = 1;
-let ENGINE_SIDE = BLACK;
-
 var last_material = [8,8,2,2,2,2,2,2,1,1];
 var last_eval = 0;
 function get_move_comment(game_board, move_str, material, eval) {
@@ -189,11 +185,10 @@ function get_move_comment(game_board, move_str, material, eval) {
   } else if (game_board.in_stalemate()) {
     return "Stalemate :/";
   } else {
-    let eval_delta = (eval - last_eval) * ENGINE_SIDE;
+    let eval_delta = eval - last_eval;
     let material_delta = material.map(function (num, idx) {
       return num - last_material[idx];
     });
-    console.log(eval_delta, material_delta);
 
     if (eval_delta < -100) {
       return "Great move! I'll move " + move_str;
