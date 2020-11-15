@@ -66,14 +66,15 @@ Module.onRuntimeInitialized = async _ => {
       let material = data.material;
       let eval = data.score;
 
+      game.move(move, { sloppy: true });
+      board.position(game.fen());
+      set_move_history(game.history());
+
       let move_comment = get_move_comment(game, move_str, material, eval);
       type_line(move_comment);
       last_material = material;
       last_eval = eval;
-
-      game.move(move, { sloppy: true });
-      board.position(game.fen());
-      set_move_history(game.history());
+      
     }, false);
   }
 
