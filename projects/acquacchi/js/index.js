@@ -1,5 +1,5 @@
-var board = null
-var game = new Chess()
+var board = null;
+var game = new Chess();
 
 function new_game() {
   game = new Chess();
@@ -58,22 +58,21 @@ Module.onRuntimeInitialized = async _ => {
       let data = e.data;
       let move = data.move;
 
-      game.move(move, { sloppy: true });
-
       let from = move.slice(0,2);
       let to = move.slice(2,4);
-      // TODO: promotion
-
+      let promo = move.slice(4,5);
       let move_str = from + '-' + to;
 
       let material = data.material;
       let eval = data.score;
+
       let move_comment = get_move_comment(game, move_str, material, eval);
       type_line(move_comment);
       last_material = material;
       last_eval = eval;
 
-      board.move(move_str);
+      game.move(move, { sloppy: true });
+      board.position(game.fen());
       set_move_history(game.history());
     }, false);
   }
@@ -84,7 +83,7 @@ Module.onRuntimeInitialized = async _ => {
       from: source,
       to: target,
       promotion: 'q' // NOTE: always promote to a queen for example simplicity
-    })
+    });
 
     // illegal move
     if (move === null) return 'snapback'
@@ -201,7 +200,6 @@ function get_move_comment(game_board, move_str, material, eval) {
     } else {
       return "That was a big blunder... " + move_str;
     }
-
   }
 }
 
