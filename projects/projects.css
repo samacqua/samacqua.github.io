@@ -44,7 +44,7 @@ h2 {
   padding-right: 1.5em;
   text-align: right;
   background-color: #f27657;
-  box-shadow: 0 0 5px rgb(138, 72, 72);
+  box-shadow: 0 0 12px rgb(221, 89, 89);
 }
 
 
@@ -121,9 +121,13 @@ img {
   margin-bottom: 2em;
 }
 
-.project-links {
+.content {
   text-align: left;
-  margin-bottom: 10px;
+}
+
+.project-links {
+  float: right;
+  margin-top: 0.5em;
 }
 
 #typer {
@@ -131,103 +135,36 @@ img {
 }
 
 .project {
-  background-color: rgb(214, 214, 214);
-  margin-top: 10px;
-  margin-bottom: 10px;
+  background-color: rgb(228, 228, 228);
+  margin: 15px;
   padding: 12px;
-  box-shadow: 3px 3px 5px rgb(141, 141, 141);
+  box-shadow: 0 4px 12px 1px rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  border-radius: 6px;
+}
+
+.project h2 {
+  display: inline-block;
+  text-align: left;
 }
 
 .github_link {
-  color: #1fa9ff;
+  color: #fff;
+  background-color: #1fa9ff;
+  padding: 5px;
+  border-radius: 5px;
 }
 
 .try_link {
-  color: #bb00e6;
+  color: #fff;
+  background-color: #bb00e6;
+  padding: 5px;
+  border-radius: 5px;
 }
 
 .beta_tag {
   color: #c44525;
+  /* background-color: #c44525; */
+  padding: 5px;
+  border-radius: 5px;
+  pointer-events: none;        
 }
-
-/* :root {
-  --main-color: #4b88b0;
-  --back-color: #323232;
-}
-
-* {
-  background-color: var(--back-color)
-}
-
-body,
-html {
-  font-size: 20px;
-  background-color: var(--back-color);
-}
-
-h2 {
-  color: white;
-  text-align: left;
-}
-
-p {
-  color: lightGray;
-  text-align: left;
-}
-
-.project {
-  padding: 20px;
-}
-
-code {
-  font-size: 20px;
-}
-
-.github_link {
-  color: #1fa9ff;
-}
-
-.try_link {
-  color: #bb00e6;
-}
-
-body {
-  background-color: var(--back-color);
-}
-
-ul {
-  text-align: right;
-  list-style-type: none;
-}
-
-ul li a {
-  color: var(--main-color);
-  text-decoration: none;
-}
-
-ul li a:hover {
-  color: white;
-  cursor: default;
-  text-decoration: none;
-}
-
-img {
-  max-width: 600px;
-  height: 150px;
-
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-
-  filter: drop-shadow(15px 15px 15px #222);
-
-  margin-top: 20px;
-  margin-bottom: 10px;
-}
-
-.shadowed {
-  -webkit-filter: drop-shadow(12px 12px 25px rgba(0, 0, 0, 0.5));
-  filter: url(#drop-shadow);
-  -ms-filter: "progid:DXImageTransform.Microsoft.Dropshadow(OffX=12, OffY=12, Color='#444')";
-  filter: "progid:DXImageTransform.Microsoft.Dropshadow(OffX=12, OffY=12, Color='#444')";
-} */
