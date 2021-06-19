@@ -67,7 +67,8 @@
 <noscript>Sorry, you need Javascript on to email me.</noscript>
 
   <script>
-    new TypeIt("#typer", {
+
+    var instance = new TypeIt("#typer", {
         speed: 50,
         waitUntilVisible: true,
         afterComplete: function (step, instance) {
@@ -82,8 +83,23 @@
     .type(" :)", {delay: 600})
     .delete(10)
     .type('welcome to my website', {delay: 2500})
-    .type(' :)')
-    .go();
+    .type(' :)', {delay: 500})
+
+    // warn small screen users things will be weird
+    if (window.innerWidth < 750) {
+      instance.delete('welcome to my website :)'.length);
+      instance.type('(looks like ur on a small screen)', {delay: 1000});
+      instance.delete('(looks like ur on a small screen)'.length);
+      instance.type('(site is built for computers)', {delay: 1000});
+      instance.delete('(site is built for computers)'.length);
+      instance.type('(so some things might be jank)', {delay: 1000});
+      instance.delete('(so some things might be jank)'.length, {delay: 1000});
+      instance.type('but still...', {delay: 1000});
+      instance.delete('but still...'.length);
+      instance.type('welcome to my website', {delay: 2500}).type(' :)')
+    }
+
+    instance.go();
   </script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css"/>
