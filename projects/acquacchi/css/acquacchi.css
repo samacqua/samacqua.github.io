@@ -3,10 +3,8 @@ body {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: #f0f0f0;
-  font-family: Courier, monospace;
-  font-style: normal;
-  font-weight: 100;
+  background-color: #adf;
+  font-family: Open Sans;
   color: #202020;
 }
 .lg-container {
@@ -39,17 +37,32 @@ h2 {
   width: 100%;
 }
 .pages {
-  position: relative;
-  width: 100%;
-  margin: 0em 0em 1.5em auto;
+  max-width: 50em;
+  margin: 0 auto;
   padding-right: 1.5em;
   text-align: right;
-  background-color: #f27657;
-  box-shadow: 0 0 12px rgb(221, 89, 89);
 }
-.sidenav-title {
-  margin-top: 20px;
-  margin-bottom: 8px;
+.pages h1 {
+  color: #f66;
+  font-weight: bold;
+  margin: 0.25em;
+  display: inline-block;
+  float: left;
+}
+
+.pages a {
+    display: inline-block;
+    overflow: hidden;
+    opacity: 1;
+    line-height: 2em;
+    margin: 0.7em;
+    color: #f0f0f0;
+    font-size: 1.5em;
+    transition: color .15s ease-in-out;
+}
+
+.links-wrapper {
+  display: inline-block;
 }
 
 #myBoard {
@@ -95,28 +108,6 @@ h2 {
     font-size: 1.5em;
 }
 
-.contact {
-  position: relative;
-  width: 20em;
-  max-width: 100%;
-  margin: -1em auto 1.5em auto;
-}
-
-.contact a {
-  display: inline-block;
-  overflow: hidden;
-  opacity: 1;
-  width: 2em;
-  line-height: 2em;
-  margin: 0 .20em;
-  color: #f0f0f0;
-  font-size: 1.5em;
-  transition: background-color .2s ease-in-out;
-  border-radius: 50%;
-}
-
-.contact a:hover { color: rgb(92, 92, 92); }
-
 .pages a:hover { color: rgb(92, 92, 92); }
 
 canvas {
@@ -146,70 +137,8 @@ br {
   cursor: default;
 }
 
-img {
-  object-fit: cover;
-  width: 100%;
-  /* float: right;
-  margin-bottom: 5px; */
-}
-
-.projects {
-  margin-top: 1em;
-  margin-bottom: 2em;
-}
-
-.project-links {
-  text-align: left;
-  margin-bottom: 10px;
-}
-
 #typer {
   margin: 10px 8px 0px 0px;
-}
-
-.vis_link {
-  color: #c44525 !important;
-  text-decoration: underline !important;
-}
-
-/* The side navigation menu */
-.sidenav {
-  height: 100%; /* 100% Full-height */
-  width: 0; /* 0 width - change this with JavaScript */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Stay on top */
-  top: 0; /* Stay at the top */
-  left: 0;
-  background-color: rgb(219, 219, 219); /* Black*/
-  overflow-x: hidden; /* Disable horizontal scroll */
-  padding-top: 20px; /* Place content 60px from the top */
-  transition: 0.5s; /* 0.5 second transition effect to slide in the sidenav */
-  box-shadow: 0 0 5px rgb(90, 90, 90);
-}
-
-/* The navigation menu links */
-.sidenav a {
-  text-decoration: none;
-  color: var(--main-color);
-}
-
-.sidenav h1, .sidenav p {
-  text-align: left;
-}
-
-/* When you mouse over the navigation links, change their color */
-.sidenav a:hover {
-  color: #f1f1f1;
-  transition: 0.3s;
-}
-
-/* Position and style the close button (top right corner) */
-.sidenav .closebtn {
-  position: absolute;
-  top: 0;
-  right: 25px;
-  font-size: 36px;
-  margin-left: 50px;
 }
 
 .new_game_btn {
@@ -218,3 +147,52 @@ img {
   padding: 5px;
   margin: 15px;
 } 
+
+.about {
+  max-width: 40em;
+  padding-bottom: 1em;
+}
+
+.about h2, h3 {
+  color: #f66;
+  font-weight: bold;
+  padding-top: 1em;
+}
+
+:root {
+  --text: #2b3044;
+  --line: rgb(79, 137, 177);
+  --line-active: #275efe;
+  --spacing: 0em;
+}
+
+.about a {
+  display: inline-block;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  margin: 0 var(--spacing, 0px);
+  transition: margin 0.25s;
+}
+
+.about a svg {
+  width: 66px;
+  height: 40px;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 7px) translateZ(0);
+  fill: none;
+  stroke: var(--stroke, var(--line));
+  stroke-linecap: round;
+  stroke-width: 2px;
+  stroke-dasharray: var(--offset, 69px) 278px;
+  stroke-dashoffset: 361px;
+  transition: stroke 0.25s ease var(--stroke-delay, 0s), stroke-dasharray 0.35s;
+}
+.about a:hover {
+  --spacing: 4px;
+  --stroke: var(--line-active);
+  --stroke-delay: 0.1s;
+  --offset: 180px;
+}

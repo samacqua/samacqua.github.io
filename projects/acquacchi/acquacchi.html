@@ -13,6 +13,8 @@
     </script>
 
     <link rel="stylesheet" type="text/css" href="css/acquacchi.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
+
     <script src="js/chessboard-1.0.0.js"></script>
     <script src="js/chess.js"></script>
     <script src="js/a.out.js"></script>
@@ -26,46 +28,18 @@
 
     <div class="lg-container">
       <div class="pages">
-        <a href="../../index.html">home</a>
-        <a href="../projects.html">projects</a>
-        <a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
-        <a href="../../bio/bio.html">bio</a>
-      </div>
+        <h1>Acquacchi</h1>
 
-      <div id="mySidenav" class="sidenav">
-        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-        <div style="padding: 15px">
-          <h2 class="sidenav-title">Overview</h2>
-          <p>Welcome to playing against Acquacchi!
-            <br>
-          This is a simple chess interface, where you have unlimited time and Acquacchi
-            has around 3 seconds per move. To make Acquacchi run in your browser, it had to lose some features.
-            If you want to play against the full strength version or play against Acquacchi using any sort of time control,
-            challenge Acquacchi <a class="vis_link" href="http://lichess.org/?user=acquacchi#friend">on lichess.com</a>.
-            To send a challenge, you have to be logged in. Also, Acquacchi will only accept "Standard"
-            and "From Position" variants with "Real time" time control.
-            <br>
-          Good luck!</p>
-
-          <h2 class="sidenav-title">Features</h2>
-          <p>If every chess game ended after 3 moves, there would still be 121 million possible games. Because of this,
-            a chess engine has to be very careful with which positions it analyzes and it has to analyze every position quickly.
-            On my laptop, which has very bad computing power, Acquacchi searches over 1.5 million positions per second.
-            <br>
-            It does this through a simple Mini-max search and <b>a lot</b> of optimisations, such as alpha-beta pruning, null move pruning,
-            bit-board representations, killer heuristic, and history heuristic. Acquacchi also uses a transposition table, quiescence search, 
-            and iterative deepening.
-            <br>
-          The source code (which can be compiled and run on your computer) can be <a class="vis_link" href="https://github.com/samacqua/Acquacchi">found here</a>.</p>
-
-          <h2 class="sidenav-title">Why?</h2>
-          <p>Quarantine.</p>
+        <div class="links-wrapper">
+          <a href="../../index.html">home</a>
+          <a href="../projects.html">projects</a>
+          <a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+          <a href="../../bio/bio.html">bio</a>
         </div>
       </div>
   
       <div class="container">
         
-        <h2>Acquacchi</h2>
         <div id="board-container">
           <div id="myBoard"></div>
           <div id="board-right">
@@ -75,6 +49,35 @@
         </div>
         <div id="moves-container">
           <p id="moves"></p>
+        </div>
+
+        <div class='about'>
+          <h2>About</h2>
+          <p>Welcome to playing against Acquacchi!
+            <br>
+          This is a simple chess interface, where you have unlimited time and Acquacchi
+            has around 3 seconds per move. To make Acquacchi run in your browser, it had to lose some features.
+            If you want to play against the full strength version or play against Acquacchi using any sort of time control,
+            challenge Acquacchi on <a href="http://lichess.org/?user=acquacchi#friend">lichess</a>.
+            To send a challenge, you have to be logged in. Also, Acquacchi will only accept "Standard"
+            and "From Position" variants with "Real time" time control. If the bot is not running, just email me (email on homepage)
+            and I will restart the server!
+            <br>
+          Good luck!</p>
+
+          <h2>Features</h2>
+          <p>If every chess game ended after 3 moves, there would still be 121 million possible games. Because of this,
+            a chess engine has to be very careful with which positions it analyzes and it has to analyze every position quickly.
+            On my laptop, which has very bad computing power, Acquacchi searches over 1.5 million positions per second.
+            <br>
+            It does this through a simple Mini-max search and <b>a lot</b> of optimisations, such as alpha-beta pruning, null move pruning,
+            bit-board representations, killer heuristic, and history heuristic. Acquacchi also uses a transposition table, quiescence search, 
+            and iterative deepening.
+            <br>
+          The source code (which can be compiled and run on your computer) can be found on the <a href="https://github.com/samacqua/Acquacchi">github</a>.</p>
+
+          <h2>Why?</h2>
+          <p>Quarantine (also wanted to learn C).</p>
         </div>
       </div>
     </div>

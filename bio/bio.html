@@ -39,10 +39,22 @@
 
   <link href="https://codepen.io/juliangarnier/pen/EWxgGx" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.js"></script>
-  <!-- <script src="bio.js"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="bio.js"></script>
   <script>
+
+    function render_links() {
+      // js is used to apply svg to each links so don't have to copy paste a bunch
+      // animation from https://codepen.io/aaroniker/pen/VwjexVy
+      const links = document.querySelectorAll('.loop-link');
+
+      for (let i=0;i<links.length; i++) {
+          links[i].innerHTML += '<svg viewBox="0 0 70 36"><path d="M6.9739 30.8153H63.0244C65.5269 30.8152 75.5358 -3.68471 35.4998 2.81531C-16.1598 11.2025 0.894099 33.9766 26.9922 34.3153C104.062 35.3153 54.5169 -6.68469 23.489 9.31527" /></svg>';
+      }
+    }
+
     new TypeIt("#typer", {
-        speed: 30,
+        speed: 20,
         waitUntilVisible: true,
         afterComplete: function (step, instance) {
           setTimeout(() => {
@@ -63,6 +75,10 @@
     .break()
     .type("Currently, I am working in the Computer Science and Artificial Intelligence Laboratory at MIT,", {delay: 100})
     .type(" where I am working towards teaching computers to solve abstract grid patterns.", {delay: 100})
+    .type(" See my latest publication from the group <a class='loop-link' href='https://arxiv.org/abs/2106.07824'>here</a>.")
+    .exec(render_links)
+    .type(" I am also an intern this summer at John Deere, where I am working on a computer vision project to make corn harvesting more efficient,")
+    .type(" and also on a reinforcement learning project to automate advanced construction maneuvers in a skid steer.")
     .go();
   </script>
 </body>

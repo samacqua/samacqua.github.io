@@ -51,7 +51,6 @@ h2 {
   float: left;
 }
 
-
 .pages a {
     display: inline-block;
     overflow: hidden;
@@ -117,8 +116,42 @@ img {
   margin-top: 0.5em;
 }
 
-#typer {
-  margin: 10px 8px 0px 0px;
+:root {
+  --text: #2b3044;
+  --line: #adf;
+  --line-active: #275efe;
+  --spacing: 0.5em;
+}
+
+.project-links a {
+  display: inline-block;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  margin: 0 var(--spacing, 0px);
+  transition: margin 0.25s;
+}
+
+.project-links a svg {
+  width: 76px;
+  height: 40px;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 7px) translateZ(0);
+  fill: none;
+  stroke: var(--stroke, var(--line));
+  stroke-linecap: round;
+  stroke-width: 2px;
+  stroke-dasharray: var(--offset, 69px) 278px;
+  stroke-dashoffset: 361px;
+  transition: stroke 0.25s ease var(--stroke-delay, 0s), stroke-dasharray 0.35s;
+}
+.project-links a:hover {
+  --spacing: 4px;
+  --stroke: var(--line-active);
+  --stroke-delay: 0.1s;
+  --offset: 180px;
 }
 
 .project {
@@ -142,7 +175,7 @@ img {
   text-align: left;
 }
 
-.github_link {
+/* .github_link {
   color: #fff;
   background-color: #1fa9ff;
   padding: 5px;
@@ -154,7 +187,7 @@ img {
   background-color: #bb00e6;
   padding: 5px;
   border-radius: 5px;
-}
+} */
 
 .beta_tag {
   color: #c44525;

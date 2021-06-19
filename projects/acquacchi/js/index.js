@@ -6,19 +6,8 @@ function new_game() {
   board.position('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
 }
 
-/* Set the width of the side navigation to 250px */
-function openNav() {
-  document.getElementById("mySidenav").style.width = "21em";
-}
-
-/* Set the width of the side navigation to 0 */
-function closeNav() {
-  document.getElementById("mySidenav").style.width = "0";
-}
-
 Module.onRuntimeInitialized = async _ => {
 
-  openNav();
   const api = {
     get_board_pointer: Module.cwrap('get_board_pointer', 'board', []),
     get_info_pointer: Module.cwrap('get_info_pointer', 'info', []),
@@ -224,4 +213,13 @@ function get_think_comment(game_board) {
     let phrase = move_phrases[Math.floor(Math.random() * move_phrases.length)];
     return phrase;
   }
+}
+
+
+// apply svg to each links so don't have to copy paste a bunch
+// animation from https://codepen.io/aaroniker/pen/VwjexVy
+const links = document.querySelectorAll('.about a');
+
+for (let i=0;i<links.length; i++) {
+    links[i].innerHTML += '<svg viewBox="0 0 70 36"><path d="M6.9739 30.8153H63.0244C65.5269 30.8152 75.5358 -3.68471 35.4998 2.81531C-16.1598 11.2025 0.894099 33.9766 26.9922 34.3153C104.062 35.3153 54.5169 -6.68469 23.489 9.31527" /></svg>';
 }

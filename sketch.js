@@ -47,7 +47,8 @@ function handleEvent(e) {
     }
 
     // if clicking button -- don't do animation
-    if (!e.srcElement.toString().includes('HTMLDivElement')) {
+    const click_obj = e.srcElement.toString();
+    if (!(click_obj.includes('HTMLDivElement') || click_obj.includes('HTMLDocument'))) {
       return;
     }
 
