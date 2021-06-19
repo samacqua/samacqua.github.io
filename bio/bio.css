@@ -3,9 +3,8 @@ body {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: #f0f0f0;
-  font-family: Courier, monospace;
-  font-style: normal;
+  background-color: #bfd;
+  font-family: Open Sans;
   font-weight: 100;
   color: #202020;
 }
@@ -20,7 +19,7 @@ body {
 .container {
   position: relative;
   margin: 0 auto;
-  width: 40em;
+  width: 45em;
   max-width: 100%;
   height: 10em;
   text-align: center;
@@ -34,15 +33,18 @@ h1 {
   text-align: left;
 }
 .pages {
-  position: relative;
-  width: 100%;
-  margin: 0em 0em 1.5em auto;
+  max-width: 50em;
+  margin: 0 auto;
   padding-right: 1.5em;
   text-align: right;
-  background-color: #f27657;
-  box-shadow: 0 0 12px rgb(221, 89, 89);
 }
-
+.pages h1 {
+  color: #e06;
+  margin: 0.25em;
+  display: inline-block;
+  float: left;
+  font-weight: bold;
+}
 
 .pages a {
     display: inline-block;
@@ -50,31 +52,10 @@ h1 {
     opacity: 1;
     line-height: 2em;
     margin: 0.7em;
-    color: #f0f0f0;
+    color: #db88ab;
     font-size: 1.5em;
+    transition: color .15s ease-in-out;
 }
-
-.contact {
-  position: relative;
-  width: 20em;
-  max-width: 100%;
-  margin: -1em auto 1.5em auto;
-}
-
-.contact a {
-  display: inline-block;
-  overflow: hidden;
-  opacity: 1;
-  width: 2em;
-  line-height: 2em;
-  margin: 0 .20em;
-  color: #f0f0f0;
-  font-size: 1.5em;
-  transition: background-color .2s ease-in-out;
-  border-radius: 50%;
-}
-
-.contact a:hover { color: rgb(92, 92, 92); }
 
 .pages a:hover { color: rgb(92, 92, 92); }
 

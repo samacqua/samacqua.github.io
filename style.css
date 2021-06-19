@@ -4,8 +4,8 @@ body {
   width: 100%;
   height: 100%;
   background-color: #f0f0f0;
-  font-family: Courier, monospace;
-  font-style: normal;
+  /* font-family: Courier, monospace; */
+  font-family: "Open Sans";
   font-weight: 100;
   color: #202020;
 }
@@ -69,6 +69,26 @@ h1 a:active { transform: scale(.8); }
   100% { transform: scale(1); opacity: 1; }
 }
 
+@keyframes fade-in {
+  0%   { transform: rotate(25deg) scale(.01); opacity: 0; }
+  70%  { transform: scale(1.4); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pages a.animated, a.animated, .contact a.animated {
+  animation: fade-in 0.5s ease-out 0.0s 1 normal forwards;
+}
+
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
 h1 em {
   position: absolute;
   display: block;
@@ -118,9 +138,8 @@ hr {
 
 .pages {
     position: relative;
-    width: 30em;
-    max-width: 100%;
-    margin: 0em 0em 1.5em auto;
+    max-width: 50em;
+    margin: 0 auto;
     padding-right: 1.5em;
     text-align: right;
 }
@@ -128,11 +147,11 @@ hr {
 .pages a {
     display: inline-block;
     overflow: hidden;
-    opacity: 1;
     line-height: 2em;
     margin: 0.7em;
     color: #f0f0f0;
     font-size: 1.5em;
+    transition: all .15s ease-in-out;
 }
 
 .contact {
@@ -151,13 +170,12 @@ hr {
   margin: 0 .20em;
   color: #f0f0f0;
   font-size: 1.5em;
-  transition: background-color .2s ease-in-out;
+  transition: all .15s ease-in-out;
   border-radius: 50%;
 }
 
-.contact a:hover { color: rgb(92, 92, 92); }
-
-.pages a:hover { color: rgb(92, 92, 92); }
+.contact a:hover { color: rgb(92, 92, 92) !important; }
+.pages a:hover { color: rgb(92, 92, 92) !important; }
 
 canvas {
   display: block;

@@ -5,9 +5,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
-  <!-- CSS file-->
   <link rel="stylesheet" type="text/css" href="bio.css" />
   <script src="https://cdn.jsdelivr.net/npm/typeit@7.0.4/dist/typeit.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
 
   <title>Bio</title>
   <meta name="Description" content="About me page for my personal website.">
@@ -20,15 +20,18 @@
 
   <div class="lg-container">
     <div class="pages">
-      <a href="../index.html">home</a>
-      <a href="../projects/projects.html">projects</a>
-      <a href="../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
-      <a href="#" class="disabled_a">bio</a>
+      <h1>About me</h1>
+
+      <div class="links-wrapper">
+        <a href="../index.html">home</a>
+        <a href="../projects/projects.html">projects</a>
+        <a href="../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+        <a href="#" class="disabled_a">bio</a>
+      </div>
     </div>
 
     <div class="container">
       <img src="../assets/profilephoto.jpg" alt="Sam Acquaviva" width="300" height="300" />
-      <h1>About me</h1>
       <p id="typer"></p>
     </div>
 
@@ -36,7 +39,7 @@
 
   <link href="https://codepen.io/juliangarnier/pen/EWxgGx" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.js"></script>
-  <script src="bio.js"></script>
+  <!-- <script src="bio.js"></script> -->
   <script>
     new TypeIt("#typer", {
         speed: 30,

@@ -8,7 +8,7 @@ var animations = [];
 var circles = [];
 
 var colorPicker = (function() {
-  var colors = ["#9b59c2", "#f27657", "#FFBE53", "#38a3eb"];
+  var colors = [["#8fd", "#10c"], ["#f89", "#fff"], ["#adf", "#f66"]];
   var index = 0;
   function next() {
     index = index++ < colors.length-1 ? index : 0;
@@ -40,21 +40,40 @@ function addClickListeners() {
 };
 
 function handleEvent(e) {
+
     if (e.touches) { 
       e.preventDefault();
       e = e.touches[0];
     }
-    var currentColor = colorPicker.current();
-    var nextColor = colorPicker.next();
+
+    // if clicking button -- don't do animation
+    if (!e.srcElement.toString().includes('HTMLDivElement')) {
+      return;
+    }
+
+    var currentColors = colorPicker.current();
+    var currentBackground = currentColors[0];
+    var nextColors = colorPicker.next();
+    var nextBackground = nextColors[0];
+    var nextText = nextColors[1];
     var targetR = calcPageFillRadius(e.pageX, e.pageY);
     var rippleSize = Math.min(200, (cW * .4));
     var minCoverDuration = 750;
+
+    var links = document.getElementsByTagName("a");
+    for(var i=0;i<links.length;i++)
+    {
+        if(links[i].href)
+        {
+            links[i].style.color = nextText;
+        }
+    }  
     
     var pageFill = new Circle({
       x: e.pageX,
       y: e.pageY,
       r: 0,
-      fill: nextColor
+      fill: nextBackground
     });
     var fillAnimation = anime({
       targets: pageFill,
@@ -71,10 +90,10 @@ function handleEvent(e) {
       x: e.pageX,
       y: e.pageY,
       r: 0,
-      fill: currentColor,
+      fill: currentBackground,
       stroke: {
         width: 3,
-        color: currentColor
+        color: currentBackground
       },
       opacity: 1
     });
@@ -92,7 +111,7 @@ function handleEvent(e) {
       var particle = new Circle({
         x: e.pageX,
         y: e.pageY,
-        fill: currentColor,
+        fill: currentBackground,
         r: anime.random(24, 48)
       })
       particles.push(particle);
