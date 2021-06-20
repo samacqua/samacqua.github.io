@@ -48,7 +48,7 @@ function handleEvent(e) {
 
     // if clicking button -- don't do animation
     const click_obj = e.srcElement.toString();
-    if (!(click_obj.includes('HTMLDivElement') || click_obj.includes('HTMLDocument'))) {
+    if (click_obj.includes('HTMLElement') || click_obj.includes('http')) {
       return;
     }
 
@@ -186,11 +186,6 @@ var resizeCanvas = function() {
 
 (function init() {
   resizeCanvas();
-  if (window.CP) {
-    // CodePen's loop detection was causin' problems
-    // and I have no idea why, so...
-    window.CP.PenTimer.MAX_TIME_IN_LOOP_WO_EXIT = 6000; 
-  }
   window.addEventListener("resize", resizeCanvas);
   addClickListeners();
   handleInactiveUser();
@@ -201,7 +196,19 @@ function handleInactiveUser() {
     fauxClick(cW/2, cH/2);
   }, 4500);
   
-  function clearInactiveTimeout() {
+  function clearInactiveTimeout(e) {
+
+    if (e.touches) { 
+      e.preventDefault();
+      e = e.touches[0];
+    }
+
+    // if clicking button -- don't do animation
+    const click_obj = e.srcElement.toString();
+    if (click_obj.includes('HTMLElement') || click_obj.includes('http')) {
+      return;
+    }
+
     clearTimeout(inactive);
     document.removeEventListener("mousedown", clearInactiveTimeout);
     document.removeEventListener("touchstart", clearInactiveTimeout);
