@@ -97,8 +97,6 @@ Module.onRuntimeInitialized = async _ => {
     showErrors: 'console',
   }
   board = Chessboard('myBoard', config);
-
-  $("#texter").css("height", $("#myBoard").height());
 };
 
 function set_move_history(history) {
@@ -121,7 +119,7 @@ function on_write_new_line(state) {
 }
 
 var last_line = ""; // used to make sure settimeout is correct amount
-type_line("make a move");
+type_line("make a move to start");
 
 function type_line(line) {
   on_write_new_line(line);
