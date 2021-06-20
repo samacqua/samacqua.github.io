@@ -42,22 +42,31 @@ body * {
                                 supported by Chrome, Edge, Opera and Firefox */
 }
 
-h1 a {
+.main_ref {
   position: relative;
   display: block;
   overflow: hidden;
-  opacity: 0;
-  width: 1em;
-  height: 1em;
+  width: 1.5em;
+  height: 1.5em;
   margin: 0 auto;
-  background-color: #303132;
+  background-color: transparent;
   font-size: 3em;
   line-height: 3em;
   color: transparent;
   border-radius: 50%;
   border: 0em solid #39F;
   transition: all .15s ease-in-out;
+  opacity: 0;
   animation: logo .25s ease-out 4.4s 1 normal forwards;
+  
+}
+
+img {
+  width: 1.5em;
+  height: 1.5em;
+  display: block;
+  padding: 0.2em;
+  background-color: #f0f0f0;
 }
 
 h1 a:hover, h1 a:focus { background-color: #39F; }
