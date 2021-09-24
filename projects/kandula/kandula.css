@@ -159,8 +159,14 @@ br {
   --offset: 180px;
 }
 
-.banner_img {
+#kandula-wrap {
+  display: flex;
+  justify-content: center;
   width: 100%;
+}
+
+#kandula-logo {
+  width: 30%;
 }
 
 .phone {

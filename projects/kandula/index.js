@@ -10,7 +10,7 @@ for (let i=0;i<links.length; i++) {
 
 var x = 0.5;
 var y = 0.5;
-var maxRotation = 9; 
+var maxRotation = 18; 
 var perspective = 1000;
 
 $(document).mousemove(function(event){
