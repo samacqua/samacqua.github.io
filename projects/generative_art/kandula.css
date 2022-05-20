@@ -1,0 +1,175 @@
+* { box-sizing: border-box; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; margin: 0; padding: 0;}
+body {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #adf;
+  font-family: Open Sans;
+  color: #202020;
+}
+.lg-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+  }
+.container {
+  position: relative;
+  margin: 0 auto;
+  width: 40em;
+  max-width: 100%;
+  height: 10em;
+  text-align: center;
+}
+a { 
+  text-decoration: none;
+  color: inherit;
+}
+h1 {
+  font-size: 2.6em;
+  text-align: left;
+}
+h2 {
+  font-size: 2em;
+  text-align: left;
+  width: 100%;
+}
+.pages {
+  max-width: 50em;
+  margin: 0 auto;
+  padding-right: 1.5em;
+  text-align: right;
+}
+.pages h1 {
+  color: #f66;
+  font-weight: bold;
+  margin: 0.25em;
+  display: inline-block;
+  float: left;
+}
+
+.pages a {
+    display: inline-block;
+    overflow: hidden;
+    opacity: 1;
+    line-height: 2em;
+    margin: 0.7em;
+    color: #f0f0f0;
+    font-size: 1.5em;
+    transition: color .15s ease-in-out;
+}
+
+.links-wrapper {
+  display: inline-block;
+}
+
+.pages a {
+    display: inline-block;
+    overflow: hidden;
+    opacity: 1;
+    line-height: 2em;
+    margin: 0.7em;
+    color: #f0f0f0;
+    font-size: 1.5em;
+}
+
+.pages a:hover { color: rgb(92, 92, 92); }
+
+p {
+  text-align: left;
+}
+
+br {
+  display: block;
+  content: "";
+  border-bottom: 10px solid transparent;
+}
+@-moz-document url-prefix() {
+  br {
+    margin-bottom: 10px;
+  }
+}
+
+.disabled_a { 
+  color: rgb(92, 92, 92) !important;
+  pointer-events: none;
+  cursor: default;
+}
+
+#typer {
+  margin: 10px 8px 0px 0px;
+}
+
+.new_game_btn {
+  background-color: var(--main-color) !important;
+  color: white;
+  padding: 5px;
+  margin: 15px;
+} 
+
+.about {
+  max-width: 40em;
+  padding-bottom: 1em;
+}
+
+.about h2, h3 {
+  color: #f66;
+  font-weight: bold;
+  padding-top: 1em;
+  text-align: left;
+}
+
+:root {
+  --text: #2b3044;
+  --line: rgb(79, 137, 177);
+  --line-active: #275efe;
+  --spacing: 0em;
+}
+
+.about a {
+  display: inline-block;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  margin: 0 var(--spacing, 0px);
+  transition: margin 0.25s;
+}
+
+.about a svg {
+  width: 66px;
+  height: 40px;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 7px) translateZ(0);
+  fill: none;
+  stroke: var(--stroke, var(--line));
+  stroke-linecap: round;
+  stroke-width: 2px;
+  stroke-dasharray: var(--offset, 69px) 278px;
+  stroke-dashoffset: 361px;
+  transition: stroke 0.25s ease var(--stroke-delay, 0s), stroke-dasharray 0.35s;
+}
+.about a:hover {
+  --spacing: 4px;
+  --stroke: var(--line-active);
+  --stroke-delay: 0.1s;
+  --offset: 180px;
+}
+
+#kandula-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+#kandula-logo {
+  width: 30%;
+}
+
+.phone {
+  width: 30%;
+  float: right;
+}
