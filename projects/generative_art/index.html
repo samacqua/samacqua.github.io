@@ -40,6 +40,25 @@
       </div>
     </div>
 
+    <script>
+      // hacks for if screen is small.
+      if (window.innerWidth < 700) {
+        $(".links-wrapper").html(`
+          <a href="../../">home</a>
+        </br>
+          <a href="../">projects</a>
+        </br>
+          <a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+        </br>
+          <a href="../../bio/">bio</a>
+        `);
+  
+        $(".links-wrapper").css("margin-top", "1em");
+        $(".links-wrapper a").css("line-height", "1.5");
+        $(".links-wrapper a").css("margin", "0");
+  
+      }
+    </script>
     <script src="index.js"></script>
 
   </body>

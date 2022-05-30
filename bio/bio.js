@@ -6,6 +6,11 @@ var maxRotation = 18;
 var perspective = 1000;
 
 $(document).mousemove(function(event){
+
+    // ignore if touch screen.
+    if ('ontouchstart' in document.documentElement) {
+        return;
+    }
     var pos = [event.pageX / document.body.clientWidth, event.pageY / document.body.clientHeight];
     for (var i=0;i < pos.length;i++) {
     if (pos[i]<0) {

@@ -56,6 +56,11 @@ h1 {
     font-size: 1.5em;
     transition: color .15s ease-in-out;
 }
+.pages li {
+  line-height: 0em;
+  list-style-type: none;
+  float: right;
+}
 
 .pages a:hover { color: rgb(92, 92, 92); }
 
@@ -101,7 +106,7 @@ img {
 }
 
 #typer {
-  margin: 10px 8px 0px 0px;
+  margin: 10px 1em 0px 1em;
 }
 
 :root {

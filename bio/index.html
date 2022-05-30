@@ -49,6 +49,31 @@
       }
     }
 
+    // hacks for if screen is small.
+    if (window.innerWidth < 700) {
+      $(".links-wrapper").html(`
+        <a href="../">home</a>
+        </br>
+        <a href="../projects/">projects</a>
+      </br>
+        <a href="../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+      </br>
+        <a href="#" class="disabled_a">bio</a>
+      `);
+
+      $(".links-wrapper").css("margin-top", "1em");
+      $(".links-wrapper a").css("line-height", "1.5");
+      $(".links-wrapper a").css("margin", "0");
+
+      // center image and don't wrap text.
+      $(".container").html(`
+      <div style="display:block;margin-left:auto;margin-right:auto;display:inline-block;">
+        <img src="../assets/profilephoto.jpg" alt="Sam Acquaviva" width="300" height="300" />
+      </div>
+      <p id="typer"></p>
+      `);
+    }
+
     // >| denotes line break + delay, | indicates delay when typing.
     let bio_text = "My name is Sam.>| I'm an undergrad at MIT studying Computation and Cognition (Course 6-9), which is a blend of computer science and cognitive science." + 
                    "| My goal is to use AI to help solve important problems in the world, like creating food sustainably and reducing the barrier to be productive with computers." +
@@ -104,6 +129,7 @@
       render_links();
 
     });
+
   </script>
 </body>
 

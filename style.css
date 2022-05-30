@@ -83,11 +83,13 @@ body * {
     max-width: 50em;
     margin: 0 auto;
     padding-right: 1.5em;
-    text-align: right;
 }
 
-.pages a {
+.pages li {
+    line-height: 0em;
+    list-style-type: none;
     margin: 0.7em;
+    float: right;
 }
 
 .contact {
