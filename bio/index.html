@@ -16,8 +16,6 @@
 </head>
 
 <body>
-  <canvas class="fireworks"></canvas>
-
   <div class="lg-container">
     <div class="pages">
       <h1>About me</h1>
@@ -37,8 +35,6 @@
 
   </div>
 
-  <link href="https://codepen.io/juliangarnier/pen/EWxgGx" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="bio.js"></script>
   <script>
@@ -53,7 +49,19 @@
       }
     }
 
-    new TypeIt("#typer", {
+    // >| denotes line break + delay, | indicates delay when typing.
+    let bio_text = "My name is Sam.>| I'm an undergrad at MIT studying Computation and Cognition (Course 6-9), which is a blend of computer science and cognitive science." + 
+                   "| My goal is to use AI to help solve important problems in the world, like creating food sustainably and reducing the barrier to be productive with computers." +
+                   ">| Last summer, while at John Deere, I worked on the first problem, using computer vision to make corn harvesting more efficient.>|" +
+                   "Since then, I've focused on the second problem. In the Computational Cognitive Science Lab at MIT, I researched how we can use human-to-human communication to improve human-to-computer communication " +
+                   "(<a class='loop-link' href='https://arxiv.org/abs/2106.07824'>paper</a>). " +
+                   "This Spring, while at X, I worked on a similar problem. I'm currently at Apple, where I am working on Siri.>|" + 
+                   "Outside of this work, I <a class='loop-link' href='https://mitathletics.com/sports/mens-cross-country/roster/sam-acquaviva/9625'>run</a>, play <a class='loop-link' href='https://lichess.org/@/sam_acqua'>chess</a>, and <a class='loop-link' href='../projects/generative_art'>make</a> generative art.";
+    let break_delay = 200;  // in milliseconds.
+
+    let bio_text_lines = bio_text.split("|");
+
+    var typer = new TypeIt("#typer", {
         speed: 20,
         waitUntilVisible: true,
         afterComplete: function (step, instance) {
@@ -61,25 +69,41 @@
             instance.destroy();
           }, 3000);
         }
-    })
-    .type("My name is Sam Acquaviva.", {delay: 200})
-    .break()
-    .type(" I'm an undergrad at MIT studying Computation and Cognition (Course 6-9), which is a blend of computer science and cognitive science.", {delay: 200})
-    .type(" I'm also minoring in design (Course 4).", {delay: 200})
-    .type(" My goal is to build AI that can learn like a human.", {delay: 200})
-    .break()
-    .type("I graduated from Newburyport High School in 2019 where I ran cross country, was Class President, and Valedictorian.", {delay: 200})
-    .type(" Now, I compete for MIT as a cross-country and track distance runner.", {delay: 200})
-    .type(" Freshman year, I was Vice President of my Class.", {delay: 200})
-    .type(" Now, I am the tech chair for the MIT Ethical Technology Initiative.", {delay: 200})
-    .break()
-    .type("Currently, I am working in the Computer Science and Artificial Intelligence Laboratory at MIT,", {delay: 100})
-    .type(" where I am working towards teaching computers to solve abstract grid patterns.", {delay: 100})
-    .type(" See my latest publication from the group <a class='loop-link' href='https://arxiv.org/abs/2106.07824'>here</a>.")
-    .exec(render_links)
-    .type(" I am also an intern this summer at John Deere, where I am working on a computer vision project to make corn harvesting more efficient,")
-    .type(" and also on a reinforcement learning project to automate advanced construction maneuvers in a skid steer.")
-    .go();
+    });
+
+    for (let i=0;i<bio_text_lines.length;i++) {
+      let line = bio_text_lines[i];
+      let should_break = (line.slice(-1) == ">");
+      if (should_break) {
+        line = line.slice(0, -1);
+      }
+      typer.type(line, {delay: break_delay});
+      if (should_break) {
+        typer.break();
+      }
+      typer.exec(render_links);
+    }
+    typer.go()
+
+    $(".lg-container").click(function() {
+      typer.destroy();
+
+      let full_text = "";
+      for (let i=0;i<bio_text_lines.length;i++) {
+        let line = bio_text_lines[i];
+        let should_break = (line.slice(-1) == ">");
+        if (should_break) {
+          line = line.slice(0, -1);
+        }
+        full_text += line;
+        if (should_break) {
+          full_text += "<br/>";
+        }
+      }
+      $("#typer").html(full_text);
+      render_links();
+
+    });
   </script>
 </body>
 
