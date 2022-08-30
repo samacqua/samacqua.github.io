@@ -159,13 +159,13 @@ br {
   --offset: 180px;
 }
 
-#kandula-wrap {
+.img-wrap {
   display: flex;
   justify-content: center;
   width: 100%;
 }
 
-#kandula-logo {
+img {
   width: 30%;
 }
 
