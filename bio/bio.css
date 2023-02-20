@@ -31,6 +31,7 @@ a {
 h1 {
   font-size: 3em;
   text-align: left;
+  text-transform: lowercase;
 }
 .pages {
   max-width: 50em;
