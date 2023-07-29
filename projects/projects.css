@@ -199,3 +199,11 @@ img {
   border-radius: 5px;
   pointer-events: none;        
 }
+
+
+hr {
+  height: 0.2em;
+  border-radius: 5px;
+  border-width:0;
+  background-color:#f0f0f0;
+}
