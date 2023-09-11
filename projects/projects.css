@@ -144,7 +144,8 @@ img {
   stroke: var(--stroke, var(--line));
   stroke-linecap: round;
   stroke-width: 2px;
-  stroke-dasharray: var(--offset, 69px) 278px;
+  /* stroke-dasharray: var(--offset, 69px) 278px; */
+  stroke-dasharray: var(--offset, 69px) var(--path-length);
   stroke-dashoffset: 361px;
   transition: stroke 0.25s ease var(--stroke-delay, 0s), stroke-dasharray 0.35s;
 }
