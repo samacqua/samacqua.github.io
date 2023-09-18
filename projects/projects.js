@@ -41,16 +41,35 @@ function render_links() {
         var length = path.getTotalLength();
         console.log(link.innerText, link_n_chars, new_width);
 
-        // Change differently if safari.
-        // This is a hack that experimentally kind of works. TODO: figure out why?
-        if (isSafari()) {
-            length *= 0.81;
-        }
+        // // Change differently if safari.
+        // // This is a hack that experimentally kind of works. TODO: figure out why?
+        // if (isSafari()) {
+        //     length *= 0.81;
+        // }
 
         svg.style.setProperty('--path-length', `${length}px`);
 
         link.appendChild(svg);
+
     }
 }
 
-render_links();
+if (isSafari()) {
+    // Set all link's to have text-decoration: underline !important, the underline color, and the underline hover color.
+
+    const links = document.querySelectorAll('.project-links a');
+    for (let link of links) {
+
+        link.setAttribute('style', 'text-decoration: underline !important; text-decoration-color: var(--line) !important');
+
+        // Change active color on hover
+        link.addEventListener('mouseover', () => {
+            link.setAttribute('style', 'text-decoration: underline !important; text-decoration-color: var(--line-active) !important');
+        });
+        link.addEventListener('mouseout', () => {
+            link.setAttribute('style', 'text-decoration: underline !important; text-decoration-color: var(--line) !important');
+        });
+    }
+} else {
+    render_links();
+}

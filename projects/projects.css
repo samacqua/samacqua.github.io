@@ -131,6 +131,7 @@ img {
   color: inherit;
   margin: 0 var(--spacing, 0px);
   transition: margin 0.25s;
+  text-decoration-thickness: 2px;
 }
 
 .project-links a svg {
