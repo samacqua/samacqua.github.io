@@ -106,15 +106,12 @@
     }
 
     // >| denotes line break + delay, | indicates delay when typing.
-    let bio_text = "My name is Sam.>| I'm a first-year master's student at MIT in the Computational Cognitive Science Lab. I got my undergrad from MIT in Computation and Cognition (Course 6-9), which is a blend of computer science and cognitive science." + 
-                   "| My goal is to use AI to help solve important problems in the world, like creating food sustainably and reducing the barrier to productive interactions with computers." +
-                   ">| Two summers ago, while at John Deere, I worked on the first problem, using computer vision to make corn harvesting more efficient.>|" +
-                   "Since then, I've focused on the second problem. While in undergrad, I researched how we can use human-to-human communication to improve human-to-computer communication " +
-                   "(<a class='loop-link' href='https://arxiv.org/abs/2106.07824'>paper</a>). " +
-                   "Last Spring, while at X, The Moonshot Factory, I worked on a similar problem (although I cannot discuss the motivation of the project in detail due to confidentiality, see my resume for the technical highlights). " +
-                   "Last Summer, I was at Apple, where I worked on bridging the gap between testing and training for Siri: one of the most common ways people communicate to computers with language. " + 
-                   "Now, I am researching how to use language to make problem-solving with computers more powerful.>|" +
-                   "Outside of this work, I <a class='loop-link' href='https://mitathletics.com/sports/mens-cross-country/roster/sam-acquaviva/9625'>run</a> for MIT.";
+    let bio_text = "My name is Sam.>|" +
+                   "I just finished my master's degree at MIT in Computation and Cognition (a blend of computer science and cognitive science). I'm now working at a stealth startup." +
+                   ">|My goal is to use AI to help solve <em>actual</em> problems in the world, like creating food sustainably." +
+                   "| Most of my research has been more fundamental: making general reasoning machines." +
+                   ">|Outside of research, I run a lot and am mediocre at many hobbies (violin, cooking, weight lifting)." +
+                   ">|If you are interested in Bayesian cognition or program synthesis, reach out!";
     let break_delay = 200;  // in milliseconds.
 
     let bio_text_lines = bio_text.split("|");
