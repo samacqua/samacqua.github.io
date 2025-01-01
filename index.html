@@ -1,122 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sam's Website</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Using a monospace code font -->
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Background SVGs -->
+    <script type="module" src="background-svgs.js"></script>
+</head>
+<body>
+    <div class="splash-container">
+        <canvas id="sketch"></canvas>
+        <canvas id="circular-networks"></canvas>
 
-    <link rel="stylesheet" type="text/css" href="style.css" />
-    <script
-      src="https://code.jquery.com/jquery-3.5.1.min.js"
-      integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
-      crossorigin="anonymous">
+        <div class="background-gif">
+            <div class="static-frame"></div>
+            <div class="animated-gif"></div>
+        </div>
+        <div class="content">
+            <div id="title-container" class="hand-drawn-title"></div>
+            <div class="scroll-indicator">
+                scroll down
+                <div class="arrow">↓</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New container for the circular network -->
+    <!-- <div class="circular-network-container">
+        <canvas id="circular-network"></canvas>
+    </div> -->
+
+    <section class="about">
+        <p class="about-text">
+            I'm currently working at a startup working on ~intelligence~.
+            If you're interested in program synthesis, we are hiring!
+            I'm trying to answer the questions:
+            <!-- line break -->
+            <br>
+            <br>
+            1. How are people and natural intelligences so data and compute efficient?
+            <br>
+            2. How do we use these insights to inform AI research?
+            <br>
+            3. How do we ensure advances in AI = advances for the average person?
+        </p>
+    </section>
+
+    <section class="projects">
+        <h2>Projects</h2>
+        <p>
+            (This is a placeholder for now)
+        </p>
+        <div class="project-grid">
+            <div class="project-card">
+                <h3>Thesis</h3>
+                <p>How can we model people's flexible and efficient inductive reasoning ability? In my thesis, I propose two hypotheses: people may operate over an incredibly vast language which is made tractable via a strong bottom-up proposal model, or people may learn task-specific languages to reason over.</p>
+            </div>
+            <div class="project-card">
+                <h3>LARC</h3>
+                <p>Dataset and analysis of crowd-sourced "language-complete" descriptions of 100s of tasks, as well as language-informed program synthesis results.</p>
+            </div>
+            <div class="project-card">
+                <h3>Acquacchi</h3>
+                <p>A very heuristic-heavy chess engine in C.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="resume">
+        <h2>Resume</h2>
+        <p>
+            This website is mostly intended for academic / professional purposes, so here is my resume:
+        </p>
+
+        <div class="resume-content">
+            <div class="education">
+                <h3>Education</h3>
+                <div class="education-entry">
+                    <h4>Massachusetts Institute of Technology (MIT)</h4>
+                    <p class="degree">Master of Engineering, Computation and Cognition</p>
+                    <p class="details">May 2024 | GPA: 5.0/5.0</p>
+                </div>
+
+                <div class="education-entry">
+                    <h4>Massachusetts Institute of Technology (MIT)</h4>
+                    <p class="degree">Bachelor of Science in Computer Science and Cognitive Science</p>
+                    <p class="details">May 2023 | GPA: 4.9/5.0</p>
+                    <p class="coursework">Relevant coursework: Algorithms, Signal Processing, Matrix Methods for Machine Learning, Deep Learning, Advanced Natural Language Processing, Tissue vs. Silicon: Differences in Machine Learning</p>
+                    <p class="coursework">Extracurriculars: MIT Track and Field and Cross Country (U.S. Track & Field and Cross Country Coaches Association Men's Scholar-Athlete of the Year 2022), MIT Class of 2023 Class Council (Vice President 2019-2020)</p>
+                </div>
+            </div>
+
+            <div class="experience">
+                <h3>Experience</h3>
+                <div class="experience-entry">
+                    <h4>Stealth</h4>
+                    <p class="dates">September 2024 – Present</p>
+                    <p class="position">Founding Research Engineer</p>
+                </div>
+
+                <div class="experience-entry">
+                    <h4>Apple</h4>
+                    <!-- <p class="position">Machine Learning Intern</p> -->
+                    <p class="dates">May 2022 – August 2022</p>
+                    <ul>
+                        <li>Designed and implemented semi-supervised training pipeline for Siri from high-risk production data</li>
+                        <li>Generated large-scale datasets of failing interactions and recreated the outcome in an offline environment</li>
+                    </ul>
+                </div>
+
+                <div class="experience-entry">
+                    <h4>X, The Moonshot Factory (Google X)</h4>
+                    <!-- <p class="position">AI Residency</p> -->
+                    <p class="dates">February 2022 – May 2022</p>
+                    <ul>
+                        <li>Implemented state-of-the-art neural-guided program synthesis engine</li>
+                        <li>Ran hundreds of experiments across thousands of machines to document program performance</li>
+                        <li>Outlined approach to combine program synthesis methods with completely neural sequence-to-sequence models</li>
+                    </ul>
+                </div>
+
+                <div class="experience-entry">
+                    <h4>John Deere</h4>
+                    <!-- <p class="position">Software Engineering Intern</p> -->
+                    <p class="dates">June 2021 – September 2021</p>
+                    <ul>
+                        <li>Developed computer vision system to identify corn kernels in a noisy production environment</li>
+                        <li>Modeled and used reinforcement learning methods to automate advanced skid steer maneuvers</li>
+                        <li>Collaborated with PhD students on a daily basis to ensure solid theoretical bases for models</li>
+                    </ul>
+                </div>
+
+                <div class="experience-entry">
+                    <h4>Cloud Canaries</h4>
+                    <!-- <p class="position">Software Engineer</p> -->
+                    <p class="dates">January 2021 – May 2021</p>
+                    <ul>
+                        <li>Created a data pipeline to robustly store large scale customer data for efficient search</li>
+                        <li>Built a forecasting system to predict Service Level Agreement compliance for various cloud computing providers</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact">
+        <h2>Contact</h2>
+        <div class="message-form">
+            <h3>Leave me a message</h3>
+
+            <p style="text-align: center;">
+               (And a way to contact you if you want to get in touch. Placeholder for now.)
+            </p>
+            <form id="contactForm">
+                <textarea 
+                    placeholder="Type your message here..."
+                    id="messageInput"
+                    required
+                ></textarea>
+                <button type="submit">Send Message</button>
+            </form>
+        </div>
+        <div class="social-links">
+            <a class="social-link">
+                <i class="far fa-envelope"></i> sam[italian word for water] at gmail dot com
+            </a>
+            <a href="https://x.com/Sam_Acqua" class="social-link" target="_blank"><i class="fab fa-twitter"></i> Twitter</a>
+            <a href="https://www.instagram.com/s.acqua/" class="social-link" target="_blank"><i class="fab fa-instagram"></i> Instagram</a>
+            <a href="https://github.com/samacqua" class="social-link" target="_blank"><i class="fab fa-github"></i> GitHub</a>
+            <a href="https://www.linkedin.com/in/sam-acquaviva/" class="social-link" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+    </section>
+
+    <script>
+        // TODO: load small gif/image if on mobile.
+    document.addEventListener('DOMContentLoaded', () => {
+        const staticFrame = document.querySelector('.static-frame');
+        const animatedGif = document.querySelector('.animated-gif');
+
+        const gifLoader = new Image();
+        gifLoader.src = getComputedStyle(document.documentElement)
+            .getPropertyValue('--background-gif')
+            .replace('url(', '')
+            .replace(')', '')
+            .replace(/['"]/g, '');
+
+        gifLoader.onload = () => {
+            // Fade in the GIF while keeping static frame visible
+            animatedGif.classList.add('loaded');
+
+            // Remove static frame after 2.5s (no fade)
+            setTimeout(() => {
+                if (staticFrame?.parentNode) {
+                    staticFrame.parentNode.removeChild(staticFrame);
+                }
+            }, 2500);
+        };
+    });
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/typeit@7.0.4/dist/typeit.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
-
-    <title>Sam Acquaviva</title>
-    <meta name="Description" content="My personal website :)">
-    <link rel="icon" type="image/x-icon" href="favicon.ico?"/>
-  </head>
-
-  <body>
-    <canvas id="c"></canvas>
-    <div class="lg-container">
-
-      <ul class="pages">
-        <li><a href="bio/">bio</a></li>
-        <li><a href="assets/Sam Acquaviva.pdf" target="_blank">resume</a></li>
-        <li><a href="projects/">projects</a></li>
-      </ul>
-  
-      <div class="container">
-          <img id="main_ref" src="assets/me-draw.png" alt="abstract self-portrait of myself"/>
-          <p class="typer-wrapper"><span id="typer"></span></p>
-          <div class="contact">
-            <a href="javascript:void(0)" aria-label="email" id="email-link"><i class="icon-envelope"></i></a>
-            <a href="https://linkedin.com/in/sam-acquaviva" target="_blank" rel="noopener" aria-label="linkedin"><i class="icon-linkedin"></i></a>
-            <a href="https://github.com/samacqua" target="_blank" rel="noopener" aria-label="github"><i class="icon-github"></i></a>
-            <a href="https://instagram.com/s.acqua/" target="_blank" rel="noopener" aria-label="instagram"><i class="icon-instagram"></i></a>
-          </div>
-        </div>
-  </div>
-
-  <script type="text/javascript" language="javascript">
-    // Email obfuscator script 2.1 by Tim Williams, University of Arizona
-    // Random encryption key feature coded by Andrew Moulden
-    // This code is freeware provided these four comment lines remain intact
-    // A wizard to generate this code is at http://www.jottings.com/obfuscator/
-    {
-      coded = "hPsPKcbP@sLd.YAb";
-      key =
-        "eEo280IgNpKH3UAQYTFvZ14mCOj7DiJ59uRXlazsqVwntLxrMbyS6PBhcfWkdG";
-      shift = coded.length;
-      link = "";
-      for (i = 0; i < coded.length; i++) {
-        if (key.indexOf(coded.charAt(i)) == -1) {
-          ltr = coded.charAt(i);
-          link += ltr;
-        } else {
-          ltr =
-            (key.indexOf(coded.charAt(i)) - shift + key.length) %
-            key.length;
-          link += key.charAt(ltr);
-        }
-      }
-      document.getElementById("email-link").href = "mailto:" + link;
-    }
-</script>
-<noscript>Sorry, you need Javascript on to email me.</noscript>
-
-  <script>
-
-    var instance = new TypeIt("#typer", {
-        speed: 50,
-        waitUntilVisible: true,
-        afterComplete: function (step, instance) {
-          setTimeout(() => {
-            instance.destroy();
-          }, 3000);
-        }
-    })
-    .type("hi", {delay: 500})
-    .delete(2)
-    .type("i'm sam", {delay: 800})
-    .type(" :)", {delay: 600})
-    .delete(10)
-    .type('welcome to my website', {delay: 2500})
-    .type(' :)', {delay: 500})
-
-    // warn small screen users things will be weird
-    if (window.innerWidth < 750) {
-      instance.delete('welcome to my website :)'.length);
-      instance.type('(looks like ur on a small screen)', {delay: 1000});
-      instance.delete('(looks like ur on a small screen)'.length);
-      instance.type('(site is built for computers)', {delay: 1000});
-      instance.delete('(site is built for computers)'.length);
-      instance.type('(so some things might be jank)', {delay: 1000});
-      instance.delete('(so some things might be jank)'.length, {delay: 1000});
-      instance.type('but still...', {delay: 1000});
-      instance.delete('but still...'.length);
-      instance.type('welcome to my website', {delay: 2500}).type(' :)');
-
-      // change to vertical list.
-      $(".pages li").css("float", "none");
-      $(".pages").css("float", "right");
-      $(".pages").css("text-align", "right");
-      $(".pages li").css("margin", "0");
-    }
-
-    instance.go();
-  </script>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.1/css/font-awesome.min.css"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.0.2/anime.js"></script>
-  <link href="https://codepen.io/juliangarnier/pen/EWxgGx" rel="stylesheet" />
-  <script src="sketch.js"></script>
-
 </body>
-</html>
+</html> 
+
