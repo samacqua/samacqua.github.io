@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <link rel="stylesheet" type="text/css" href="bio.css" />
+  <script src="https://cdn.jsdelivr.net/npm/typeit@7.0.4/dist/typeit.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
+
+  <title>Bio</title>
+  <meta name="Description" content="About me page for my personal website.">
+  <link rel="icon" type="image/x-icon" href="../favicon.ico?"/>
+  
+</head>
+
+<body>
+  <div class="lg-container">
+    <div class="pages">
+      <h1>About me</h1>
+
+      <div class="links-wrapper">
+        <a href="../">home</a>
+        <a href="../projects/">projects</a>
+        <a href="../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+        <a href="#" class="disabled_a">bio</a>
+      </div>
+    </div>
+
+    <div class="container">
+      <img src="../assets/profilephoto.jpg" alt="Sam Acquaviva" width="300" height="300" />
+      <p id="typer"></p>
+    </div>
+
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="bio.js"></script>
+  <script>
+
+    function render_links() {
+
+      function isSafari() {
+          return /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+      }
+
+      // js is used to apply svg to each links so don't have to copy paste a bunch
+      // animation from https://codepen.io/aaroniker/pen/VwjexVy
+      const links = document.querySelectorAll('.loop-link');
+
+      if (isSafari()) {
+        for (let link of links) {
+
+          link.setAttribute('style', 'text-decoration: underline !important; text-decoration-color: var(--line) !important');
+
+          // Change active color on hover
+          link.addEventListener('mouseover', () => {
+              link.setAttribute('style', 'text-decoration: underline !important; text-decoration-color: var(--line-active) !important');
+          });
+          link.addEventListener('mouseout', () => {
+              link.setAttribute('style', 'text-decoration: underline !important; text-decoration-color: var(--line) !important');
+          });
+        }
+        return;
+      }
+
+      for (let i=0;i<links.length; i++) {
+          // links[i].innerHTML += '<svg viewBox="0 0 70 36"><g transform="scale(1 1)"><path d="M6.9739 30.8153H63.0244C65.5269 30.8152 75.5358 -3.68471 35.4998 2.81531C-16.1598 11.2025 0.894099 33.9766 26.9922 34.3153C104.062 35.3153 54.5169 -6.68469 23.489 9.31527" /></g></svg>';
+
+          const n_char_per_unit = 6;
+          const length_per_unit = 66;
+          const link_n_chars = links[i].innerText.length;
+          const scale = link_n_chars / n_char_per_unit;
+
+          const new_width = `${length_per_unit * scale}px`;
+          const view_box_width = 70;
+
+          links[i].innerHTML += `<svg viewBox="0 0 ${view_box_width * scale} 36" style="width:${new_width}" ><g transform="scale(${scale} 1)"><path d="M6.9739 30.8153H63.0244C65.5269 30.8152 75.5358 -3.68471 35.4998 2.81531C-16.1598 11.2025 0.894099 33.9766 26.9922 34.3153C104.062 35.3153 54.5169 -6.68469 23.489 9.31527" /></g></svg>`;
+      }
+    }
+
+    // hacks for if screen is small.
+    if (window.innerWidth < 700) {
+      $(".links-wrapper").html(`
+        <a href="../">home</a>
+        </br>
+        <a href="../projects/">projects</a>
+      </br>
+        <a href="../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+      </br>
+        <a href="#" class="disabled_a">bio</a>
+      `);
+
+      $(".links-wrapper").css("margin-top", "1em");
+      $(".links-wrapper a").css("line-height", "1.5");
+      $(".links-wrapper a").css("margin", "0");
+
+      // center image and don't wrap text.
+      $(".container").html(`
+      <div style="display:block;margin-left:auto;margin-right:auto;display:inline-block;">
+        <img src="../assets/profilephoto.jpg" alt="Sam Acquaviva" width="300" height="300" />
+      </div>
+      <p id="typer"></p>
+      `);
+    }
+
+    // >| denotes line break + delay, | indicates delay when typing.
+    let bio_text = "My name is Sam.>|" +
+                   "I just finished my master's degree at MIT in Computation and Cognition (a blend of computer science and cognitive science). I'm now working at a stealth startup." +
+                   ">|My goal is to use AI to help solve <em>actual</em> problems in the world, like creating food sustainably." +
+                   "| Most of my research has been more fundamental: making general reasoning machines." +
+                   ">|Outside of research, I run a lot and am mediocre at many hobbies (violin, cooking, weight lifting)." +
+                   ">|If you are interested in Bayesian cognition or program synthesis, reach out!";
+    let break_delay = 200;  // in milliseconds.
+
+    let bio_text_lines = bio_text.split("|");
+
+    var typer = new TypeIt("#typer", {
+        speed: 20,
+        waitUntilVisible: true,
+        afterComplete: function (step, instance) {
+          setTimeout(() => {
+            instance.destroy();
+          }, 3000);
+        }
+    });
+
+    for (let i=0;i<bio_text_lines.length;i++) {
+      let line = bio_text_lines[i];
+      let should_break = (line.slice(-1) == ">");
+      if (should_break) {
+        line = line.slice(0, -1);
+      }
+      typer.type(line, {delay: break_delay});
+      if (should_break) {
+        console.log("-");
+        console.log(line);
+        // typer.break();   
+        typer.type("</br></br>");     
+      }
+      typer.exec(render_links);
+    }
+    typer.go()
+
+    $(".lg-container").click(function() {
+      typer.destroy();
+
+      let full_text = "";
+      for (let i=0;i<bio_text_lines.length;i++) {
+        let line = bio_text_lines[i];
+        let should_break = (line.slice(-1) == ">");
+        if (should_break) {
+          line = line.slice(0, -1);
+        }
+        full_text += line;
+        if (should_break) {
+          full_text += "</br></br>";
+        }
+      }
+      $("#typer").html(full_text);
+      render_links();
+
+    });
+
+  </script>
+</body>
+
+</html>

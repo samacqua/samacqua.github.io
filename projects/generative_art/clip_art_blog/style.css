@@ -1,0 +1,137 @@
+.clip-img-div {
+    overflow:hidden;
+}
+.clip-img-div div {
+    width: 25%;
+    float: left;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+}
+.clip-img-div img {
+    width: 25vw;
+    height: 25vw;
+}
+.clip-img-div p {
+    padding: 8px;
+}
+
+.vector {
+    font-size: 8px;
+    line-height: 1;
+    font-family: 'Courier New', monospace;
+    overflow-wrap: break-word;
+    display: none;
+}
+#clip-text-vec {
+    margin: 8px;
+    width: 60%;
+    margin-left: 20%;
+}
+
+#toggle-embeddings {
+    position: absolute;
+    right: 8px;
+    bottom: 0px;
+    height: 40px;
+    border-radius: 4px;
+}
+
+.l-screen h2, h3 {
+    width: 100%;
+    text-align: center;
+}
+
+.clip-input-div, .clip-gan-input-div, .clip-draw-input-div {
+    width: 60%;
+    /* height: 30px;
+    background-color: red; */
+    margin: auto;
+    background-color: white;
+    border-radius: 4px;
+    height: 40px;
+    box-sizing: border-box;
+    border: 1px solid blue;
+  }
+  
+  .clip-input-div input, .input-div input, .clip-gan-input-div input, .clip-draw-input-div input {
+    height: 100%;
+    width: 88%;
+    padding-left: 1% !important;
+    padding-right: 1% !important;
+    border: none;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    font-size: 24px;
+  }
+
+  button {
+    border: none;
+    color: white;
+    background-color: blue;
+  }
+
+  .clip-input-div button, .clip-gan-input-div button, .clip-draw-input-div button {
+    /* position: absolute; */
+    float: right;
+    height: 100%;
+    width: 10%;
+  }
+
+  button:hover, #gan-submit-btn:hover {
+      background-color: rgb(0, 0, 168);
+  }
+
+
+
+
+  /* GAN */
+  #gan-result, #clip-gan-result, #clip-draw-result {
+      width: 40vw;
+      height: 40vw;
+        margin-left:30vw;
+        margin-right:30vw;
+  }
+
+  #gan-submit-btn {
+    border: none;
+    width: 400px;
+    height: 40px;
+    font-size: 18px;
+    padding: 10px;
+    border-radius: 4px;
+    margin:0 auto;
+    display:block;
+  }
+
+  #server-instructions {
+    position: fixed;
+    z-index: 999;
+    width: 50vw;
+    /* height: 30vw; */
+    /* top: 0; */
+    /* left: 35vw; */
+    /* bottom: 0; */
+    /* right: 35vw; */
+    background-color: white;
+    border-radius: 10px;
+    padding-left: 15px;
+    padding-right: 15px;
+    box-shadow: 0 10px 16px 0 rgb(0 0 0 / 20%), 0 6px 20px 0 rgb(0 0 0 / 19%) !important;
+    display: none;
+  }
+
+  #server-exit-btn {
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      padding: 15px;
+      margin: 0px;
+      font-size: 30px;
+      background-color: transparent !important;
+      color: blue;
+  }
+  #server-exit-btn:hover {
+      color: purple;
+  }

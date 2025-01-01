@@ -11,7 +11,21 @@ body, html {
     min-height: 100vh;
     background: linear-gradient(180deg, rgb(0, 0, 0) 0%, rgb(0, 0, 0) 100vh, rgb(16, 38, 19) 150vh);
     color: white;
-    font-family: 'Source Code Pro', monospace;
+    /* font-family: 'Source Code Pro', monospace; */
+    /* font-family: 'Share Tech Mono', 'Courier New', monospace; */
+
+    /* Option 2: Modern Tech */
+    /* font-family: 'Fira Code', 'Source Code Pro', monospace; */
+    
+    /* Option 3: Balanced Tech/Natural */
+    /* font-family: 'Space Grotesk', system-ui, sans-serif; */
+    
+    /* Option 4: Sophisticated Natural */
+    /* font-family: 'Outfit', 'Inter', sans-serif; */
+    
+    /* Option 5: Organic/Natural */
+    font-family: 'Sora', 'Quicksand', sans-serif;
+
 }
 
 .splash-container {
@@ -23,6 +37,7 @@ body, html {
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    margin-bottom: 8rem;
 
     z-index: 1;
 }

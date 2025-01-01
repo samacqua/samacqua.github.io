@@ -1,0 +1,211 @@
+* { box-sizing: border-box; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; margin: 0; padding: 0; color: #f0f0f0; text-transform: lowercase}
+body {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #f89;
+  font-family: Open Sans;
+  font-weight: 100;
+  color: #202020;
+}
+.lg-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+  }
+.container {
+  position: relative;
+  margin: 0 auto;
+  width: 45em;
+  max-width: 100%;
+  height: 10em;
+  text-align: center;
+}
+a { 
+  text-decoration: none;
+  color: inherit;
+}
+h1 {
+  font-size: 3em;
+  text-align: left;
+}
+h2 {
+  font-size: 2em;
+  text-align: left;
+}
+.pages {
+  max-width: 50em;
+  margin: 0 auto;
+  padding-right: 1.5em;
+  text-align: right;
+}
+
+.pages h1 {
+  color: #f9ffad;
+  font-weight: bold;
+  margin: 0.25em;
+  display: inline-block;
+  float: left;
+}
+
+.pages a {
+    display: inline-block;
+    overflow: hidden;
+    opacity: 1;
+    line-height: 2em;
+    margin: 0.7em;
+    color: #f0f0f0;
+    font-size: 1.5em;
+    transition: color .15s ease-in-out;
+}
+
+.links-wrapper {
+  display: inline-block;
+}
+
+.pages a:hover { color: rgb(92, 92, 92); }
+
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+p {
+  text-align: left;
+  text-transform: none;
+}
+
+br {
+  display: block;
+  content: "";
+  border-bottom: 10px solid transparent;
+}
+@-moz-document url-prefix() {
+  br {
+    margin-bottom: 10px;
+  }
+}
+
+.disabled_a { 
+  color: rgb(92, 92, 92) !important;
+  pointer-events: none;
+  cursor: default;
+}
+
+img {
+  object-fit: cover;
+  width: 100%;
+  /* float: right;
+  margin-bottom: 5px; */
+}
+
+.projects {
+  margin-top: 1em;
+  padding-bottom: 1em;
+}
+
+.content {
+  text-align: left;
+}
+
+.project-links {
+  float: right;
+  margin-top: 0.5em;
+}
+
+:root {
+  --text: #2b3044;
+  --line: #adf;
+  --line-active: #275efe;
+  --spacing: 0.5em;
+}
+
+.project-links a {
+  display: inline-block;
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+  margin: 0 var(--spacing, 0px);
+  transition: margin 0.25s;
+  text-decoration-thickness: 2px;
+}
+
+.project-links a svg {
+  width: 76px;
+  height: 40px;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 7px) translateZ(0);
+  fill: none;
+  stroke: var(--stroke, var(--line));
+  stroke-linecap: round;
+  stroke-width: 2px;
+  /* stroke-dasharray: var(--offset, 69px) 278px; */
+  stroke-dasharray: var(--offset, 69px) var(--path-length);
+  stroke-dashoffset: 361px;
+  transition: stroke 0.25s ease var(--stroke-delay, 0s), stroke-dasharray 0.35s;
+}
+.project-links a:hover {
+  --spacing: 4px;
+  --stroke: var(--line-active);
+  --stroke-delay: 0.1s;
+  --offset: 180px;
+}
+
+.project {
+  /* background-color: rgb(228, 228, 228); */
+  
+  margin: 15px;
+  padding: 12px;
+  /* box-shadow: 0 4px 12px 1px rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.19); */
+  border-radius: 6px;
+  transition: top ease 0.3s;
+  position: relative;
+  top: 0;
+  border: 0.2em solid #f0f0f0 !important;
+}
+
+.project:hover {
+  top: -0.5em;
+  /* transform: scale(1.01); */
+}
+
+.project h2 {
+  display: inline-block;
+  text-align: left;
+}
+
+/* .github_link {
+  color: #fff;
+  background-color: #1fa9ff;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.try_link {
+  color: #fff;
+  background-color: #bb00e6;
+  padding: 5px;
+  border-radius: 5px;
+} */
+
+.beta_tag {
+  color: #c44525;
+  /* background-color: #c44525; */
+  padding: 5px;
+  border-radius: 5px;
+  pointer-events: none;        
+}
+
+
+hr {
+  height: 0.2em;
+  border-radius: 5px;
+  border-width:0;
+  background-color:#f0f0f0;
+}

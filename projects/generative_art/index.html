@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <script
+      src="https://code.jquery.com/jquery-3.5.1.min.js"
+      integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+      crossorigin="anonymous">
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="generative_art.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
+
+    <title>Acquacchi</title>
+    <meta name="Description" content="Play against Acquacchi--a quarantine chess engine project.">
+    <link rel="icon" type="image/x-icon" href="../../favicon.ico?"/>
+  </head>
+  <body>
+
+    <div class="lg-container">
+      <div class="pages">
+        <h1>Generative Art</h1>
+        <div class="links-wrapper">
+          <a href="../../">home</a>
+          <a href="../">projects</a>
+          <a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+          <a href="../../bio/">bio</a>
+        </div>
+      </div>
+  
+      <div class="container">
+
+        <div class='about'>
+          <h2>Overview</h2>
+          <p>For the first 6 months of 2022, I made 1 piece of generative art per day in an attempt to use my computer science studies for more creative endeavors.
+          </br></br>
+          I am currently preparing the art and code for sharing, but I will show some highlights here. Note that the images and videos are downsampled and cropped so that they can be easily served on the website.
+          </p>
+
+          <h2>01/01</h2>
+
+          <div class="img-wrap">
+            <video class="phone" controls loop="true" autoplay="autoplay">
+              <source src="img/01-01.mp4" type="video/mp4">
+            </video>
+          </div>
+
+          <div>
+            <p>
+              The first day of the generative art challenge. This work uses CLIP and a GAN as described in this <a href="./clip_art_blog/index.html">blog</a> I wrote last semester for a deep learning <a href="https://phillipi.github.io/6.s898/">class</a>.
+              The prompt that I used to generate this image is "colorful vivid fractals". 
+              After generating the original animation, I also used a GAN for image interpolation (to increase the framerate) and a GAN for super-resolution on each frame.
+            </p>
+          </div>
+
+          <h2>01/29</h2>
+
+          <div class="img-wrap">
+            <video class="phone" controls loop="true" autoplay="autoplay">
+              <source src="img/01-29.MP4" type="video/mp4">
+            </video>
+          </div>
+
+          <div>
+            <p>This is the first work that improves the image quality through direct gradient manipulation. 
+              For all of January, I was making art mostly with CLIP + GAN, but I was only changing the prompts and other features for the gradient to take into account. 
+              I tried encoding an image with CLIP and using this as a penalty term in the loss (to keep the generated image semantically similar), adding image optimization loss items (sharpness, different colors, etc...). 
+              This piece, which cycles through scenes by various artists, is the first time I changed how the image changes as a result of the loss. 
+              The prompts used, in this order, are "art in the style of Wojcieck Siudmak", "art in the style of Keith Haring", "a dinosaur in the style of James Gurney", "a creature in the style of Zdzislaw Beksinski", then "a landscape in the style of Albert Bierstad".
+            </p>
+          </div>
+
+          <h2>02/17</h2>
+
+          <div class="img-wrap">
+            <img src="img/02-17.jpg" />
+          </div>
+
+          <div>
+            <p>
+              This is my favorite generated image from the series. 
+              Not for any technical reason, but rather because it highlights how human-computer interaction can go both ways.
+              Originally, I wanted to create recreate this image but in a different style (that of Greg Rutkowski).
+              However, after trying different prompts, image initializations, and gradient manipulation tricks to make the image more coherent, I realized I actually preferred the more abstract style that the GAN was creating.
+              So, instead, I tried to generate an image like the one above. 
+              To me, this image shows that text-to-image art can do more than act as a tool to quickly generate art; it can act as inspiration as well.
+              The prompt for this image is "I can't find my mind by Greg Rutkowski, oil on canvas".
+            </p>
+          </div>
+
+          <h2>03/02</h2>
+
+          <div class="img-wrap">
+            <img src="img/03-02.jpg" />
+          </div>
+          
+          <div>
+            <p>
+              This is the first successful diffusion image I created.
+              This image was created using CLIP-guided diffusion (great explanation <a href="https://arxiv.org/abs/2110.02711">here</a>).
+              The prompt is the same as the 02-17 image: "I can't find my mind by Greg Rutkowski, oil on canvas".
+              Note the difference in coherence between the GAN and diffusion-generated images.
+            </p>
+          </div>
+
+          <h2>05/03</h2>
+
+          <div class="img-wrap">
+            <img src="img/05-01.png" />
+            <img src="img/05-01_2.png" />
+            <img src="img/05-01_3.png" />
+          </div>
+
+          <div>
+            <p>
+              This series of images shows the workflow that I used for the last month or so of the series.
+              The first image is the output of a CLIP-guided diffusion model with the prompt, "What do you think my brain is made for. Is it just a container for the mind? This great grey matter. By Wassily Kandinsky." (lyrics from "Pink Matter" by Frank Ocean).
+              The second and third images are variations produced by <a href="https://openai.com/dall-e-2/">DALL-E 2</a>, based on the original image.
+              Although I am hesitant to use the text-to-image service instead of using code I wrote to generate art, it is interesting to see the capabilities and limitations of the SOTA system.
+              For example, note how DALL-E does not respect the original direction of the face in the image.
+              This is characteristic of nearly all text-to-image models: they do not do well with hard constraints (number of objects, absolute directions).
+              I want to improve these models by teaching them to respect symbolic constraints.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // hacks for if screen is small.
+      if (window.innerWidth < 700) {
+        $(".links-wrapper").html(`
+          <a href="../../">home</a>
+        </br>
+          <a href="../">projects</a>
+        </br>
+          <a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+        </br>
+          <a href="../../bio/">bio</a>
+        `);
+  
+        $(".links-wrapper").css("margin-top", "1em");
+        $(".links-wrapper a").css("line-height", "1.5");
+        $(".links-wrapper a").css("margin", "0");
+  
+      }
+    </script>
+    <script src="index.js"></script>
+
+  </body>
+</html>
