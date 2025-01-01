@@ -2,6 +2,7 @@
     --background-gif: url('media/website-background-transparent-noloop.gif');
     --animation-start: 0.1s;
     --time-per-letter: 0s;
+    --text-color: #ffffff;
 }
 
 body, html {
@@ -39,7 +40,7 @@ body, html {
     animation-delay: 30s;
     z-index: 100;
 
-    opacity: 0;
+    /* opacity: 0; */
 }
 
 .content {
@@ -411,4 +412,35 @@ h2 {
     width: 100%;
     height: auto;
     display: block;
+}
+
+.resume > p {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.projects > p {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.undergrad-extracurriculars {
+    margin-top: 1.5rem;
+}
+
+.undergrad-extracurriculars h4 {
+    font-size: 1.2rem;
+    margin-bottom: 0.8rem;
+    color: #fff;
+}
+
+.undergrad-extracurriculars ul {
+    margin: 0.8rem 0;
+    padding-left: 1.2rem;
+}
+
+.undergrad-extracurriculars li {
+    margin: 0.5rem 0;
+    line-height: 1.4;
+    opacity: 0.9;
 }
