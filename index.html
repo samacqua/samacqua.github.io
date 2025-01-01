@@ -14,7 +14,10 @@
 </head>
 <body>
     <div class="splash-container">
-        <div class="background-gif"></div>
+        <div class="background-gif">
+            <div class="static-frame"></div>
+            <div class="animated-gif"></div>
+        </div>
         <div class="content">
             <div id="title-container" class="hand-drawn-title"></div>
             <div class="scroll-indicator">
@@ -95,8 +98,8 @@
 
                 <div class="experience-entry">
                     <h4>Apple</h4>
-                    <p class="dates">May 2022 – August 2022</p>
                     <!-- <p class="position">Machine Learning Intern</p> -->
+                    <p class="dates">May 2022 – August 2022</p>
                     <ul>
                         <li>Designed and implemented semi-supervised training pipeline for Siri from high-risk production data</li>
                         <li>Generated large-scale datasets of failing interactions and recreated the outcome in an offline environment</li>
@@ -105,8 +108,8 @@
 
                 <div class="experience-entry">
                     <h4>X, The Moonshot Factory (Google X)</h4>
-                    <p class="dates">February 2022 – May 2022</p>
                     <!-- <p class="position">AI Residency</p> -->
+                    <p class="dates">February 2022 – May 2022</p>
                     <ul>
                         <li>Implemented state-of-the-art neural-guided program synthesis engine</li>
                         <li>Ran hundreds of experiments across thousands of machines to document program performance</li>
@@ -165,6 +168,33 @@
             <a href="https://www.linkedin.com/in/sam-acquaviva/" class="social-link" target="_blank"><i class="fab fa-linkedin"></i> LinkedIn</a>
         </div>
     </section>
+
+    <script>
+        // TODO: load small gif/image if on mobile.
+    document.addEventListener('DOMContentLoaded', () => {
+        const staticFrame = document.querySelector('.static-frame');
+        const animatedGif = document.querySelector('.animated-gif');
+
+        const gifLoader = new Image();
+        gifLoader.src = getComputedStyle(document.documentElement)
+            .getPropertyValue('--background-gif')
+            .replace('url(', '')
+            .replace(')', '')
+            .replace(/['"]/g, '');
+
+        gifLoader.onload = () => {
+            // Fade in the GIF while keeping static frame visible
+            animatedGif.classList.add('loaded');
+
+            // Remove static frame after 500ms (no fade)
+            setTimeout(() => {
+                if (staticFrame.parentNode) {
+                    staticFrame.parentNode.removeChild(staticFrame);
+                }
+            }, 2500);
+        };
+    });
+    </script>
 
 </body>
 </html> 

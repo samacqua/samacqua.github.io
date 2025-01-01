@@ -331,7 +331,7 @@ class BackgroundSVG {
             const speedKeyframes = [];
             
             let currentPosition = -60;
-            const totalDistance = window.innerWidth + 60; // Just enough to exit screen
+            const totalDistance = window.outerWidth * 2 + 120; // Add extra distance to ensure full crossing
  
             // Create natural-looking movement keyframes
             for (let i = 0; i <= 100; i++) {
@@ -353,9 +353,6 @@ class BackgroundSVG {
                 speedKeyframes.push({ left: `${currentPosition}px` });
             }
 
-            // Reset position first
-            snailSvg.style.left = '-60px';
-
             // Animate stretching
             snailSvg.animate(scaleKeyframes, {
                 duration: duration,
@@ -369,8 +366,9 @@ class BackgroundSVG {
                 easing: 'linear',
                 fill: 'forwards'
             }).onfinish = () => {
-                // Start again
-                animate();
+                // Reset position and start again
+                snailSvg.style.left = '-60px';
+                requestAnimationFrame(() => animate());
             };
         };
 
@@ -530,7 +528,43 @@ class TitleSVG {
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.querySelector('.splash-container');
     const backgroundSVGs = new BackgroundSVG(container);
-    const titleSVG = new TitleSVG();
+    let titleSVG = new TitleSVG();
+
+
+    setTimeout(() => {
+        const animatedGif = document.querySelector('.animated-gif');
+        const backgroundGif = document.querySelector('.background-gif');
+ 
+        if (!animatedGif.classList.contains('loaded')) {
+            // Initially hide scroll indicator
+            const scrollIndicator = document.querySelector('.scroll-indicator');
+            scrollIndicator.style.opacity = '0';
+            scrollIndicator.style.transition = 'opacity 0.5s ease-in-out';
+
+            // First set opacity to 0 on elements that will be revealed
+            const content = document.querySelector('.content');
+            content.style.opacity = '0';
+            content.style.transition = 'opacity 1s ease-in-out';
+            
+            // Change z-index and fade in the content
+            backgroundGif.style.zIndex = '1';
+            
+            // Use requestAnimationFrame to ensure the opacity transition takes effect
+            requestAnimationFrame(() => {
+                content.style.opacity = '1';
+                
+                // Fade in scroll indicator after a short delay
+                setTimeout(() => {
+                    scrollIndicator.style.opacity = '1';
+                }, 5000); // Half second delay after content fades in
+            });
+            
+            // Destroy and recreate title
+            const titleContainer = document.getElementById('title-container');
+            titleContainer.innerHTML = ''; // Clear existing title
+            titleSVG = new TitleSVG(); // Create new instance
+        }
+    }, 2000);
 }); 
 
 
