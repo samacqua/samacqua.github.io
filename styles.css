@@ -360,9 +360,10 @@ h2 {
 }
 
 .hand-drawn-title {
-    max-width: 90vw;
-    height: auto;
+    width: 80vw;
+    max-width: 600px;
     margin: 0 auto;
+    position: relative;
 }
 
 .sketch-path {
@@ -404,4 +405,10 @@ h2 {
 .sketch-path:nth-child(10) { animation-delay: calc(var(--time-per-letter) * 9 + var(--animation-start)); }
 .sketch-path:nth-child(11) { animation-delay: calc(var(--time-per-letter) * 10 + var(--animation-start)); }
 .sketch-path:nth-child(12) { animation-delay: calc(var(--time-per-letter) * 11 + var(--animation-start)); }
-.sketch-path:nth-child(13) { animation-delay: calc(var(--time-per-letter) * 12 + var(--animation-start)); } 
+.sketch-path:nth-child(13) { animation-delay: calc(var(--time-per-letter) * 12 + var(--animation-start)); }
+
+.hand-drawn-title svg {
+    width: 100%;
+    height: auto;
+    display: block;
+}
