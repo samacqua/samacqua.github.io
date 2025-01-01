@@ -1,12 +1,14 @@
 :root {
     --background-gif: url('media/website-background-transparent-noloop.gif');
+    --animation-start: 0.1s;
+    --time-per-letter: 0s;
 }
 
 body, html {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    background-color: rgb(0, 0, 0);
+    background: linear-gradient(180deg, rgb(0, 0, 0) 0%, rgb(0, 0, 0) 100vh, rgb(16, 38, 19) 150vh);
     color: white;
     font-family: 'Source Code Pro', monospace;
 }
@@ -36,6 +38,8 @@ body, html {
     animation: fadeOutGif 0.5s forwards;
     animation-delay: 30s;
     z-index: 100;
+
+    opacity: 0;
 }
 
 .content {
@@ -157,8 +161,120 @@ h2 {
 
 .resume-content {
     background: rgba(255, 255, 255, 0.05);
-    padding: 2rem;
-    border-radius: 8px;
+    padding: 3rem;
+    border-radius: 12px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.resume-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.resume-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.resume-header p {
+    font-size: 1.1rem;
+}
+
+.resume-header a {
+    color: white;
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.resume-header a:hover {
+    opacity: 1;
+}
+
+.education, .experience, .extracurriculars {
+    margin-bottom: 2.5rem;
+}
+
+.education h3, .experience h3, .extracurriculars h3 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 0.5rem;
+}
+
+.education-entry, .experience-entry, .extracurricular-entry {
+    margin-bottom: 2rem;
+}
+
+.education-entry h4, .experience-entry h4, .extracurricular-entry h4 {
+    font-size: 1.3rem;
+    margin: 0 0 0.5rem 0;
+    color: #fff;
+}
+
+.location {
+    font-style: italic;
+    opacity: 0.8;
+    margin: 0.2rem 0;
+}
+
+.degree {
+    font-weight: 500;
+    margin: 0.2rem 0;
+}
+
+.details {
+    opacity: 0.8;
+    margin: 0.2rem 0;
+}
+
+.coursework {
+    font-size: 0.9rem;
+    opacity: 0.7;
+    margin: 0.5rem 0;
+    line-height: 1.4;
+}
+
+.position {
+    font-weight: 500;
+    margin: 0.2rem 0;
+}
+
+.dates {
+    font-style: italic;
+    opacity: 0.8;
+    margin: 0.2rem 0;
+}
+
+.experience-entry ul {
+    margin: 0.8rem 0;
+    padding-left: 1.2rem;
+}
+
+.experience-entry li {
+    margin: 0.5rem 0;
+    line-height: 1.4;
+    opacity: 0.9;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .resume-content {
+        padding: 1.5rem;
+    }
+
+    .resume-header h1 {
+        font-size: 2rem;
+    }
+
+    .education h3, .experience h3, .extracurriculars h3 {
+        font-size: 1.5rem;
+    }
+
+    .education-entry h4, .experience-entry h4, .extracurricular-entry h4 {
+        font-size: 1.2rem;
+    }
 }
 
 .social-links {
@@ -181,4 +297,111 @@ h2 {
 
 .social-link:hover {
     opacity: 1;
-} 
+}
+
+.message-form {
+    max-width: 600px;
+    margin: 0 auto 3rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.message-form h3 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.message-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.message-form textarea {
+    width: 100%;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: white;
+    font-family: 'Source Code Pro', monospace;
+    min-height: 150px;
+    resize: none;
+    overflow-y: hidden;
+    box-sizing: border-box;
+}
+
+.message-form button {
+    padding: 0.8rem 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: white;
+    font-family: 'Source Code Pro', monospace;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.message-form button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.message-form textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Add responsive styles for the form */
+@media (max-width: 768px) {
+    .message-form {
+        padding: 1rem;
+        margin: 0 1rem 2rem;
+    }
+}
+
+.hand-drawn-title {
+    max-width: 90vw;
+    height: auto;
+    margin: 0 auto;
+}
+
+.sketch-path {
+    fill: none;
+    stroke: white;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    animation: drawPath 3s ease forwards;
+    opacity: 0;
+    filter: drop-shadow(2px 2px 20px rgba(0, 0, 0, 0.5));
+}
+
+@keyframes drawPath {
+    0% {
+        opacity: 0;
+        stroke-dashoffset: 1000;
+        stroke-dasharray: 1000;
+    }
+    10% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+        stroke-dashoffset: 0;
+        stroke-dasharray: 1000;
+    }
+}
+
+.sketch-path:nth-child(1) { animation-delay: calc(var(--time-per-letter) * 0 + var(--animation-start)); }
+.sketch-path:nth-child(2) { animation-delay: calc(var(--time-per-letter) * 1 + var(--animation-start)); }
+.sketch-path:nth-child(3) { animation-delay: calc(var(--time-per-letter) * 2 + var(--animation-start)); }
+.sketch-path:nth-child(4) { animation-delay: calc(var(--time-per-letter) * 3 + var(--animation-start)); }
+.sketch-path:nth-child(5) { animation-delay: calc(var(--time-per-letter) * 4 + var(--animation-start)); }
+.sketch-path:nth-child(6) { animation-delay: calc(var(--time-per-letter) * 5 + var(--animation-start)); }
+.sketch-path:nth-child(7) { animation-delay: calc(var(--time-per-letter) * 6 + var(--animation-start)); }
+.sketch-path:nth-child(8) { animation-delay: calc(var(--time-per-letter) * 7 + var(--animation-start)); }
+.sketch-path:nth-child(9) { animation-delay: calc(var(--time-per-letter) * 8 + var(--animation-start)); }
+.sketch-path:nth-child(10) { animation-delay: calc(var(--time-per-letter) * 9 + var(--animation-start)); }
+.sketch-path:nth-child(11) { animation-delay: calc(var(--time-per-letter) * 10 + var(--animation-start)); }
+.sketch-path:nth-child(12) { animation-delay: calc(var(--time-per-letter) * 11 + var(--animation-start)); }
+.sketch-path:nth-child(13) { animation-delay: calc(var(--time-per-letter) * 12 + var(--animation-start)); } 
