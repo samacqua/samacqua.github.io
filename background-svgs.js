@@ -1,5 +1,12 @@
 // Collection of SVG paths and their configurations
 
+import Network from './space-colonization/js/Network.js';
+import Node from './space-colonization/js/Node.js';
+import { getGridOfAttractors } from './space-colonization/js/AttractorPatterns.js';
+import { random } from './space-colonization/js/Utilities.js';
+import defaults from './space-colonization/js/Defaults.js';
+import { setupKeyListeners } from './space-colonization/js/KeyboardInteractions.js';
+
 const svgCollection = [
     {
         name: 'vine',
@@ -104,16 +111,173 @@ class BackgroundSVG {
     constructor(container) {
         this.container = container;
         this.svgs = [];
+        
+        // Initialize multiple networks
+        this.initSpaceColonization();
+        // this.initCircularNetwork();
 
-        // Comment out or remove the old river method call.
-        // this.addRiver();
-
-        // Add the fractal river instead:
-        // this.addFractalRiver();
-
+        // Add other background elements
         this.addSnail();
         this.addBee();
         this.addMonstera();
+    }
+
+    initSpaceColonization() {
+        // Use existing canvas
+        const canvas = document.getElementById('sketch');
+        canvas.style.position = 'absolute';  
+        canvas.style.top = '0';             
+        canvas.style.left = '0';            
+        canvas.style.zIndex = '0';          
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas size
+        const resizeCanvas = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Initialize network
+        const network = new Network(ctx, defaults);
+
+        // Create a circle in the center as an obstacle
+        const cx = window.innerWidth / 1.3;
+        const cy = window.innerHeight / 1.3;
+        const obstacleRadius = Math.min(window.innerWidth, window.innerHeight) * 0.7;
+        const resolution = 100;
+        const obstaclePoints = this.createCircleOfPoints(cx, cy, obstacleRadius, resolution);
+        // Close the shape
+        const obstacleShape = [...obstaclePoints, obstaclePoints[0]];
+
+        // Create attractors on a grid, then remove those inside the obstacle circle
+        const gridAttractors = getGridOfAttractors(150, 100, ctx, 100).filter(
+            ({ position: { x, y } }) => !this.isPointInPolygon({ x, y }, obstacleShape)
+        );
+        network.attractors = gridAttractors;
+
+        // Add an initial node at the bottom center
+        network.addNode(new Node(null, { x: 0, y: 0 }, true, ctx, defaults));
+
+        // Add frame rate control
+        const frameInterval = 50; // Milliseconds between frames (adjust this value to control speed)
+        let lastFrameTime = 0;
+
+        // Modified animation loop
+        const animate = (currentTime) => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Only update if enough time has passed
+            if (currentTime - lastFrameTime > frameInterval) {
+                if (!defaults.IsPaused) {
+                    network.update();
+                }
+                lastFrameTime = currentTime;
+            }
+
+            network.draw();
+            requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+    }
+
+    initCircularNetwork() {
+        // Use existing canvas
+        const canvas = document.getElementById('circular-network');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas size
+        const resizeCanvas = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = Math.max(document.documentElement.scrollHeight - window.innerHeight, window.innerHeight);
+        };
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Initialize network with custom green colors that override defaults
+        const greenSettings = {
+            Colors: {
+                BackgroundColor: 'rgb(0, 0, 0)',
+                BranchColor: 'rgba(0, 255, 0, 1)',
+                TipColor: 'rgba(0, 255, 0, .8)',
+                AttractionZoneColor: 'rgba(0, 255, 0, .008)',
+                KillZoneColor: 'rgba(0, 255, 0, .02)',
+                InfluenceLinesColor: 'rgba(0, 255, 0, .1)',
+                BoundsFillColor: 'rgba(0, 255, 0, .1)',
+                BoundsBorderColor: 'rgba(0, 255, 0, .3)',
+                ObstacleFillColor: 'rgba(0, 255, 0, .1)',
+                ObstacleBorderColor: 'rgba(0, 255, 0, .3)'
+            }
+        };
+        const network = new Network(ctx, { ...defaults, ...greenSettings });
+
+        // Create a circle in the center as an obstacle (same as space colonization)
+        const cx = window.innerWidth / 1.3;
+        const cy = window.innerHeight - window.innerHeight / 1.3;
+        const obstacleRadius = Math.min(window.innerWidth, window.innerHeight) * 0.7;
+        const resolution = 100;
+        const obstaclePoints = this.createCircleOfPoints(cx, cy, obstacleRadius, resolution);
+        const obstacleShape = [...obstaclePoints, obstaclePoints[0]];
+
+        // Create attractors on a grid, filtering those inside the obstacle (same as space colonization)
+        const gridAttractors = getGridOfAttractors(150, 100, ctx, 100).filter(
+            ({ position: { x, y } }) => !this.isPointInPolygon({ x, y }, obstacleShape)
+        );
+        network.attractors = gridAttractors;
+
+        // Add an initial node at the bottom center
+        network.addNode(new Node(null, { x: 0, y: 0 }, true, ctx, defaults));
+
+        // Add frame rate control
+        const frameInterval = 5;
+        let lastFrameTime = 0;
+
+        // Animation loop
+        const animate = (currentTime) => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (currentTime - lastFrameTime > frameInterval) {
+                if (!defaults.IsPaused) {
+                    network.update();
+                }
+                lastFrameTime = currentTime;
+            }
+
+            network.draw();
+            requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+    }
+
+    /**
+     * Create a polygon of points approximating a circle.
+     */
+    createCircleOfPoints(cx, cy, radius, resolution = 50) {
+        const points = [];
+        for (let i = 0; i < resolution; i++) {
+            const theta = (2 * Math.PI * i) / resolution;
+            const x = cx + Math.cos(theta) * radius;
+            const y = cy + Math.sin(theta) * radius;
+            points.push({ x, y });
+        }
+        return points;
+    }
+
+    /**
+     * Standard "point in polygon" check using ray casting.
+     */
+    isPointInPolygon(point, polygon) {
+        let inside = false;
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            const xi = polygon[i].x, yi = polygon[i].y;
+            const xj = polygon[j].x, yj = polygon[j].y;
+            const intersect =
+                (yi > point.y) !== (yj > point.y) &&
+                point.x < ((xj - xi) * (point.y - yi)) / (yj - yi) + xi;
+            if (intersect) inside = !inside;
+        }
+        return inside;
     }
 
     // ------------------------------------------------------------------
@@ -433,6 +597,7 @@ class BackgroundSVG {
         };
         requestAnimationFrame(animate);
     }
+
 }
 
 class TitleSVG {

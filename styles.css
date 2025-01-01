@@ -34,6 +34,9 @@ body, html {
     width: 100%;
     height: 100%;
     z-index: 100;
+
+    /* temporary for debugging */
+    /* opacity: 0; */
 }
 
 .static-frame,
@@ -48,9 +51,6 @@ body, html {
 
     /* add transition */
     transition: opacity 2s ease;
-
-    /* temporary for debugging */
-    /* opacity: 0; */
 }
 
 .static-frame {
@@ -539,5 +539,35 @@ h2 {
     height: 100%;
     z-index: 2;
     pointer-events: none;
-    opacity: 0.6;
+    opacity: 0.4;
+    mix-blend-mode: screen;
+}
+
+#circular-networks {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+
+#circular-network {
+    position: fixed;
+    top: 100vh;
+    left: 0;
+    width: 100%;
+    height: 400%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.4;
+    mix-blend-mode: screen;
+}
+
+
+#circular-network {
+    position: absolute;
+    /* top: 0;
+    left: 0; */
+    z-index: 1; /* Or whichever z-index you want */
+    width: 100vw; /* optional if you want a CSS-based layout */
 }

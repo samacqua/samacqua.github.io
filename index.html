@@ -14,6 +14,9 @@
 </head>
 <body>
     <div class="splash-container">
+        <canvas id="sketch"></canvas>
+        <canvas id="circular-networks"></canvas>
+
         <div class="background-gif">
             <div class="static-frame"></div>
             <div class="animated-gif"></div>
@@ -26,6 +29,11 @@
             </div>
         </div>
     </div>
+
+    <!-- New container for the circular network -->
+    <!-- <div class="circular-network-container">
+        <canvas id="circular-network"></canvas>
+    </div> -->
 
     <section class="about">
         <p class="about-text">
@@ -186,9 +194,9 @@
             // Fade in the GIF while keeping static frame visible
             animatedGif.classList.add('loaded');
 
-            // Remove static frame after 500ms (no fade)
+            // Remove static frame after 2.5s (no fade)
             setTimeout(() => {
-                if (staticFrame.parentNode) {
+                if (staticFrame?.parentNode) {
                     staticFrame.parentNode.removeChild(staticFrame);
                 }
             }, 2500);
