@@ -2,7 +2,7 @@
 body {
   position: absolute;
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   background-color: #f89;
   font-family: Open Sans;
   font-weight: 100;
@@ -13,15 +13,15 @@ body {
     left: 0;
     top: 0;
     width: 100%;
-    height: 100%;
+    min-height: 100%;
     text-align: center;
+    padding-bottom: 3em;
   }
 .container {
   position: relative;
   margin: 0 auto;
-  width: 45em;
-  max-width: 100%;
-  height: 10em;
+  width: 60em;
+  max-width: 95%;
   text-align: center;
 }
 a { 
@@ -37,7 +37,7 @@ h2 {
   text-align: left;
 }
 .pages {
-  max-width: 50em;
+  max-width: 60em;
   margin: 0 auto;
   padding-right: 1.5em;
   text-align: right;
@@ -99,10 +99,262 @@ br {
 img {
   object-fit: cover;
   width: 100%;
-  /* float: right;
-  margin-bottom: 5px; */
 }
 
+/* ========== Featured Section ========== */
+.featured-section {
+  margin-top: 1.5em;
+  margin-bottom: 2em;
+}
+
+.section-title {
+  /* font-size: 1.2em; */
+  text-align: left;
+  color: #f9ffad;
+  margin-bottom: 1em;
+  font-weight: bold;
+  letter-spacing: 0.1em;
+}
+
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5em;
+}
+
+.featured-card {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #f0f0f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+}
+
+.featured-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.featured-img-wrapper {
+  height: 140px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.featured-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.featured-card:hover .featured-img-wrapper img {
+  transform: scale(1.05);
+}
+
+.nanogpt-bg {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nanogpt-icon {
+  font-size: 3.5em;
+  filter: drop-shadow(0 0 20px rgba(255, 200, 50, 0.6));
+}
+
+.featured-content {
+  padding: 1.2em;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.featured-content h3 {
+  font-size: 1.3em;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  color: #f9ffad;
+  text-align: left;
+}
+
+.featured-content p {
+  font-size: 0.85em;
+  line-height: 1.5;
+  color: #f0f0f0;
+  flex: 1;
+  opacity: 0.9;
+}
+
+.featured-tag {
+  display: inline-block;
+  margin-top: 0.8em;
+  padding: 0.25em 0.6em;
+  background: rgba(249, 255, 173, 0.2);
+  color: #f9ffad;
+  font-size: 0.75em;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+/* ========== All Projects Section ========== */
+.all-projects {
+  margin-top: 2em;
+}
+
+.year-group {
+  margin-bottom: 2em;
+}
+
+.year-label {
+  font-size: 1.4em;
+  color: #f9ffad;
+  font-weight: bold;
+  text-align: left;
+  margin-bottom: 0.8em;
+  padding-bottom: 0.3em;
+  border-bottom: 2px solid rgba(240, 240, 240, 0.3);
+}
+
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+}
+
+.project-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(240, 240, 240, 0.3);
+  border-radius: 8px;
+  padding: 1em 1.2em;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.project-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(4px);
+}
+
+.project-info {
+  flex: 1;
+  text-align: left;
+}
+
+.project-info h4 {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 0.3em;
+  display: inline;
+}
+
+.project-info p {
+  font-size: 0.85em;
+  line-height: 1.5;
+  color: rgba(240, 240, 240, 0.85);
+  margin-top: 0.4em;
+}
+
+.status-tag {
+  display: inline-block;
+  margin-left: 0.5em;
+  padding: 0.15em 0.5em;
+  background: rgba(255, 200, 100, 0.3);
+  color: #ffd;
+  font-size: 0.7em;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+.project-actions {
+  display: flex;
+  gap: 0.6em;
+  margin-left: 1em;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.project-actions a {
+  padding: 0.4em 0.8em;
+  background: rgba(249, 255, 173, 0.15);
+  border: 1px solid rgba(249, 255, 173, 0.4);
+  border-radius: 5px;
+  font-size: 0.85em;
+  color: #f9ffad;
+  transition: all 0.2s ease;
+}
+
+.project-actions a:hover {
+  background: rgba(249, 255, 173, 0.3);
+  border-color: #f9ffad;
+}
+
+/* ========== Mobile Responsive ========== */
+@media (max-width: 700px) {
+  .featured-grid {
+    grid-template-columns: 1fr;
+    gap: 1em;
+  }
+
+  .featured-card {
+    flex-direction: row;
+  }
+
+  .featured-img-wrapper {
+    width: 120px;
+    height: auto;
+    min-height: 100%;
+  }
+
+  .featured-content {
+    padding: 1em;
+  }
+
+  .featured-content h3 {
+    font-size: 1.1em;
+  }
+
+  .project-item {
+    flex-direction: column;
+    gap: 0.8em;
+  }
+
+  .project-actions {
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 500px) {
+  .featured-card {
+    flex-direction: column;
+  }
+
+  .featured-img-wrapper {
+    width: 100%;
+    height: 120px;
+  }
+
+  .pages h1 {
+    font-size: 2em;
+  }
+
+  .section-title {
+    font-size: 1em;
+  }
+
+  .year-label {
+    font-size: 1.2em;
+  }
+}
+
+/* ========== Legacy styles (kept for compatibility) ========== */
 .projects {
   margin-top: 1em;
   padding-bottom: 1em;
@@ -145,7 +397,6 @@ img {
   stroke: var(--stroke, var(--line));
   stroke-linecap: round;
   stroke-width: 2px;
-  /* stroke-dasharray: var(--offset, 69px) 278px; */
   stroke-dasharray: var(--offset, 69px) var(--path-length);
   stroke-dashoffset: 361px;
   transition: stroke 0.25s ease var(--stroke-delay, 0s), stroke-dasharray 0.35s;
@@ -158,11 +409,8 @@ img {
 }
 
 .project {
-  /* background-color: rgb(228, 228, 228); */
-  
   margin: 15px;
   padding: 12px;
-  /* box-shadow: 0 4px 12px 1px rgba(0, 0, 0, 0.3), 0 6px 20px 0 rgba(0, 0, 0, 0.19); */
   border-radius: 6px;
   transition: top ease 0.3s;
   position: relative;
@@ -172,7 +420,6 @@ img {
 
 .project:hover {
   top: -0.5em;
-  /* transform: scale(1.01); */
 }
 
 .project h2 {
@@ -180,28 +427,12 @@ img {
   text-align: left;
 }
 
-/* .github_link {
-  color: #fff;
-  background-color: #1fa9ff;
-  padding: 5px;
-  border-radius: 5px;
-}
-
-.try_link {
-  color: #fff;
-  background-color: #bb00e6;
-  padding: 5px;
-  border-radius: 5px;
-} */
-
 .beta_tag {
   color: #c44525;
-  /* background-color: #c44525; */
   padding: 5px;
   border-radius: 5px;
   pointer-events: none;        
 }
-
 
 hr {
   height: 0.2em;
