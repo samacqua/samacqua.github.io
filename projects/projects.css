@@ -108,12 +108,11 @@ img {
 }
 
 .section-title {
-  /* font-size: 1.2em; */
+  font-size: 1.5em;
   text-align: left;
   color: #f9ffad;
   margin-bottom: 1em;
   font-weight: bold;
-  letter-spacing: 0.1em;
 }
 
 .featured-grid {
@@ -331,14 +330,26 @@ img {
   }
 }
 
-@media (max-width: 500px) {
+/* @media (max-width: 500px) {
   .featured-card {
     flex-direction: column;
   }
 
   .featured-img-wrapper {
     width: 100%;
-    height: 120px;
+    height: 80px;
+  }
+
+  .featured-content {
+    padding: 0.8em;
+  }
+
+  .featured-content h3 {
+    font-size: 1em;
+  }
+
+  .featured-content p {
+    font-size: 0.8em;
   }
 
   .pages h1 {
@@ -346,13 +357,13 @@ img {
   }
 
   .section-title {
-    font-size: 1em;
+    font-size: 1.3em;
   }
 
   .year-label {
-    font-size: 1.2em;
+    font-size: 1.1em;
   }
-}
+} */
 
 /* ========== Legacy styles (kept for compatibility) ========== */
 .projects {
