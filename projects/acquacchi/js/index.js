@@ -110,7 +110,7 @@ function initAcquacchi() {
 
       if (move !== null) {
         board.position(game.fen());
-        set_move_history(game.history());
+        set_move_history();
         removeHighlights();
         selectedSquare = null;
         onMoveEnd();
@@ -163,7 +163,7 @@ function initAcquacchi() {
 
       game.move(move, { sloppy: true });
       board.position(game.fen());
-      set_move_history(game.history());
+      set_move_history();
 
       last_material = material;
       last_eval = eval;
@@ -184,7 +184,7 @@ function initAcquacchi() {
     // illegal move
     if (move === null) return 'snapback'
 
-    set_move_history(game.history());
+    set_move_history();
     onMoveEnd();
   }
 
@@ -251,30 +251,54 @@ function initAcquacchi() {
   updateMoveButtons();
 };
 
-function set_move_history(history) {
+function set_move_history() {
   moveHistory = game.history({ verbose: true });
   currentMoveIndex = moveHistory.length - 1;
 
-  renderMovesBar(history);
+  renderMovesBar();
   updateMoveButtons();
 }
 
-function renderMovesBar(history) {
+function renderMovesBar() {
   let parts = [];
-  for (i=0;i<history.length;i++) {
+  for (i=0;i<moveHistory.length;i++) {
     if (i%2 == 0) {
       parts.push('<span class="move-number">' + (i/2+1) + '.</span>');
     }
-    let cls = (i === currentMoveIndex) ? 'move-item current-move' : 'move-item';
-    parts.push('<span class="' + cls + '">' + history[i] + '</span>');
+    let cls = 'move-item';
+    if (i === currentMoveIndex) {
+      cls += ' current-move';
+    } else if (i > currentMoveIndex) {
+      cls += ' future-move';
+    }
+    parts.push('<span class="' + cls + '">' + moveHistory[i].san + '</span>');
   }
   $("#moves").html(parts.join(' '));
   
-  // Scroll all the way to the right (deferred to ensure DOM is updated)
+  // Scroll to keep current move visible
   setTimeout(function() {
     var movesContainer = document.getElementById('moves-container');
-    if (movesContainer) {
-      movesContainer.scrollLeft = movesContainer.scrollWidth;
+    var currentMoveEl = document.querySelector('.current-move');
+    
+    if (movesContainer && currentMoveEl) {
+      var containerRect = movesContainer.getBoundingClientRect();
+      var moveRect = currentMoveEl.getBoundingClientRect();
+      
+      // Calculate where the element is relative to the container's visible area
+      var elementLeft = moveRect.left - containerRect.left;
+      var elementRight = moveRect.right - containerRect.left;
+      
+      // If element is out of view on the left, scroll left
+      if (elementLeft < 0) {
+        movesContainer.scrollLeft += elementLeft - 20; // 20px padding
+      }
+      // If element is out of view on the right, scroll right
+      else if (elementRight > containerRect.width) {
+        movesContainer.scrollLeft += elementRight - containerRect.width + 20;
+      }
+    } else if (movesContainer) {
+      // No current move (before first move), scroll to start
+      movesContainer.scrollLeft = 0;
     }
   }, 50);
 }
@@ -295,7 +319,7 @@ function goToMove(index) {
   currentMoveIndex = index;
   board.position(game.fen());
   updateMoveButtons();
-  renderMovesBar(game.history());
+  renderMovesBar();
 }
 
 function moveBackward() {

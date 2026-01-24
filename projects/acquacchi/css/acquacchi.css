@@ -234,6 +234,10 @@ h2 {
   color: #fff;
 }
 
+.move-item.future-move {
+  color: #555;
+}
+
 .pages a {
     display: inline-block;
     overflow: hidden;
