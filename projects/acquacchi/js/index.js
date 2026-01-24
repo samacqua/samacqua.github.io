@@ -269,6 +269,14 @@ function renderMovesBar(history) {
     parts.push('<span class="' + cls + '">' + history[i] + '</span>');
   }
   $("#moves").html(parts.join(' '));
+  
+  // Scroll all the way to the right (deferred to ensure DOM is updated)
+  setTimeout(function() {
+    var movesContainer = document.getElementById('moves-container');
+    if (movesContainer) {
+      movesContainer.scrollLeft = movesContainer.scrollWidth;
+    }
+  }, 50);
 }
 
 function updateMoveButtons() {
