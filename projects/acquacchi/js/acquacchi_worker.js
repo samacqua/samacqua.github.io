@@ -1,8 +1,28 @@
 self.addEventListener('message', function(e) {
-  importScripts('a.out.js');
-
   var data = e.data;
   let fen = data.fen;
+
+  // Capture console output from worker and send to main thread
+  // Must be set BEFORE importing a.out.js
+  var originalLog = console.log;
+  console.log = function() {
+    var message = Array.from(arguments).join(' ');
+    originalLog.apply(console, arguments);
+    self.postMessage({type: 'log', message: message});
+  };
+
+  // Set up Module BEFORE importing a.out.js so we can capture stdout
+  var Module = {
+    print: function(text) {
+      self.postMessage({type: 'log', message: text});
+    },
+    printErr: function(text) {
+      self.postMessage({type: 'log', message: '[ERR] ' + text});
+    }
+  };
+  self.Module = Module;
+
+  importScripts('a.out.js');
 
   Module['onRuntimeInitialized'] = function() {
 

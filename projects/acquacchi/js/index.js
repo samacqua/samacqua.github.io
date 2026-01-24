@@ -1,12 +1,58 @@
 var board = null;
 var game = new Chess();
+var moveHistory = [];
+var currentMoveIndex = -1;
+
+// Intercept console.log to display in UI
+var consoleOutput = [];
+var originalLog = console.log;
+
+function renderConsoleOutput() {
+  var consoleDiv = document.getElementById('console-output');
+  if (!consoleDiv) return;
+
+  if (consoleOutput.length === 0) {
+    consoleDiv.classList.add('console-empty');
+    consoleDiv.textContent = 'play a move to begin';
+    return;
+  }
+
+  consoleDiv.classList.remove('console-empty');
+  consoleDiv.textContent = consoleOutput.join('\n');
+  consoleDiv.scrollTop = consoleDiv.scrollHeight;
+}
+
+console.log = function() {
+  var message = Array.from(arguments).map(arg => {
+    if (typeof arg === 'object') {
+      try {
+        return JSON.stringify(arg);
+      } catch(e) {
+        return String(arg);
+      }
+    }
+    return String(arg);
+  }).join(' ');
+  
+  originalLog.apply(console, arguments);
+  consoleOutput.push(message);
+  
+  // Keep only last 50 lines
+  if (consoleOutput.length > 50) {
+    consoleOutput.shift();
+  }
+  
+  // Update UI
+  renderConsoleOutput();
+};
 
 function new_game() {
   game = new Chess();
   board.position('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
 }
 
-Module.onRuntimeInitialized = async _ => {
+// Called by Module.onRuntimeInitialized (defined in HTML before a.out.js loads)
+function initAcquacchi() {
 
   const api = {
     get_board_pointer: Module.cwrap('get_board_pointer', 'board', []),
@@ -27,24 +73,84 @@ Module.onRuntimeInitialized = async _ => {
   api.init_engine();
   api.set_board(board_pointer);
 
+  // Track selected square for tap-to-move
+  var selectedSquare = null;
+
+  function removeHighlights() {
+    $('#myBoard .square-55d63').removeClass('selected-square legal-move');
+  }
+
+  function highlightLegalMoves(square) {
+    var moves = game.moves({ square: square, verbose: true });
+    moves.forEach(function(move) {
+      $('#myBoard .square-' + move.to).addClass('legal-move');
+    });
+  }
+
+  function onSquareClick(square, piece) {
+    // Don't allow moves if game is over
+    if (game.game_over()) return;
+
+    // If clicking on a white piece, select it
+    if (piece && piece.search(/^w/) !== -1) {
+      removeHighlights();
+      selectedSquare = square;
+      $('#myBoard .square-' + square).addClass('selected-square');
+      highlightLegalMoves(square);
+      return;
+    }
+
+    // If we have a selected square, try to move
+    if (selectedSquare) {
+      var move = game.move({
+        from: selectedSquare,
+        to: square,
+        promotion: 'q'
+      });
+
+      if (move !== null) {
+        board.position(game.fen());
+        set_move_history(game.history());
+        removeHighlights();
+        selectedSquare = null;
+        onMoveEnd();
+        return;
+      }
+    }
+
+    // Clear selection if clicking empty square or black piece
+    removeHighlights();
+    selectedSquare = null;
+  }
+
   function onDragStart (source, piece, position, orientation) {
+    removeHighlights();
+    selectedSquare = null;
+    
     // do not pick up pieces if the game is over
     if (game.game_over()) return false
 
     // only pick up pieces for White
     if (piece.search(/^b/) !== -1) return false
+    
+    // Show legal moves while dragging
+    $('#myBoard .square-' + source).addClass('selected-square');
+    highlightLegalMoves(source);
   }
 
-  function onMoveEnd (old_pos, new_pos) {
-
-    let comment = get_think_comment(game);
-    type_line(comment);
-
+  function onMoveEnd () {
     let fen = game.fen();
     var worker = new Worker('js/acquacchi_worker.js');
     worker.postMessage({'fen': fen});
     worker.addEventListener('message', function(e) {
       let data = e.data;
+      
+      // Handle log messages from worker
+      if (data.type === 'log') {
+        console.log('[Engine] ' + data.message);
+        return;
+      }
+      
       let move = data.move;
 
       let from = move.slice(0,2);
@@ -59,8 +165,6 @@ Module.onRuntimeInitialized = async _ => {
       board.position(game.fen());
       set_move_history(game.history());
 
-      let move_comment = get_move_comment(game, move_str, material, eval);
-      type_line(move_comment);
       last_material = material;
       last_eval = eval;
       
@@ -68,6 +172,8 @@ Module.onRuntimeInitialized = async _ => {
   }
 
   function onDrop (source, target) {
+    removeHighlights();
+    
     // see if the move is legal
     var move = game.move({
       from: source,
@@ -79,7 +185,7 @@ Module.onRuntimeInitialized = async _ => {
     if (move === null) return 'snapback'
 
     set_move_history(game.history());
-    onMoveEnd(4,4);
+    onMoveEnd();
   }
 
   // update the board position after the piece snap
@@ -97,121 +203,107 @@ Module.onRuntimeInitialized = async _ => {
     showErrors: 'console',
   }
   board = Chessboard('myBoard', config);
+  
+  renderConsoleOutput();
+  
+  // Add tap-to-move handlers
+  var isDragging = false;
+  
+  function handleSquareTap($squareEl) {
+    var square = $squareEl.attr('data-square');
+    var piece = game.get(square);
+    var pieceStr = piece ? piece.color + piece.type.toUpperCase() : null;
+    onSquareClick(square, pieceStr);
+  }
+
+  $('#myBoard').on('mousedown', '.square-55d63', function() {
+    isDragging = false;
+  });
+
+  $('#myBoard').on('mousemove', '.square-55d63', function() {
+    isDragging = true;
+  });
+
+  $('#myBoard').on('mouseup', '.square-55d63', function() {
+    if (isDragging) return;
+    handleSquareTap($(this));
+  });
+
+  $('#myBoard').on('touchstart', '.square-55d63', function() {
+    isDragging = false;
+  });
+
+  $('#myBoard').on('touchmove', '.square-55d63', function() {
+    isDragging = true;
+  });
+
+  $('#myBoard').on('touchend', '.square-55d63', function(e) {
+    if (isDragging) return;
+    e.preventDefault();
+    handleSquareTap($(this));
+  });
+  
+  // Add move navigation button handlers
+  $('#btn-backward').on('click', moveBackward);
+  $('#btn-forward').on('click', moveForward);
+  
+  // Initialize button states
+  updateMoveButtons();
 };
 
 function set_move_history(history) {
-  let hist_string = "";
+  moveHistory = game.history({ verbose: true });
+  currentMoveIndex = moveHistory.length - 1;
+
+  renderMovesBar(history);
+  updateMoveButtons();
+}
+
+function renderMovesBar(history) {
+  let parts = [];
   for (i=0;i<history.length;i++) {
     if (i%2 == 0) {
-      hist_string += i/2+1 + ". ";
+      parts.push('<span class="move-number">' + (i/2+1) + '.</span>');
     }
-    hist_string += history[i] + "  ";
+    let cls = (i === currentMoveIndex) ? 'move-item current-move' : 'move-item';
+    parts.push('<span class="' + cls + '">' + history[i] + '</span>');
   }
-  $("#moves").text(hist_string);
+  $("#moves").html(parts.join(' '));
 }
 
-// custom event trigger: https://stackoverflow.com/a/23344816/5416200
-function on_write_new_line(state) {
-  var evt = $.Event('writing_new_line');
-  evt.state = state;
-
-  $(window).trigger(evt);
+function updateMoveButtons() {
+  $('#btn-backward').prop('disabled', currentMoveIndex < 0);
+  $('#btn-forward').prop('disabled', currentMoveIndex >= moveHistory.length - 1);
 }
 
-var last_line = ""; // used to make sure settimeout is correct amount
-type_line("make a move to start");
+function goToMove(index) {
+  if (index < -1 || index >= moveHistory.length) return;
+  
+  game.reset();
+  for (let i = 0; i <= index; i++) {
+    game.move(moveHistory[i]);
+  }
+  
+  currentMoveIndex = index;
+  board.position(game.fen());
+  updateMoveButtons();
+  renderMovesBar(game.history());
+}
 
-function type_line(line) {
-  on_write_new_line(line);
+function moveBackward() {
+  if (currentMoveIndex >= 0) {
+    goToMove(currentMoveIndex - 1);
+  }
+}
 
-//  set timeout to give func enough time for delete animation (very jank)
- setTimeout(() => {
-  last_line = line;
-
-  var e = $('<div id="acquacchi-text" class="texter"></div>');
-  $("#texter").empty();
-  $("#texter").append(e)
-  new TypeIt(`#acquacchi-text`, {
-    speed: 50,
-    waitUntilVisible: true,
-    afterComplete: () => {
-      // make latest message visible
-      $("#" + id)[0].scrollIntoView();
-    }
-  })
-  .type(line)
-  .exec(async () => {
-    await new Promise((resolve, reject) => {
-      // jank solution to make line delete itself bc typeit.js only allows direct chaining
-      // wait for custom even (type_line is called to write next line), then delete self
-      $(window).on('writing_new_line', function (e) {
-        return resolve();
-      });
-    });
-  })
-  .delete(line.length)
-  .go();
- }, 50*last_line.length+1);
+function moveForward() {
+  if (currentMoveIndex < moveHistory.length - 1) {
+    goToMove(currentMoveIndex + 1);
+  }
 }
 
 var last_material = [8,8,2,2,2,2,2,2,1,1];
 var last_eval = 0;
-function get_move_comment(game_board, move_str, material, eval) {
-  if (game_board.in_checkmate()) {
-    return "checkmate! :)";
-  } else if (game_board.in_check()) {
-    return "check!";
-  }  else if (game_board.in_draw()) {
-    if (game_board.insufficient_material()) {
-      return "neither side has enough pieces to checkmate--it's a draw.";
-    } else {
-      return "it's a draw! We've gone 50 moves without any captures or pawn moves.";
-    }
-  } else if (game_board.in_threefold_repetition()) {
-    return "three-fold repitition--draw";
-  } else if (game_board.in_stalemate()) {
-    return "Stalemate :/";
-  } else {
-    let eval_delta = eval - last_eval;
-    let material_delta = material.map(function (num, idx) {
-      return num - last_material[idx];
-    });
-
-    if (eval_delta < -100) {
-      return "Great move! I'll move " + move_str;
-    } else if (eval_delta < 50) {
-      return "Good move! I'll move " + move_str;
-    } else if (eval_delta < 100) {
-      return "Okay move. I'll move " + move_str;
-    } else if (eval_delta < 300) {
-      return "That was a mistake. " + move_str;
-    } else {
-      return "That was a big blunder... " + move_str;
-    }
-  }
-}
-
-function get_think_comment(game_board) {
-  if (game_board.in_checkmate()) {
-    return "you checkmated me! :(";
-  } else if (game_board.in_check()) {
-    return "uh oh, i'm in check";
-  } else if (game_board.in_draw()) {
-    if (game_board.insufficient_material()) {
-      return "neither side has enough pieces to checkmate--it's a draw.";
-    } else {
-      return "it's a draw! We've gone 50 moves without any captures or pawn moves.";
-    }
-  } else if (game_board.in_threefold_repetition()) {
-    return "three-fold repitition--draw";
-  } else if (game_board.in_stalemate()) {
-    return "Stalemate >:)";
-  } else {
-    let move_phrases = ["thinking...", "hm...", "beep boop"];
-    let phrase = move_phrases[Math.floor(Math.random() * move_phrases.length)];
-    return phrase;
-  }
-}
 
 
 // apply svg to each links so don't have to copy paste a bunch
@@ -220,4 +312,9 @@ const links = document.querySelectorAll('.about a');
 
 for (let i=0;i<links.length; i++) {
     links[i].innerHTML += '<svg viewBox="0 0 70 36"><path d="M6.9739 30.8153H63.0244C65.5269 30.8152 75.5358 -3.68471 35.4998 2.81531C-16.1598 11.2025 0.894099 33.9766 26.9922 34.3153C104.062 35.3153 54.5169 -6.68469 23.489 9.31527" /></svg>';
+}
+
+// If WASM already initialized before this script loaded, call init now
+if (wasmReady) {
+  initAcquacchi();
 }
