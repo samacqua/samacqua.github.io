@@ -1122,6 +1122,14 @@ document.addEventListener("DOMContentLoaded", () => {
   Prism.highlightAll();
 });
 </script>
+<script>
+if (window.innerWidth < 700) {
+  var w = document.querySelector('.top-nav-links');
+  w.innerHTML = '<a href="../../">home</a><br><a href="../">projects</a><br><a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a><br><a href="../../bio/">bio</a>';
+  w.style.marginTop = '1em';
+  w.querySelectorAll('a').forEach(function(a) { a.style.lineHeight = '1.5'; a.style.margin = '0'; });
+}
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
 </body>
