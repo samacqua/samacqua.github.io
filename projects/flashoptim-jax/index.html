@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FlashOptim in JAX: A Journey to Speed</title>
+
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans">
+  <script src="https://cdn.plot.ly/plotly-2.35.0.min.js" charset="utf-8"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #fafaf8;
+      --bg-alt: #f0efec;
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --accent: #c44b25;
+      --accent-light: #e8d5ce;
+      --border: #ddd;
+      --code-bg: #f5f4f0;
+      --table-header: #2c2c2c;
+      --table-header-text: #fff;
+      --highlight-row: #fdf6e3;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Open Sans, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16.5px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    article {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 3rem 2rem 4rem;
+    }
+
+    h1 {
+      font-family: Open Sans, sans-serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      max-width: 720px;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin-bottom: 0.4rem;
+    }
+
+    .subtitle strong { color: var(--text); }
+
+    h2 {
+      font-family: Open Sans, sans-serif;
+      font-size: 1.7rem;
+      font-weight: 600;
+      margin: 3.5rem 0 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      max-width: 720px;
+    }
+
+    p, ul, ol { max-width: 720px; margin-bottom: 1rem; }
+    ul, ol { padding-left: 1.5rem; }
+    li { margin-bottom: 0.3rem; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    strong { font-weight: 600; }
+    code {
+      font-family: monospace;
+      font-size: 0.88em;
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+
+    pre {
+      max-width: 720px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      line-height: 1.55;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.84rem;
+    }
+
+    .top-nav {
+      max-width: 60em;
+      margin: 0 auto 1.5em;
+      padding-right: 1.5em;
+      text-align: right;
+      font-family: Open Sans, sans-serif;
+    }
+
+    .top-nav-title {
+      float: left;
+      margin: 0.7em;
+      color: #f66;
+      font-size: 1.5em;
+      font-weight: bold;
+      line-height: 2em;
+      text-decoration: none;
+    }
+
+    .top-nav-links {
+      display: inline-block;
+    }
+
+    .top-nav-links a {
+      display: inline-block;
+      margin: 0.7em;
+      color: #999;
+      font-size: 1.5em;
+      line-height: 2em;
+      text-decoration: none;
+      transition: color .15s ease-in-out;
+    }
+
+    .top-nav-links a:hover,
+    .top-nav-title:hover {
+      color: rgb(92, 92, 92);
+    }
+
+    details {
+      max-width: 720px;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-alt);
+    }
+
+    details[open] { background: var(--bg); }
+
+    summary {
+      padding: 0.7rem 1rem;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.95rem;
+      user-select: none;
+    }
+
+    summary:hover { color: var(--accent); }
+
+    details > :not(summary) {
+      padding: 0 1rem;
+    }
+
+    details pre {
+      margin: 0.5rem 0 1rem;
+      border: none;
+      background: var(--code-bg);
+    }
+
+    details p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin: 0.5rem 0;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 1.5rem;
+      align-items: start;
+      margin: 2rem 0 2.5rem;
+    }
+
+    @media (max-width: 900px) {
+      .results-grid { grid-template-columns: 1fr; }
+    }
+
+    .table-wrap { overflow-x: auto; }
+
+    .table-controls {
+      display: flex;
+      justify-content: flex-start;
+      margin: 0 0 0.55rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    thead th {
+      background: var(--table-header);
+      color: var(--table-header-text);
+      padding: 0.55rem 0.7rem;
+      text-align: left;
+      font-weight: 500;
+      font-size: 0.8rem;
+      white-space: normal;
+      line-height: 1.3;
+    }
+
+    thead th:first-child { border-radius: 6px 0 0 0; }
+    thead th:last-child { border-radius: 0 6px 0 0; }
+
+    tbody td {
+      padding: 0.5rem 0.7rem;
+      border-bottom: 1px solid var(--border);
+      font-variant-numeric: tabular-nums;
+    }
+
+    tbody tr:hover { background: #f5f4f0; }
+    tbody tr.row-bold td { font-weight: 600; }
+    tbody tr.row-highlight td { background: var(--highlight-row); font-weight: 600; }
+    tbody td:first-child { font-weight: 500; font-size: 0.83rem; }
+
+    .table-toggle {
+      display: inline-flex;
+      gap: 1.2rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      user-select: none;
+    }
+    .table-toggle span {
+      color: #999;
+      cursor: pointer;
+      padding-bottom: 0.2rem;
+      border-bottom: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .table-toggle span:hover {
+      color: #444;
+    }
+    .table-toggle span.active {
+      color: var(--text);
+      border-bottom-color: var(--text);
+    }
+
+    .plot-wrap {
+      min-height: 360px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fafafa;
+    }
+
+    .hero-plot {
+      max-width: 720px;
+      margin: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fafafa;
+    }
+
+    .bibtex {
+      max-width: 720px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      font-family: monospace;
+      font-size: 0.82rem;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.6;
+    }
+
+    .goal-callout {
+      max-width: 720px;
+      margin: 1.4rem 0 1.5rem;
+      padding: 0.15rem 0 0.15rem 1.1rem;
+      background: transparent;
+      border: none;
+      border-left: 4px solid #9a9a92;
+      border-radius: 0;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      article { padding: 2rem 1rem; }
+      table { font-size: 0.78rem; }
+    }
+
+    .token.comment { color: #6a737d; }
+    .token.keyword { color: #d73a49; }
+    .token.string { color: #032f62; }
+    .token.function { color: #6f42c1; }
+    .token.number { color: #005cc5; }
+    .token.operator { color: #d73a49; }
+    .token.builtin { color: #005cc5; }
+    .token { background: transparent !important; }
+  </style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../../" class="top-nav-title">flashoptim-jax</a>
+  <div class="top-nav-links">
+    <a href="../../">home</a>
+    <a href="../">projects</a>
+    <a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+    <a href="../../bio/">bio</a>
+  </div>
+</nav>
+<article>
+
+  <!-- ─── Header ─── -->
+  <h1>FlashOptim in JAX: a small journey</h1>
+  <p class="subtitle"><strong>tldr:</strong> presenting <a href="https://github.com/samacqua/flashoptim-jax">flashoptim-jax</a> -- a JAX-native version of <a href="https://arxiv.org/abs/2602.23349">FlashOptim</a>
+
+  <figure style="max-width:720px; margin:1.5rem 0;">
+    <div class="hero-plot" id="hero-plot" style="min-height:380px"></div>
+    <figcaption style="font-size:0.9em; color:var(--text-muted); line-height:1.5; margin-top:0.3em;">Speed vs. memory compression across implementations. Higher is better on both axes; the top-right corner is the Pareto frontier. Note that <code>jax-flashoptim</code> is ~10% faster than the PyTorch implementation for this update, and takes 50% less memory than the JAX baseline.</figcaption>
+  </figure>
+
+  <p>In mixed-precision training, you run your forward and backward passes in bf16 for speed and memory savings, but keep fp32 master weights and optimizer state for numerical stability. For Adam, that means storing — per parameter — a bf16 working copy (2 bytes), an fp32 master copy (4 bytes), and two fp32 momentum buffers (4 bytes each): 14 bytes per parameter total. On a 7B-parameter model, the optimizer state alone eats 56 GB while the bf16 working weights take just 14 GB.</p>
+
+  <p><a href="https://arxiv.org/abs/2602.23349">FlashOptim</a> showed that you can compress this state dramatically through a few quantization tricks (see paper). Their implementation is in PyTorch with Triton kernels, and I want to use it in JAX.</p>
+
+  <p class="goal-callout"><strong>The goal:</strong> Implement FlashOptim in JAX with the same memory and speed as PyTorch.</p>
+
+  <p> This post walks through four implementations (least to most involved) until the baseline is matched.</p>
+  <ul>
+    <li><strong>Triton via DLPack:</strong> Just call the implemented PyTorch kernels using <a href="https://dmlc.github.io/dlpack/latest/">DLPack</a>.</li>
+    <li><strong>JAX unfused:</strong> Reimplement FlashOptim in plain good ol' JAX ops, leaving fusion to XLA compiler.</li>
+    <li><strong>JAX fused:</strong> Fuse dequantize, Adam, and requantize into a single Pallas kernel calculating update.</li>
+    <li><strong>JAX FlashOptim:</strong> Fuse everything (including applying updates) into a single in-place kernel.</li>
+  </ul>
+
+  <h2>Baselines</h2>
+
+  <p>We measure speed, steady-state memory, and peak memory use of each optimizer for single-step updates on an A100 on the largest parameter groups of <a href="https://huggingface.co/Qwen/Qwen3-8B">Qwen3-8B</a> (<code>hidden_size=4096</code>, <code>intermediate_size=12288</code>, GQA with 32 Q-heads / 8 KV-heads). Peak memory is measured <em>after</em> compilation/warmup for both frameworks. Note that JAX's XLA compilation itself can transiently allocate significantly more memory than the steady-state footprint.</p>
+
+  <p>Our target to beat, with a full-precision baseline for JAX and PyTorch:</p>
+
+  <div class="results-grid">
+    <div class="table-wrap" id="table-target"></div>
+    <div class="plot-wrap" id="plot-0"></div>
+  </div>
+
+  <p>We plot relative memory efficiency (1/memory) and relative speed (1/step time) so we can construct a pareto frontier where good=up-and-to-the-right. Note that FlashOptim uses significantly less memory with comparable speed.</p>
+
+  <details>
+    <summary><strong>Implementation code: PyTorch baseline</strong></summary>
+    <p>The standard PyTorch mixed-precision setup: fp32 parameters, fp32 optimizer state, with <code>autocast</code> handling bf16 externally during the forward/backward pass. <code>fused=True</code> runs the entire Adam update in a single CUDA kernel.</p>
+    <pre><code class="language-python"># init
+w = torch.nn.Parameter(torch.randn(shape, dtype=torch.float32, device="cuda"))
+opt = torch.optim.AdamW([w], lr=1e-3, weight_decay=1e-2, fused=True)
+
+# step (autocast handles bf16 for forward/backward)
+w.grad = grad_w
+opt.step()
+opt.zero_grad(set_to_none=True)</code></pre>
+  </details>
+
+  <details>
+    <summary><strong>Implementation code: JAX baseline</strong></summary>
+    <p><code>optax.adamw</code> on fp32 params with <code>donate_argnums</code> for buffer reuse (lower memory, comparable speed).</p>
+    <pre><code class="language-python"># init
+tx = optax.adamw(learning_rate=1e-3, weight_decay=1e-2)
+opt_state = tx.init(params)  # params are fp32
+
+# step
+@jax.jit(donate_argnums=(0, 1))
+def step(params, opt_state, grads):
+    updates, new_state = tx.update(grads, opt_state, params)
+    return optax.apply_updates(params, updates), new_state
+
+params, opt_state = step(params, opt_state, grads)</code></pre>
+  </details>
+
+  <details>
+    <summary><strong>Implementation code: PyTorch FlashOptim</strong></summary>
+    <p>The original FlashOptim implementation: bf16 parameters, quantized int8/uint8 optimizer state (~5 bytes/param). Uses fused Triton kernels that dequantize, update, and requantize in a single pass.</p>
+    <pre><code class="language-python"># init
+from flashoptim import FlashAdamW
+w = torch.nn.Parameter(torch.randn(shape, dtype=torch.bfloat16, device="cuda"))
+opt = FlashAdamW([w], lr=1e-3)
+
+# step
+w.grad = grad_w
+opt.step()</code></pre>
+  </details>
+
+  <details>
+    <summary><strong>Benchmarking methodology</strong></summary>
+    <p>Each data point is the <strong>median of 200 timing samples</strong>, where each sample times a batch of 20 consecutive optimizer steps (4,000 total steps per measurement). A separate warmup phase runs first. Each configuration runs in its own subprocess to avoid cross-contamination of GPU state. Memory is measured after warmup/compilation: <strong>steady-state</strong> = bytes currently allocated; <strong>peak</strong> = max allocated after compilation (JAX via <code>device.memory_stats()</code>, PyTorch via <code>torch.cuda.max_memory_allocated()</code> after <code>reset_peak_memory_stats()</code>).</p>
+    <pre><code class="language-python"># PyTorch timing
+for _ in range(warmup):
+    for _ in range(steps_per_sync):          # steps_per_sync = 20
+        w.grad = grad_w; opt.step(); opt.zero_grad(set_to_none=True)
+    torch.cuda.synchronize()
+
+samples = []
+for _ in range(steps):                       # steps = 200
+    torch.cuda.synchronize()
+    t0 = time.perf_counter()
+    for _ in range(steps_per_sync):
+        w.grad = grad_w; opt.step(); opt.zero_grad(set_to_none=True)
+    torch.cuda.synchronize()
+    samples.append((time.perf_counter() - t0) * 1e6 / steps_per_sync)  # µs
+
+median_us = statistics.median(samples)</code></pre>
+    <pre><code class="language-python"># JAX timing (identical structure, different sync)
+for _ in range(warmup):
+    for _ in range(steps_per_sync):
+        params, opt_state = step(params, opt_state, grads)
+    jax.block_until_ready((params, opt_state))
+
+samples = []
+for _ in range(steps):
+    t0 = time.perf_counter()
+    for _ in range(steps_per_sync):
+        params, opt_state = step(params, opt_state, grads)
+    jax.block_until_ready((params, opt_state))
+    samples.append((time.perf_counter() - t0) * 1e6 / steps_per_sync)
+
+median_us = statistics.median(samples)</code></pre>
+  </details>
+
+  <!-- ─── Implementation 1: DLPack ─── -->
+  <h2>Implementation 1: Triton via DLPack</h2>
+
+  <p>The simplest thing to try is: don't reimplement anything yet. Just call the existing PyTorch FlashOptim Triton kernels from JAX using <a href="https://dmlc.github.io/dlpack/latest/">DLPack</a>, which lets the two frameworks exchange GPU tensors without copying the underlying storage.</p>
+
+  <p>Speed is slower than native PyTorch FlashOptim because each leaf tensor crosses the JAX→PyTorch boundary individually via <code>jax.pure_callback</code>, paying Python dispatch and DLPack conversion overhead per parameter. Memory is higher because <code>pure_callback</code> is opaque to XLA — it can't use <code>donate_argnums</code> (explained later) to recycle input buffers, so both old and new copies of params/state coexist during the step.</p>
+
+  <details>
+    <summary><strong>Implementation code: Triton via DLPack</strong></summary>
+    <pre><code class="language-python"># init
+state = init_torch_flashoptim_state(params)
+
+# step
+def dlpack_step(params, state, grads):
+    return jax.pure_callback(
+        torch_flashoptim_step,
+        result_shape_dtypes=(params, state),
+        params, state, grads,
+    )
+
+step = jax.jit(dlpack_step)
+params, state = step(params, state, grads)</code></pre>
+    <p>The actual update runs in PyTorch. JAX just hands tensors across the framework boundary, waits for the callback to finish, then resumes execution.</p>
+  </details>
+
+  <div class="results-grid">
+    <div class="table-wrap" id="table-1"></div>
+    <div class="plot-wrap" id="plot-1"></div>
+  </div>
+
+  <!-- ─── Implementation 2: Unfused ─── -->
+  <h2>Implementation 2: A drop-in optax-shaped optimizer</h2>
+
+  <p>The next thing to try is to implement the FlashOptim algorithm in plain JAX ops. Dequantize the stored int8/uint8 state, run the standard Adam math in fp32, requantize and store. No custom kernels; leave fusion to XLA compilation.</p>
+
+  <p>Here's the core of the unfused path (still in the codebase as <code>_flash_adamw_leaf_unfused</code>, kept for readability and testing):</p>
+
+  <pre><code class="language-python"># Reconstruct fp32 parameter from bf16 + error correction code
+if use_ecc:
+    param_f32 = reconstruct_leaf(param, ecc)
+else:
+    param_f32 = jnp.asarray(param, dtype=jnp.float32)
+
+# Dequantize optimizer state from int8/uint8 back to fp32
+mu_f32 = dequantize_momentum(mu, group_size)   # int8 + fp16 scales → fp32
+nu_f32 = dequantize_variance(nu, group_size)    # uint8 + fp16 scales → fp32
+
+# Standard AdamW update
+mu_f32 = b1 * mu_f32 + (1 - b1) * grad_f32
+nu_f32 = b2 * nu_f32 + (1 - b2) * grad_f32 ** 2
+param_f32 = param_f32 * (1 - lr * weight_decay)
+param_f32 = param_f32 - (lr / bc1) * mu_f32 / (sqrt(nu_f32 / bc2) + eps)
+
+# Requantize and store
+update = new_param.astype(param.dtype) - param  # compute delta
+new_mu = quantize_momentum(mu_f32, group_size)  # fp32 → int8 + fp16 scales
+new_nu = quantize_variance(nu_f32, group_size)   # fp32 → uint8 + fp16 scales</code></pre>
+
+  <p>This works correctly and can be easily wrapped as a drop-in-replacement for <code>optax</code> optimizers, but there is lots of unnecessary data movement: each step materializes several full-size fp32 intermediate arrays, and the caller has to apply the delta afterward (<code>new_params = params + result.update</code>). XLA does not fuse these ops well.</p>
+
+  <p>Speed aside, the memory situation is also bad: naively, XLA keeps old and new copies of params and state alive simultaneously, roughly doubling memory. We can fix this with <a href="https://docs.jax.dev/en/latest/buffer_donation.html"><code>donate_argnums</code></a> — JAX's mechanism for telling XLA that the caller won't use the input buffers after the call returns so they can be overwritten:</p>
+
+  <pre><code class="language-python">@jax.jit(donate_argnums=(0, 1))
+def train_step(params, opt_state, grads):
+    updates, new_state = tx.update(grads, opt_state, params)
+    new_params = optax.apply_updates(params, updates)
+    return new_params, new_state</code></pre>
+
+  <details>
+    <summary><strong>Implementation code: unfused (with and without donation)</strong></summary>
+    <pre><code class="language-python"># init
+tx = flash_adamw(learning_rate=1e-3, fused=False)
+state = tx.init(params)
+
+# step
+def train_step(params, state, grads):
+    updates, new_state = tx.update(grads, state, params)
+    new_params = optax.apply_updates(params, updates)
+    return new_params, new_state
+
+# without donation:
+step = jax.jit(train_step)
+# with donation:
+step = jax.jit(train_step, donate_argnums=(0, 1))</code></pre>
+    <p>The only difference is <code>donate_argnums=(0, 1)</code>. Inside the compiled function, XLA runs identical code — separate kernels for dequantize, Adam math, requantize. Donation just controls whether old buffers are reused afterward.</p>
+  </details>
+
+  <div class="results-grid">
+    <div class="table-wrap" id="table-2"></div>
+    <div class="plot-wrap" id="plot-2"></div>
+  </div>
+
+  <p>The unfused JAX path is <strong>3× slower</strong> than PyTorch at the MLP shape that dominates real models. Donation closes the memory gap but does nothing for speed — it reclaims buffers at the <code>jit</code> boundary, but inside the step, XLA still materializes all the same fp32 intermediates through separate ops. Each quantize/dequantize is its own kernel launch with its own memory traffic, and XLA can't fuse them.</p>
+
+  <!-- ─── Implementation 3: Fused ─── -->
+  <h2>Implementation 3: Fusing into a single Pallas kernel</h2>
+
+  <p>The key insight from the fused FlashOptim implementation is that the dequantize → update → requantize pipeline has no cross-parameter dependencies — each block of elements can be processed independently. So, we can fuse the entire thing into one GPU kernel: load the quantized state, do all the math in registers, and write back the requantized result. No intermediate fp32 arrays ever touch global memory.</p>
+
+  <p>In JAX, <a href="https://docs.jax.dev/en/latest/pallas/index.html">Pallas</a> lets you write GPU kernels in a NumPy-like syntax that compiles to Triton and plays nicely with the XLA compiler. Here's the structure of the fused quantized kernel, mirroring the Triton implementation closely:</p>
+
+  <pre><code class="language-python">import jax.experimental.pallas as pl
+import jax.experimental.pallas.gpu as plgpu
+
+def _flash_adamw_leaf_quantized_kernel(
+    grad_ref, param_ref, ecc_ref,
+    mu_values_ref, nu_values_ref, mu_scales_ref, nu_scales_ref,
+    lr_ref, b1_ref, b2_ref, eps_ref, weight_decay_ref,
+    bias_correction1_ref, bias_correction2_ref,
+    update_ref, ecc_out_ref,
+    mu_values_out_ref, mu_scales_out_ref,
+    nu_values_out_ref, nu_scales_out_ref,
+    block_size: int, group_size: int, ...
+):
+    pid = pl.program_id(0)
+    offsets = pid * block_size + jnp.arange(block_size)
+
+    # Load quantized state from global memory
+    mu_vals = plgpu.load(mu_values_ref.at[offsets], ...)  # int8
+    mu_sc = plgpu.load(mu_scales_ref.at[...], ...)        # fp16 per-group scales
+    # ... (load everything else)
+
+    # Dequantize in-register
+    mu = inverse_softsign(mu_vals / 127.0) * mu_sc        # int8 → fp32
+    nu = (nu_vals / 255.0 * nu_sc) ** 2                   # uint8 → fp32
+
+    # Adam math in-register (weight decay + bias correction omitted for clarity)
+    mu = b1 * mu + (1 - b1) * grad
+    nu = b2 * nu + (1 - b2) * grad ** 2
+    param_f32 = param_f32 - lr * mu / (sqrt(nu) + eps)
+
+    # Requantize in-register and write back
+    mu_out = softsign(mu / absmax(mu)) * 127   # → int8
+    nu_out = sqrt(nu) / absmax(sqrt(nu)) * 255 # → uint8
+
+    plgpu.store(update_ref.at[offsets], new_param_lp - param_lp)  # delta
+    plgpu.store(mu_values_out_ref.at[offsets], mu_out)
+    # ... (store everything else)</code></pre>
+
+  <p>This fused kernel follows the standard optax pattern: it returns a <em>delta</em> (<code>new_param - old_param</code>), and the caller applies it with <code>new_params = params + result.update</code>. Since it's a normal optax-shaped optimizer, <code>donate_argnums</code> works the same way as for the unfused path — XLA reclaims the old param/state buffers at the <code>jit</code> boundary:</p>
+
+  <details>
+    <summary><strong>Implementation code: fused delta (with and without donation)</strong></summary>
+    <p><code>inplace=False</code> tells the Pallas kernel to write <code>new_param - old_param</code> (a delta). The state outputs (mu, nu, ecc, scales) use <code>input_output_aliases</code> so donation can reuse those buffers in-place. But the param buffer can't be aliased (the kernel still needs to read old params), so the caller adds the delta back in a separate pass.</p>
+    <pre><code class="language-python"># init
+tx = flash_adamw(learning_rate=1e-3, fused=True, inplace=False)
+state = tx.init(params)
+
+# step — kernel outputs a delta, then we add it back
+def train_step(params, state, grads):
+    updates, new_state = tx.update(grads, state, params)
+    new_params = optax.apply_updates(params, updates)
+    return new_params, new_state
+
+# without donation:
+step = jax.jit(train_step)
+# with donation:
+step = jax.jit(train_step, donate_argnums=(0, 1))</code></pre>
+  </details>
+
+  <div class="results-grid">
+    <div class="table-wrap" id="table-3"></div>
+    <div class="plot-wrap" id="plot-3"></div>
+  </div>
+
+  <p>Fusion takes JAX from 3× slower to ~75% of PyTorch's speed without donation, and 90% with donation. Donation helps both memory and speed: the kernel declares <code><a href="https://docs.jax.dev/en/latest/_autosummary/jax.experimental.pallas.pallas_call.html" target="_blank" rel="noopener noreferrer">input_output_aliases</a></code> for the state outputs (mu, nu, ecc, scales). This Pallas feature tells XLA that a kernel input and output share the same buffer — the kernel reads the old value and writes the new value to the same memory. So, paired with <code>donate_argnums</code>, no copies or extra allocations are needed. The one output that <em>can't</em> be aliased is the param buffer: the kernel writes a delta (<code>new_param - old_param</code>), not the new param value, so the output has a different meaning than the input. After the kernel returns, the caller computes <code>params + delta</code> via <code>optax.apply_updates</code> — an extra kernel launch and an extra round-trip through memory bandwidth — which limits how fast the delta path can get.</p>
+
+  <!-- ─── Implementation 4: Direct-write ─── -->
+  <h2>Implementation 4: Direct-write output</h2>
+
+  <p>There is one final optimization we will pursue: removing the round trip when computing and applying updates. As stated above, following the <code>optax</code> pattern of <code>updates, new_state = tx.update(grads, opt_state, params)</code> followed by <code>optax.apply_updates(params, updates)</code> adds an unnecessary kernel launch: we can instead just calculate the new parameter in a single pass.</p>
+
+  <p>The change is one line in the Pallas kernel and adding one more input-output alias:</p>
+
+  <pre><code class="language-python"># Before (delta):
+plgpu.store(update_ref.at[offsets], new_param_lp - param_lp)  # delta
+
+# After (direct-write):
+plgpu.store(update_ref.at[offsets], new_param_lp)  # full new value</code></pre>
+
+  <p>Now, the kernel's param output IS the new param value — so we can alias the param input buffer with the param output buffer too, not just the state buffers.</p>
+
+  <p>With all buffers aliased and donated, the kernel reads old params and writes new params <em>into the same buffer</em> — zero-copies, zero extra allocation, no second pass. The entire step is one kernel launch with one pass through memory.</p>
+
+  <details>
+    <summary><strong>Implementation code: direct-write (with and without donation)</strong></summary>
+    <p><code>inplace=True</code> tells the Pallas kernel to write the full new parameter value (not a delta). This enables <code>input_output_aliases</code> inside the kernel, so when combined with <code>donate_argnums</code>, the kernel reads old params and writes new params into the same buffer.</p>
+    <pre><code class="language-python"># init
+tx = flash_adamw(learning_rate=1e-3, fused=True, inplace=True)
+state = tx.init(params)
+
+# step — kernel writes final param values directly (no delta)
+def train_step(params, state, grads):
+    return tx.step(params, state, grads)
+
+# without donation (kernel writes to fresh buffer):
+step = jax.jit(train_step)
+# with donation (kernel aliases input/output buffers):
+step = jax.jit(train_step, donate_argnums=(0, 1))</code></pre>
+  </details>
+
+  <div class="results-grid">
+    <div class="table-wrap" id="table-4"></div>
+    <div class="plot-wrap" id="plot-4"></div>
+  </div>
+
+  <p>Direct-write alone doesn't help much — without donation, XLA can't alias the buffers, so the kernel writes to a fresh allocation anyway. The payoff only comes from the combination: direct-write gives the kernel the right output shape for <code>input_output_aliases</code>, and donation tells XLA those input buffers are available.</p>
+
+  <p>This final JAX version — which has now earned the title of <i>JAX FlashOptim</i> — is <strong>6% faster</strong> than PyTorch FlashOptim at the tested MLP shape and is <strong>within 1% of memory</strong>. Across all shapes, we went from 3× slower and 60% more memory (unfused) to 6–59% faster and memory-equivalent.</p>
+
+  <!-- ─── Final API ─── -->
+  <h2>The final API</h2>
+
+  <p>The end result is a small API surface that hides all this complexity:</p>
+  <pre><code class="language-python">from flashoptim_jax import flash_adamw
+
+tx = flash_adamw(learning_rate=1e-3, weight_decay=1e-2)
+opt_state = tx.init(params)
+
+@jax.jit(donate_argnums=(0, 1))
+def train_step(params, opt_state, batch):
+    grads = jax.grad(loss_fn)(params, batch)
+    return tx.step(params, opt_state, grads)</code></pre>
+  <p>Under the hood: quantized int8/uint8 optimizer state, fused Pallas kernels, in-place parameter updates, and buffer donation. On the surface: two lines to set up, one function call per step.</p>
+
+  <p>The code is at <a href="https://github.com/samacqua/flashoptim-jax">github.com/samacqua/flashoptim-jax</a> and installable via <code>uv pip install flashoptim-jax</code>.</p>
+
+  <!-- ─── Gradient release ─── -->
+  <h2>Notes</h2>
+
+  <h3>Other optimizers + param dtypes</h3>
+
+  <p>These have a very similar trajectory and are implemented in the package, I only used bf16 and AdamW in this blog for clarity.</p>
+
+  <h3>Correctness</h3>
+
+  <p>The repo has both tests and examples showing it matches performance on real datasets/models.</p>
+
+  <h3>Gradient Release</h3>
+
+  <p>The tables above show that buffer donation closes the memory gap between JAX and PyTorch for the optimizer step itself. But the PyTorch FlashOptim has one more trick that can't be (easily, afaik) ported to JAX: <strong>gradient release</strong>.</p>
+
+  <p>PyTorch's <code>enable_gradient_release()</code> uses <code>register_post_accumulate_grad_hook</code> to step each parameter <em>the moment its gradient is ready during the backward pass</em>, then immediately sets <code>p.grad = None</code> to free the gradient. At any point during backprop, only a few gradients are alive (one per in-flight autograd node), not the full gradient tree. For a 7B model with fp32 gradients, this saves ~28 GB of peak memory.</p>
+
+  <p>In JAX, <code>jax.grad</code> is a pure function that returns the complete gradient pytree — XLA compiles the entire backward pass into a single fused program, and there's no hook mechanism to intercept individual gradients as they're computed. You can't insert Python callbacks into XLA-compiled code.</p>
+
+  <h3>TPU Compatibility</h3>
+
+  <p>Part of the motivation of porting this to JAX is to use this with TPUs. This is not yet implemented.</p>
+
+  <!-- ─── Citation ─── -->
+  <h2>Citation</h2>
+  <p>This is an independent reimplementation weekend project. If you use it, please cite the original paper:</p>
+  <div class="bibtex">@article{gonzalezblalock2026flashoptim,
+  title={FlashOptim: Optimizers for Memory Efficient Training},
+  author={Gonzalez Ortiz, Jose Javier and Gupta, Abhay and Rinard, Christopher and Blalock, Davis},
+  journal={arXiv preprint arXiv:2602.23349},
+  year={2026}
+}</div>
+
+</article>
+
+<script>
+// ── Benchmark data: s=speed(ms), m=steady-state memory(MB), p=peak memory(MB) ──
+const DATA = {
+  "PyTorch FlashOptim":              { "4096x1024": {s:0.291,m:36.5,p:44.5},  "4096x4096": {s:0.308,m:146,p:178},     "4096x12288": {s:0.862,m:438,p:534}     },
+  "PyTorch AdamW fp32":              { "4096x1024": {s:0.121,m:64,p:64},      "4096x4096": {s:0.320,m:256,p:256},     "4096x12288": {s:0.927,m:768,p:768}     },
+  "JAX optax fp32 + donate":         { "4096x1024": {s:0.095,m:64,p:64},      "4096x4096": {s:0.300,m:256,p:256},     "4096x12288": {s:0.837,m:896,p:896}     },
+  "Triton via DLPack":               { "4096x1024": {s:0.476,m:44.5,p:44.5},  "4096x4096": {s:0.462,m:194,p:194},     "4096x12288": {s:0.957,m:598,p:598}     },
+  "JAX unfused":                     { "4096x1024": {s:0.276,m:61,p:61},      "4096x4096": {s:0.956,m:257,p:257},     "4096x12288": {s:2.770,m:701,p:701}     },
+  "JAX unfused + donate":            { "4096x1024": {s:0.279,m:36.5,p:36.5},  "4096x4096": {s:0.962,m:159,p:159},     "4096x12288": {s:2.780,m:443,p:443}     },
+  "JAX fused, delta":                { "4096x1024": {s:0.162,m:61,p:61},      "4096x4096": {s:0.415,m:257,p:257},     "4096x12288": {s:1.143,m:701,p:701}     },
+  "JAX fused, delta + donate":       { "4096x1024": {s:0.101,m:36.5,p:36.5},  "4096x4096": {s:0.332,m:159,p:159},     "4096x12288": {s:0.954,m:443,p:443}     },
+  "JAX fused, direct-write":         { "4096x1024": {s:0.159,m:61,p:61},      "4096x4096": {s:0.398,m:257,p:257},     "4096x12288": {s:1.100,m:701,p:701}     },
+  "JAX fused, direct-write + donate":{ "4096x1024": {s:0.118,m:36.5,p:36.5},  "4096x4096": {s:0.285,m:159,p:159},     "4096x12288": {s:0.807,m:443,p:443}     },
+};
+
+const SHAPES = ["4096x1024", "4096x4096", "4096x12288"];
+const SHAPE_LABELS = ["4096×1024<br><span style='font-weight:400;opacity:.7'>(K/V proj)</span>", "4096×4096<br><span style='font-weight:400;opacity:.7'>(Q/O proj)</span>", "4096×12288<br><span style='font-weight:400;opacity:.7'>(MLP)</span>"];
+const MLP = "4096x12288";
+const NORM_S = DATA["PyTorch FlashOptim"][MLP].s;
+const NORM_M = DATA["PyTorch FlashOptim"][MLP].m;
+const NORM_P = DATA["PyTorch FlashOptim"][MLP].p;
+
+// Per-section display mode: "speed", "steady", or "peak"
+const sectionModes = Array(5).fill("speed");
+
+// Colors: same optimizer ± donate shares a color. Baselines are gray.
+const COLORS = {
+  "PyTorch AdamW fp32":               "#9E9E9E",
+  "JAX optax fp32 + donate":          "#9E9E9E",
+  "PyTorch FlashOptim":               "#FF6F00",
+  "Triton via DLPack":                "#AB47BC",
+  "JAX unfused":                      "#42A5F5",
+  "JAX unfused + donate":             "#42A5F5",
+  "JAX fused, delta":                 "#26A69A",
+  "JAX fused, delta + donate":        "#26A69A",
+  "JAX fused, direct-write":          "#EF5350",
+  "JAX fused, direct-write + donate": "#EF5350",
+};
+
+// Markers: diamond = PyTorch, circle = JAX, triangle = DLPack bridge.
+// Open variants = no donate, filled = donate.
+const MARKERS = {
+  "PyTorch AdamW fp32":               "diamond",
+  "JAX optax fp32 + donate":          "circle",
+  "PyTorch FlashOptim":               "diamond",
+  "Triton via DLPack":                "triangle-up",
+  "JAX unfused":                      "circle-open",
+  "JAX unfused + donate":             "circle",
+  "JAX fused, delta":                 "circle-open",
+  "JAX fused, delta + donate":        "circle",
+  "JAX fused, direct-write":          "circle-open",
+  "JAX fused, direct-write + donate": "circle",
+};
+
+const SHORT = {
+  "PyTorch AdamW fp32":               "PyTorch AdamW",
+  "JAX optax fp32 + donate":          "JAX optax",
+  "PyTorch FlashOptim":               "PyTorch FlashOptim",
+  "Triton via DLPack":                "Triton via DLPack",
+  "JAX unfused":                      "JAX unfused",
+  "JAX unfused + donate":             "JAX unfused + donate",
+  "JAX fused, delta":                 "JAX fused",
+  "JAX fused, delta + donate":        "JAX fused + donate",
+  "JAX fused, direct-write":          "JAX FlashOptim",
+  "JAX fused, direct-write + donate": "JAX FlashOptim + donate",
+};
+
+const GREY = new Set(["PyTorch AdamW fp32", "JAX optax fp32 + donate"]);
+
+// ── Table rendering ──
+function fmtSpeed(d) { return d ? `${Math.round(d.s * 1000)}&nbsp;µs` : "—"; }
+function fmtMem(d, memMode) {
+  if (!d) return "—";
+  const v = memMode === "peak" ? d.p : d.m;
+  return v >= 1024 ? `${(v / 1024).toFixed(2)}&nbsp;GB` : `${v}&nbsp;MB`;
+}
+
+function renderTable(elId, rows, mode) {
+  const secIdx = SECTIONS.findIndex(s => s.tableId === elId);
+  if (!mode) mode = secIdx >= 0 ? sectionModes[secIdx] : "speed";
+  if (secIdx >= 0) sectionModes[secIdx] = mode;
+  const memMode = mode === "peak" ? "peak" : "steady";
+  const fmt = mode === "speed" ? fmtSpeed : (d) => fmtMem(d, memMode);
+
+  const el = document.getElementById(elId);
+  const sAct = mode === "speed" ? " active" : "";
+  const smAct = mode === "steady" ? " active" : "";
+  const pmAct = mode === "peak" ? " active" : "";
+  const toggle =
+    `<div class="table-toggle" data-table="${elId}">` +
+    `<span class="tog-speed${sAct}" data-mode="speed">Speed</span>` +
+    `<span class="tog-steady${smAct}" data-mode="steady">Memory (steady)</span>` +
+    `<span class="tog-peak${pmAct}" data-mode="peak">Memory (peak)</span>` +
+    `</div>`;
+
+  let h = `${toggle ? `<div class="table-controls">${toggle}</div>` : ""}<table><thead><tr><th></th>`;
+  SHAPE_LABELS.forEach(l => h += `<th>${l}</th>`);
+  h += '</tr></thead><tbody>';
+  rows.forEach(r => {
+    const d = DATA[r.key];
+    const cls = r.highlight ? ' class="row-highlight"' : (r.bold ? ' class="row-bold"' : '');
+    h += `<tr${cls}><td>${r.label}</td>`;
+    SHAPES.forEach(s => h += `<td>${fmt(d?.[s])}</td>`);
+    h += '</tr>';
+  });
+  h += '</tbody></table>';
+  el.innerHTML = h;
+
+  el.querySelectorAll('.table-toggle span').forEach(span => {
+    span.addEventListener('click', () => {
+      const tblId = span.parentElement.dataset.table;
+      const secIdx = SECTIONS.findIndex(s => s.tableId === tblId);
+      if (secIdx >= 0) {
+        sectionModes[secIdx] = span.dataset.mode;
+        renderSection(secIdx);
+      }
+    });
+  });
+}
+
+// ── Pareto frontier ──
+function paretoFront(pts) {
+  const n = pts.length;
+  const front = [];
+  for (let i = 0; i < n; i++) {
+    let dominated = false;
+    for (let j = 0; j < n; j++) {
+      if (i === j) continue;
+      if (pts[j][0] >= pts[i][0] && pts[j][1] >= pts[i][1] &&
+          (pts[j][0] > pts[i][0] || pts[j][1] > pts[i][1])) {
+        dominated = true; break;
+      }
+    }
+    if (!dominated) front.push(i);
+  }
+  return front;
+}
+
+// ── Plot rendering ──
+function renderPlot(elId, labels, highlightSet, memMode) {
+  const mm = memMode || "steady";
+  const normM = mm === "peak" ? NORM_P : NORM_M;
+  const memKey = mm === "peak" ? "p" : "m";
+  const memLabel = mm === "peak" ? "Peak memory" : "Memory";
+  const traces = [];
+  const allX = [], allY = [];
+
+  labels.forEach(label => {
+    const d = DATA[label][MLP];
+    const x = NORM_S / d.s;
+    const mv = d[memKey];
+    const y = normM / mv;
+    allX.push(x); allY.push(y);
+    const isHi = highlightSet.has(label);
+    const isGrey = GREY.has(label);
+    const isPrev = !isHi && !isGrey;
+    const memStr = mv >= 1024 ? `${(mv / 1024).toFixed(2)} GB` : `${mv} MB`;
+
+    const mk = MARKERS[label] || 'circle';
+    const isOpen = mk.includes('open');
+    const baseSym = mk.replace('-open', '');
+    const fw = baseSym === 'diamond' ? 'PyTorch' : baseSym === 'triangle-up' ? 'DLPack' : 'JAX';
+    const lg = fw === 'JAX' ? (isOpen ? 'JAX' : 'JAX + donate') : fw;
+    traces.push({
+      x: [x], y: [y],
+      mode: 'markers',
+      type: 'scatter',
+      name: SHORT[label] || label,
+      legendgroup: lg,
+      marker: {
+        color: COLORS[label],
+        size: isHi ? 16 : (isGrey ? 10 : (isOpen ? 13 : 12)),
+        symbol: mk,
+        opacity: isGrey ? 0.42 : (isHi ? 1.0 : (isOpen ? 0.34 : 0.46)),
+        line: isOpen
+          ? { color: COLORS[label], width: 2.5 }
+          : (isHi ? { color: '#fff', width: 2.5 } : { color: COLORS[label], width: isPrev ? 0.35 : 0.5 }),
+      },
+      hovertemplate:
+        `<b>${SHORT[label] || label}</b><br>` +
+        `Speed: ${Math.round(d.s * 1000)} µs (${x.toFixed(2)}×)<br>` +
+        `${memLabel}: ${memStr} (${y.toFixed(2)}×)` +
+        `<extra></extra>`,
+      showlegend: false,
+    });
+  });
+
+  // Pareto frontier step line
+  const pts = labels.map(l => {
+    const d = DATA[l][MLP];
+    return [NORM_S / d.s, normM / d[memKey]];
+  });
+  const fi = paretoFront(pts);
+  if (fi.length > 1) {
+    const fp = fi.map(i => pts[i]).sort((a, b) => b[0] - a[0]);
+    const fx = [], fy = [];
+    fp.forEach(p => { fx.push(p[0]); fy.push(p[1]); });
+    fx.push(fp[fp.length - 1][0]);
+    fy.push(Math.min(...allY) * 0.85);
+    traces.unshift({
+      x: fx, y: fy,
+      mode: 'lines', type: 'scatter',
+      line: { color: '#ccc', width: 1.5, shape: 'hv' },
+      hoverinfo: 'skip', showlegend: false,
+    });
+  }
+
+  const xMax = Math.max(...allX) * 1.15;
+  const yMin = Math.min(...allY) * 0.85;
+  const yMax = Math.max(...allY) * 1.12;
+
+  // ── De-overlap annotations ──
+  const PW = 480, PH = 320, LH = 14;
+  const annData = labels.map(label => {
+    const d = DATA[label][MLP];
+    const x = NORM_S / d.s, y = normM / d[memKey];
+    const text = SHORT[label] || label;
+    return {
+      label, x, y, text,
+      isHi: highlightSet.has(label),
+      isGrey: GREY.has(label),
+      w: text.length * 6.2,
+      px: (x / xMax) * PW,
+      py: (1 - (y - yMin) / (yMax - yMin)) * PH,
+    };
+  });
+  annData.sort((a, b) => a.px - b.px);
+  const _placed = [];
+  annData.forEach(a => {
+    const hw = a.w / 2;
+    const tryPos = [[0,-20],[0,26],[hw+14,-14],[-(hw+14),-14],[hw+14,14],[-(hw+14),14],[0,-38],[0,42]];
+    let best = tryPos[0], bestScore = Infinity;
+    for (const [ox, oy] of tryPos) {
+      const lx = a.px + ox, ly = a.py + oy;
+      let score = 0;
+      for (const p of _placed) {
+        score += Math.max(0, (hw + p.hw + 4) - Math.abs(lx - p.lx))
+               * Math.max(0, LH - Math.abs(ly - p.ly));
+      }
+      if (lx + hw > PW) score += (lx + hw - PW) * 8;
+      if (lx - hw < 0) score += (hw - lx) * 8;
+      if (ly < 0) score += (-ly) * 8;
+      if (ly > PH) score += (ly - PH) * 8;
+      if (score < bestScore) { bestScore = score; best = [ox, oy]; }
+      if (!score) break;
+    }
+    a.ax = best[0]; a.ay = best[1];
+    _placed.push({ lx: a.px + a.ax, ly: a.py + a.ay, hw });
+  });
+  const annotations = annData.map(a => ({
+    x: a.x, y: a.y, text: a.text,
+    xref: 'x', yref: 'y',
+    showarrow: true,
+    arrowhead: 0, arrowwidth: 0.6, arrowcolor: '#ddd', standoff: 6,
+    ax: a.ax, ay: a.ay,
+    font: {
+      size: a.isHi ? 11.5 : (a.isGrey ? 9 : 10),
+      color: a.isGrey ? '#999' : COLORS[a.label],
+      family: 'Open Sans',
+    },
+    opacity: a.isGrey ? 0.5 : (a.isHi ? 1 : 0.58),
+  }));
+
+  // ── Legend entries ──
+  const usedGroups = new Set(traces.filter(t => t.legendgroup).map(t => t.legendgroup));
+  [
+    {name:'PyTorch', sym:'diamond', color:'#888'},
+    {name:'DLPack', sym:'triangle-up', color:'#888'},
+    {name:'JAX', sym:'circle-open', color:'#888'},
+    {name:'JAX + donate', sym:'circle', color:'#888'},
+  ].filter(l => usedGroups.has(l.name)).forEach(l => {
+    traces.push({
+      x:[null], y:[null], mode:'markers', type:'scatter', name:l.name,
+      legendgroup: l.name,
+      marker:{symbol:l.sym, color:l.color, size:9, line:{color:l.color, width:l.sym.includes('open') ? 2.5 : 1.5}},
+      showlegend:true,
+    });
+  });
+
+  const layout = {
+    margin: { l: 56, r: 60, t: 44, b: 118 },
+    paper_bgcolor: 'transparent',
+    plot_bgcolor: '#fafafa',
+    xaxis: {
+      title: { text: 'Relative speed  (→ faster)', font: { size: 12 } },
+      range: [0, xMax],
+      gridcolor: '#e8e8e8', gridwidth: 1,
+      zeroline: false,
+      tickformat: '.1f', ticksuffix: '×',
+    },
+    yaxis: {
+      title: { text: `Relative ${mm === "peak" ? "peak " : ""}memory efficiency  (↑ less memory)`, font: { size: 12 } },
+      range: [yMin, yMax],
+      gridcolor: '#e8e8e8', gridwidth: 1,
+      zeroline: false,
+      tickformat: '.1f', ticksuffix: '×',
+    },
+    shapes: [
+      { type:'line', x0:1, x1:1, y0:yMin, y1:yMax, line:{color:'#FF6F00',width:1,dash:'dash'}, opacity:0.25 },
+      { type:'line', x0:0, x1:xMax, y0:1, y1:1, line:{color:'#FF6F00',width:1,dash:'dash'}, opacity:0.25 },
+      { type:'rect', x0:1, x1:xMax, y0:1, y1:yMax, fillcolor:'#4CAF50', opacity:0.04, line:{width:0} },
+    ],
+    annotations,
+    font: { family: 'Open Sans' },
+    hoverlabel: { font: { family: 'Open Sans', size: 13 } },
+    title: { text:'MLP Optimizer Step', font:{size:16, color:'#333', family:'Open Sans, sans-serif'} },
+    showlegend: true,
+    legend: {
+      x:0.5, y:-0.24, xanchor:'center', yanchor:'top',
+      orientation:'h',
+      font:{size:10, family:'Open Sans'},
+    },
+  };
+
+  Plotly.newPlot(elId, traces, layout, { responsive: true, displayModeBar: false, scrollZoom: false });
+
+  // Sync annotation visibility with legend clicks
+  const plotEl = document.getElementById(elId);
+  const annLG = annData.map(a => {
+    const mk = (MARKERS[a.label] || 'circle');
+    const baseSym = mk.replace('-open', '');
+    const fw = baseSym === 'diamond' ? 'PyTorch' : baseSym === 'triangle-up' ? 'DLPack' : 'JAX';
+    return fw === 'JAX' ? (mk.includes('open') ? 'JAX' : 'JAX + donate') : fw;
+  });
+  plotEl.on('plotly_legendclick', function(ev) {
+    const clickedLG = ev.data[ev.curveNumber].legendgroup;
+    const willHide = ev.data[ev.curveNumber].visible !== 'legendonly';
+    const newAnns = plotEl.layout.annotations.map((ann, i) => {
+      if (i < annLG.length && annLG[i] === clickedLG) {
+        return Object.assign({}, ann, { visible: !willHide });
+      }
+      return ann;
+    });
+    Plotly.relayout(plotEl, { annotations: newAnns });
+  });
+}
+
+// ── Section configs ──
+const BASELINES = ["PyTorch FlashOptim", "PyTorch AdamW fp32", "JAX optax fp32 + donate"];
+const BASELINES_PLUS = [...BASELINES, "Triton via DLPack"];
+const BASE_ROWS = [
+  { label: "PyTorch FlashOptim",  key: "PyTorch FlashOptim",      bold: true },
+  { label: "PyTorch baseline",    key: "PyTorch AdamW fp32" },
+  { label: "JAX baseline",        key: "JAX optax fp32 + donate" },
+];
+const BASE_ROWS_PLUS = [
+  ...BASE_ROWS,
+  { label: "Triton via DLPack",   key: "Triton via DLPack" },
+];
+
+const SECTIONS = [
+  {
+    tableId: "table-target", plotId: "plot-0",
+    rows: BASE_ROWS,
+    plotLabels: BASELINES,
+    highlight: new Set(BASELINES),
+  },
+  {
+    tableId: "table-1", plotId: "plot-1",
+    rows: [
+      ...BASE_ROWS,
+      { label: "Triton via DLPack",   key: "Triton via DLPack", highlight: true },
+    ],
+    plotLabels: BASELINES_PLUS,
+    highlight: new Set(["Triton via DLPack"]),
+  },
+  {
+    tableId: "table-2", plotId: "plot-2",
+    rows: [
+      ...BASE_ROWS_PLUS,
+      { label: "JAX unfused",          key: "JAX unfused",          highlight: true },
+      { label: "JAX unfused + donate", key: "JAX unfused + donate", highlight: true },
+    ],
+    plotLabels: [...BASELINES_PLUS, "JAX unfused", "JAX unfused + donate"],
+    highlight: new Set(["JAX unfused", "JAX unfused + donate"]),
+  },
+  {
+    tableId: "table-3", plotId: "plot-3",
+    rows: [
+      ...BASE_ROWS_PLUS,
+      { label: "JAX unfused",          key: "JAX unfused" },
+      { label: "JAX unfused + donate", key: "JAX unfused + donate" },
+      { label: "JAX fused",            key: "JAX fused, delta",          highlight: true },
+      { label: "JAX fused + donate",   key: "JAX fused, delta + donate", highlight: true },
+    ],
+    plotLabels: [...BASELINES_PLUS, "JAX unfused", "JAX unfused + donate",
+                 "JAX fused, delta", "JAX fused, delta + donate"],
+    highlight: new Set(["JAX fused, delta", "JAX fused, delta + donate"]),
+  },
+  {
+    tableId: "table-4", plotId: "plot-4",
+    rows: [
+      ...BASE_ROWS_PLUS,
+      { label: "JAX unfused",                key: "JAX unfused" },
+      { label: "JAX unfused + donate",       key: "JAX unfused + donate" },
+      { label: "JAX fused",                  key: "JAX fused, delta" },
+      { label: "JAX fused + donate",         key: "JAX fused, delta + donate" },
+      { label: "JAX FlashOptim",             key: "JAX fused, direct-write",          highlight: true },
+      { label: "JAX FlashOptim + donate",    key: "JAX fused, direct-write + donate", highlight: true },
+    ],
+    plotLabels: [...BASELINES_PLUS, "JAX unfused", "JAX unfused + donate",
+                 "JAX fused, delta", "JAX fused, delta + donate",
+                 "JAX fused, direct-write", "JAX fused, direct-write + donate"],
+    highlight: new Set(["JAX fused, direct-write", "JAX fused, direct-write + donate"]),
+  },
+];
+
+// ── Re-render a section with current mem mode ──
+function renderSection(idx) {
+  const sec = SECTIONS[idx];
+  const mode = sectionModes[idx];
+  const memMode = mode === "peak" ? "peak" : "steady";
+  renderTable(sec.tableId, sec.rows, mode);
+  renderPlot(sec.plotId, sec.plotLabels, sec.highlight, memMode);
+  if (idx === FINAL) renderPlot("hero-plot", HERO_LABELS, SECTIONS[FINAL].highlight, memMode);
+}
+
+// ── Hero plot (same as final section) ──
+const FINAL = SECTIONS.length - 1;
+const HERO_LABELS = SECTIONS[FINAL].plotLabels.filter(label => {
+  const mk = MARKERS[label] || '';
+  if (mk.includes('open') && SECTIONS[FINAL].highlight.has(label)) return true;
+  return !mk.includes('open');
+});
+document.addEventListener("DOMContentLoaded", () => {
+  SECTIONS.forEach((sec, i) => renderSection(i));
+
+  Prism.highlightAll();
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+</body>
+</html>

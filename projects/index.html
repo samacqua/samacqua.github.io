@@ -34,13 +34,24 @@
         <div class="featured-grid">
           
 
-          <a href="https://github.com/KellerJordan/modded-nanogpt/pull/205" target="_blank" class="featured-card">
+          <a href="flashoptim-jax/" class="featured-card">
+            <div class="featured-img-wrapper">
+              <img src="assets/flashattn-jax.png" alt="FlashOptim in JAX pareto plot"/>
+            </div>
+            <div class="featured-content">
+              <h3>flashoptim in jax</h3>
+              <p>a jax-native implementation of flashoptim with fused pallas kernels and buffer donation, matching pytorch's memory and exceeding its speed.</p>
+              <span class="featured-tag">2026</span>
+            </div>
+          </a>
+
+          <a href="nanogpt/" class="featured-card">
             <div class="featured-img-wrapper">
               <img src="../assets/nanogpt_speedrun.png" alt="NanoGPT Speedrun"/>
             </div>
             <div class="featured-content">
-              <h3>nanogpt world record (in review)</h3>
-              <p>used test-time training to set record of 95.9s (3.4% improvement) training GPT-2 small to 3.28 cross entropy loss.</p>
+              <h3>nanogpt speedrunning</h3>
+              <p>two nanogpt leaderboard submissions: a test-time training "notable run" and a triton-kernel improvement.</p>
               <span class="featured-tag">2026</span>
             </div>
           </a>
@@ -91,11 +102,24 @@
 
             <div class="project-item">
               <div class="project-info">
-                <h4>nanogpt world record (in review)</h4>
-                <p>Achieved a new world record on the NanoGPT speedrun leaderboard using test-time training, reducing training time from 99.3s to 95.9s to 3.28 cross-entropy loss on the FineWeb validation set.</p>
+                <h4>flashoptim in jax</h4>
+                <p>A JAX-native reimplementation of FlashOptim, achieving the same memory compression and speed as the PyTorch original through fused Pallas kernels and buffer donation.</p>
               </div>
               <div class="project-actions">
-                <a href="https://github.com/KellerJordan/modded-nanogpt/pull/205" target="_blank">github</a>
+                <a href="flashoptim-jax/">blog post</a>
+                <a href="https://github.com/samacqua/flashoptim-jax" target="_blank">github</a>
+              </div>
+            </div>
+
+            <div class="project-item">
+              <div class="project-info">
+                <h4>nanogpt speedrunning</h4>
+                <p>I submitted two NanoGPT speedrun improvements: one 95.9s test-time-training run that was ultimately categorized as a notable run, and a later backward-transpose-kernel optimization that was accepted as an official record.</p>
+              </div>
+              <div class="project-actions">
+                <a href="nanogpt/">page</a>
+                <a href="https://github.com/KellerJordan/modded-nanogpt/pull/205" target="_blank">notable run</a>
+                <a href="https://github.com/KellerJordan/modded-nanogpt/pull/240" target="_blank">official record</a>
               </div>
             </div>
 

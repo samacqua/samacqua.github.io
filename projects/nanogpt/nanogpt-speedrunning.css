@@ -1,0 +1,269 @@
+* { box-sizing: border-box; border: 0; font-size: 100%; font: inherit; vertical-align: baseline; margin: 0; padding: 0; color: #202020; text-transform: lowercase; }
+
+body {
+  position: absolute;
+  width: 100%;
+  min-height: 100%;
+  background-color: #adf;
+  font-family: Open Sans;
+  font-weight: 100;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+p {
+  text-align: left;
+  text-transform: none;
+  line-height: 1.65;
+}
+
+code {
+  font-family: monospace;
+  text-transform: none;
+  background: rgba(0, 0, 0, 0.08);
+  padding: 0.08em 0.35em;
+  border-radius: 4px;
+}
+
+.lg-container {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  min-height: 100%;
+  text-align: center;
+  padding-bottom: 3em;
+}
+
+.container {
+  position: relative;
+  margin: 0 auto;
+  width: 56em;
+  max-width: 94%;
+}
+
+.post {
+  text-align: left;
+}
+
+.pages {
+  max-width: 60em;
+  margin: 0 auto 1.5em;
+  padding-right: 1.5em;
+  text-align: right;
+}
+
+.pages h1 {
+  font-size: 3em;
+  color: #f66;
+  font-weight: bold;
+  margin: 0.25em;
+  float: left;
+  text-align: left;
+}
+
+.pages a {
+  display: inline-block;
+  line-height: 2em;
+  margin: 0.7em;
+  color: #f0f0f0;
+  font-size: 1.5em;
+  transition: color .15s ease-in-out;
+}
+
+.pages a:hover {
+  color: rgb(92, 92, 92);
+}
+
+.links-wrapper {
+  display: inline-block;
+}
+
+.hero,
+.entry,
+.notes {
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  padding: 1.4em;
+  margin-bottom: 1.2em;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 1.2em;
+  align-items: stretch;
+}
+
+.hero-image img {
+  width: 100%;
+  height: 100%;
+  min-height: 260px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.hero-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1em;
+}
+
+.hero-copy p {
+  font-size: 1.02em;
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8em;
+  gap: 1em;
+}
+
+.entry-tag,
+.entry-year {
+  display: inline-block;
+  padding: 0.25em 0.65em;
+  border-radius: 999px;
+  font-size: 0.8em;
+  background: rgba(255, 102, 102, 0.18);
+  color: #f66;
+}
+
+.entry-tag.alt {
+  background: rgba(79, 137, 177, 0.18);
+  color: rgb(79, 137, 177);
+}
+
+.entry h2,
+.notes h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #f66;
+  text-align: left;
+  margin-bottom: 0.55em;
+}
+
+.entry p + p,
+.notes p + p,
+.hero-copy p + p {
+  margin-top: 0.8em;
+}
+
+.entry a,
+.notes a,
+.hero-copy a {
+  color: rgb(79, 137, 177);
+}
+
+.entry a:hover,
+.notes a:hover,
+.hero-copy a:hover {
+  color: #275efe;
+}
+
+.figure {
+  margin: 1.1em 0;
+}
+
+.figure img {
+  width: 100%;
+  border-radius: 10px;
+  display: block;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.figure figcaption {
+  margin-top: 0.45em;
+  font-size: 0.9em;
+  line-height: 1.5;
+  color: rgba(32, 32, 32, 0.75);
+  text-transform: none;
+}
+
+blockquote {
+  border-left: 4px solid #f66;
+  padding-left: 1em;
+  margin: 1em 0;
+  color: rgba(32, 32, 32, 0.9);
+  font-style: italic;
+  text-transform: none;
+  line-height: 1.7;
+}
+
+.stats {
+  margin-top: 1em;
+  padding: 1em 1.1em;
+  background: #1e1e1e;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.stats code {
+  background: transparent;
+  color: #d4d4d4;
+  padding: 0;
+  display: block;
+  line-height: 1.5;
+}
+
+.button-row {
+  display: flex;
+  gap: 0.7em;
+  margin-top: 1em;
+  justify-content: flex-start;
+}
+
+.button-row a {
+  padding: 0.55em 0.95em;
+  border-radius: 6px;
+  background: rgba(255, 102, 102, 0.12);
+  border: 1px solid rgba(255, 102, 102, 0.35);
+  color: #f66;
+  transition: all 0.2s ease;
+}
+
+.button-row a:hover {
+  background: rgba(255, 102, 102, 0.22);
+}
+
+@media (max-width: 700px) {
+  .pages {
+    padding-right: 0.6em;
+  }
+
+  .pages h1 {
+    float: none;
+    display: block;
+    font-size: 2.2em;
+    margin-bottom: 0.1em;
+  }
+
+  .links-wrapper {
+    margin-top: 0.6em;
+  }
+
+  .pages a {
+    margin: 0.15em 0 0 0.7em;
+    font-size: 1.2em;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-image img {
+    min-height: 180px;
+  }
+
+  .entry-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

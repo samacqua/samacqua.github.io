@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <link rel="stylesheet" type="text/css" href="nanogpt-speedrunning.css" />
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans" />
+
+  <title>NanoGPT Speedrunning</title>
+  <meta name="Description" content="NanoGPT speedrunning projects by Sam Acquaviva.">
+  <link rel="icon" type="image/x-icon" href="../favicon.ico?" />
+</head>
+
+<body>
+  <div class="lg-container">
+    <div class="pages">
+      <h1>nanogpt speedrunning</h1>
+      <div class="links-wrapper">
+        <a href="../">home</a>
+        <a href="./">projects</a>
+        <a href="../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+        <a href="../bio/">bio</a>
+      </div>
+    </div>
+
+    <div class="container">
+      <article class="post">
+        <section class="hero">
+          <div class="hero-image">
+            <img src="../assets/nanogpt_speedrun.png" alt="NanoGPT speedrun screenshot" />
+          </div>
+          <div class="hero-copy">
+            <p>
+              I like the NanoGPT speedrun because it is a weirdly clean optimization problem: the goal
+              is simple, the benchmark is public, and improvements can come from almost anywhere.
+            </p>
+            <p>
+              The two runs below capture the two ends of that space I find most fun. One was a more
+              researchy submission using test-time training and ended up in notable runs. The other was
+              a much more surgical Triton kernel change that got accepted as an official record.
+            </p>
+            <div class="button-row">
+              <a href="https://github.com/KellerJordan/modded-nanogpt/pull/205" target="_blank">pr #205</a>
+              <a href="https://github.com/KellerJordan/modded-nanogpt/pull/240" target="_blank">pr #240</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="entry">
+          <div class="entry-header">
+            <span class="entry-tag alt">notable run</span>
+            <span class="entry-year">jan 2026</span>
+          </div>
+          <h2>1. test-time training</h2>
+          <p>
+            <a href="https://github.com/KellerJordan/modded-nanogpt/pull/205" target="_blank">PR #205</a>
+            was my attempt to improve the leaderboard by changing validation rather than training. The
+            core idea was simple: before predicting <code>P(token | context)</code>, spend a tiny bit of
+            compute updating the model on the context itself. In the PR, I described it as the most
+            straightforward version of TTT: do not change training, and before predicting the next
+            chunk, train to improve the probability of the context.
+          </p>
+          <p>
+            The result was a 95.9s run by cutting the step count from 1600 to 1570 while still reaching
+            the target loss. The interesting part was not just that it worked, but why it worked:
+            validation sequences are often longer than the model's training window, so a little
+            per-sequence adaptation helps the model encode information that would otherwise fall outside
+            the context window.
+          </p>
+          <blockquote>
+            this does not change training, but increases the validation performance of a given
+            checkpoint, allowing us to train for less time to reach our target loss.
+          </blockquote>
+
+          <figure class="figure">
+            <img src="https://github.com/user-attachments/assets/5e0bf8f7-c4e7-4ecf-9123-634143be7984" alt="TTT over training plot from PR 205" loading="lazy" />
+            <figcaption>from the PR: TTT lowers loss across checkpoints loaded from the baseline run.</figcaption>
+          </figure>
+
+          <figure class="figure">
+            <img src="https://github.com/user-attachments/assets/f02e209d-26a9-40aa-8fe8-45ea42e243d1" alt="Validation sequence length plot from PR 205" loading="lazy" />
+            <figcaption>one motivation from the writeup: a lot of validation sequences are longer than the model's effective context during training.</figcaption>
+          </figure>
+
+          <pre class="stats"><code>losses = [3.2766, 3.2791, 3.2773, 3.2773, 3.2777]
+times  = [95.739, 95.693, 95.760, 95.583, 95.683]
+
+mean loss = 3.2776
+mean time = 95.6916s</code></pre>
+
+          <p>
+            This one did not become an official record. It was later put in notable runs instead. I get
+            why: even though I still think the probabilistic framing is clean, enabling backward passes
+            during validation changes the feel of the competition. The moderator response was basically
+            that it was informative and interesting, but not something they wanted to merge into the main
+            training path.
+          </p>
+
+          <figure class="figure">
+            <img src="https://github.com/user-attachments/assets/4a17872a-07af-4c89-a787-0626921ed669" alt="Relative TTT performance plot from PR 205 discussion" loading="lazy" />
+            <figcaption>my follow-up comment tried to show that the gains were not just "keep training on test".</figcaption>
+          </figure>
+        </section>
+
+        <section class="entry">
+          <div class="entry-header">
+            <span class="entry-tag">official record</span>
+            <span class="entry-year">mar 2026</span>
+          </div>
+          <h2>2. backward transpose kernel</h2>
+          <p>
+            <a href="https://github.com/KellerJordan/modded-nanogpt/pull/240" target="_blank">PR #240</a>
+            was much more direct. Instead of changing the evaluation procedure, I sped up a hot path in
+            <code>FusedSoftcappedCrossEntropy.backward</code>. The change replaced
+            <code>.T.contiguous()</code> with a custom Triton tiled transpose-copy kernel for the FP8
+            weight-gradient matmul so the run would avoid a generic elementwise copy kernel on large
+            tensors.
+          </p>
+          <p>
+            This one is the kind of systems optimization I really like: one targeted change, a clear
+            reason it should help, and then a measurable wall-clock win. The PR also included a couple
+            of practical follow-ons, like casting offsets to int64 for larger matrices and retuning the
+            tile size from 32x32 to 64x128 with 8 warps.
+          </p>
+
+          <figure class="figure">
+            <img src="https://github.com/user-attachments/assets/ae2db527-31d1-4da7-a285-1c44dcb7bd25" alt="Timing results image from PR 240" loading="lazy" />
+            <figcaption>the accepted record PR reported about a 0.4s end-to-end improvement.</figcaption>
+          </figure>
+
+          <pre class="stats"><code>Baseline  mean time = 88.3765s
+This PR   mean time = 87.9355s
+Delta                -0.4410s
+
+stage 1: 0.769 ms -> 0.588 ms   1.31x
+stage 2: 1.451 ms -> 1.179 ms   1.23x
+stage 3: 2.170 ms -> 1.768 ms   1.23x</code></pre>
+
+          <p>
+            Unlike the TTT run, this one was accepted and merged. That felt right to me: it improved
+            the benchmark inside the standard rules of the competition, and it did so by making the
+            existing training path faster rather than changing what the benchmark meant.
+          </p>
+        </section>
+
+        <section class="notes">
+          <h2>why i still like both</h2>
+          <p>
+            The TTT run was more conceptually surprising. The transpose-kernel run was cleaner and more
+            competition-aligned. Together they are a nice snapshot of what makes this benchmark fun:
+            sometimes you win by questioning the setup, and sometimes you win by removing one dumb copy.
+          </p>
+        </section>
+      </article>
+    </div>
+  </div>
+</body>
+
+</html>

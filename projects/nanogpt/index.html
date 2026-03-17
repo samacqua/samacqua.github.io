@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NanoGPT Speedrunning</title>
+  <meta name="Description" content="Two NanoGPT speedrun submissions: test-time training and a Triton transpose kernel.">
+
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #fafaf8;
+      --bg-alt: #f0efec;
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --accent: #c44b25;
+      --border: #ddd;
+      --code-bg: #f5f4f0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Open Sans, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16.5px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    article {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 3rem 2rem 4rem;
+    }
+
+    h1 {
+      font-family: Open Sans, sans-serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      max-width: 720px;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin-bottom: 0.4rem;
+    }
+
+    .subtitle strong { color: var(--text); }
+
+    h2 {
+      font-family: Open Sans, sans-serif;
+      font-size: 1.7rem;
+      font-weight: 600;
+      margin: 3.5rem 0 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      max-width: 720px;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 2rem 0 0.6rem;
+      max-width: 720px;
+    }
+
+    p, ul, ol { max-width: 720px; margin-bottom: 1rem; }
+    ul, ol { padding-left: 1.5rem; }
+    li { margin-bottom: 0.3rem; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    strong { font-weight: 600; }
+
+    code {
+      font-family: monospace;
+      font-size: 0.88em;
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+
+    pre {
+      max-width: 720px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      line-height: 1.55;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.84rem;
+    }
+
+    .top-nav {
+      max-width: 60em;
+      margin: 0 auto 1.5em;
+      padding-right: 1.5em;
+      text-align: right;
+      font-family: Open Sans, sans-serif;
+    }
+
+    .top-nav-title {
+      float: left;
+      margin: 0.7em;
+      color: #f66;
+      font-size: 1.5em;
+      font-weight: bold;
+      line-height: 2em;
+      text-decoration: none;
+    }
+
+    .top-nav-links {
+      display: inline-block;
+    }
+
+    .top-nav-links a {
+      display: inline-block;
+      margin: 0.7em;
+      color: #999;
+      font-size: 1.5em;
+      line-height: 2em;
+      text-decoration: none;
+      transition: color .15s ease-in-out;
+    }
+
+    .top-nav-links a:hover,
+    .top-nav-title:hover {
+      color: rgb(92, 92, 92);
+    }
+
+    blockquote {
+      max-width: 720px;
+      margin: 1.4rem 0 1.5rem;
+      padding: 0.15rem 0 0.15rem 1.1rem;
+      border-left: 4px solid #9a9a92;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .figure {
+      max-width: 720px;
+      margin: 1.5rem 0;
+    }
+
+    .figure img {
+      width: 100%;
+      border-radius: 8px;
+      display: block;
+      border: 1px solid var(--border);
+    }
+
+    .figure figcaption {
+      margin-top: 0.45em;
+      font-size: 0.9em;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    .stats {
+      max-width: 720px;
+      background: #1e1e1e;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      border: none;
+    }
+
+    .stats code {
+      background: transparent;
+      color: #d4d4d4;
+      padding: 0;
+      display: block;
+      line-height: 1.55;
+      font-size: 0.84rem;
+    }
+
+    details {
+      max-width: 720px;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-alt);
+    }
+
+    details[open] { background: var(--bg); }
+
+    summary {
+      padding: 0.7rem 1rem;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.95rem;
+      user-select: none;
+    }
+
+    summary:hover { color: var(--accent); }
+
+    details > :not(summary) {
+      padding: 0 1rem;
+    }
+
+    details pre {
+      margin: 0.5rem 0 1rem;
+      border: none;
+      background: var(--code-bg);
+    }
+
+    details p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      margin: 0.5rem 0;
+    }
+
+    .hero-img {
+      max-width: 720px;
+      margin: 2rem 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .hero-img img {
+      width: 100%;
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      article { padding: 2rem 1rem; }
+    }
+
+    .token.comment { color: #6a737d; }
+    .token.keyword { color: #d73a49; }
+    .token.string { color: #032f62; }
+    .token.function { color: #6f42c1; }
+    .token.number { color: #005cc5; }
+    .token.operator { color: #d73a49; }
+    .token.builtin { color: #005cc5; }
+    .token { background: transparent !important; }
+
+    /* TTT diagram */
+    .ttt-diagram { max-width: 720px; margin: 1.5rem 0; }
+    .ttt-diagram svg text { font-family: system-ui, -apple-system, sans-serif; }
+    .ttt-diagram .th { font-size: 14px; font-weight: 500; }
+    .ttt-diagram .ts { font-size: 12px; font-weight: 400; }
+    .ttt-diagram .fill-purple rect { fill: #EEEDFE; stroke: #534AB7; }
+    .ttt-diagram .fill-purple .th { fill: #3C3489; }
+    .ttt-diagram .fill-purple .ts { fill: #534AB7; }
+    .ttt-diagram .fill-teal rect { fill: #E1F5EE; stroke: #0F6E56; }
+    .ttt-diagram .fill-teal .th { fill: #085041; }
+    .ttt-diagram .fill-teal .ts { fill: #0F6E56; }
+    .ttt-diagram .fill-coral rect { fill: #FAECE7; stroke: #993C1D; }
+    .ttt-diagram .fill-coral .th { fill: #712B13; }
+    .ttt-diagram .fill-coral .ts { fill: #993C1D; }
+    .ttt-diagram .fill-amber rect { fill: #FAEEDA; stroke: #854F0B; }
+    .ttt-diagram .fill-amber .th { fill: #633806; }
+    .ttt-diagram .fill-amber .ts { fill: #854F0B; }
+    .ttt-diagram .fill-gray rect { fill: #F1EFE8; stroke: #5F5E5A; }
+    .ttt-diagram .fill-gray .th { fill: #444441; }
+    .ttt-diagram .fill-gray .ts { fill: #5F5E5A; }
+    .ttt-diagram .label-primary { fill: var(--text); }
+    .ttt-diagram .label-secondary { fill: var(--text-muted); }
+    .ttt-diagram .label-tertiary { fill: #999; }
+    .ttt-diagram .stroke-muted { stroke: #999; }
+    .ttt-diagram .stroke-border { stroke: var(--border); }
+    .ttt-diagram .arr { stroke: #999; stroke-width: 1.5; }
+    .ttt-diagram .leader { stroke: #999; stroke-width: 0.5; stroke-dasharray: 3 2; }
+
+    .ttt-diagram.animated .ttt-step { opacity: 0.25; transition: opacity 0.45s ease; }
+    .ttt-diagram.animated .ttt-step.active { opacity: 1; }
+    .ttt-diagram .loop-back {
+      stroke-dasharray: 8 5;
+      animation: loopFlow 0.8s linear infinite;
+    }
+    @keyframes loopFlow { to { stroke-dashoffset: -13; } }
+  </style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../../" class="top-nav-title">nanogpt speedrunning</a>
+  <div class="top-nav-links">
+    <a href="../../">home</a>
+    <a href="../">projects</a>
+    <a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+    <a href="../../bio/">bio</a>
+  </div>
+</nav>
+<article>
+
+  <h1>NanoGPT Speedrunning</h1>
+  <p class="subtitle"><strong>tldr:</strong> two speedrun submissions &mdash; a <a href="https://github.com/KellerJordan/modded-nanogpt/pull/205" target="_blank">test-time training run</a> that ended up in notable runs, and a <a href="https://github.com/KellerJordan/modded-nanogpt/pull/240" target="_blank">Triton transpose kernel</a> that was accepted as an official record.</p>
+
+  <div class="hero-img">
+    <img src="../../assets/nanogpt_speedrun.png" alt="NanoGPT speedrun leaderboard screenshot" />
+  </div>
+
+  <!-- ─── Intro ─── -->
+  <h2>The benchmark</h2>
+
+  <p>The <a href="https://github.com/KellerJordan/modded-nanogpt" target="_blank">NanoGPT speedrun</a> is a public competition to train a small GPT-2 variant on FineWeb-Edu as fast as possible. The rules are simple: reach a target validation loss of 3.28 on FineWeb, report wall-clock time on a single 8xH100 node. Everything else &mdash; architecture, optimizer, learning rate schedule, kernel implementations &mdash; is fair game.</p>
+
+  <p>I like this benchmark because it is a clean implementation of <a href="https://en.wiktionary.org/wiki/graduate_student_descent" target="_blank">graduate student descent</a>. It also let's you do research with a quick feedback loop, and just like for real ML problems, the compounding small optimizations matter as much as the big ideas.</p>
+
+  <p>My goal with this challenge was to try to get a world record in two ways: an algorithmic improvement (add something new) and a new kernel (making something fast).</p>
+
+  <!-- ─── TTT ─── -->
+  <h2>Test-time training</h2>
+
+  <p><a href="https://github.com/KellerJordan/modded-nanogpt/pull/205" target="_blank">PR #205</a> was my attempt to improve the leaderboard by changing validation rather than training. The core idea: before predicting <code>P(token | context)</code> on a validation sequence, spend a tiny bit of compute updating the model on the context itself.</p>
+
+  <div class="ttt-diagram">
+    <svg width="100%" viewBox="0 0 680 720" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+
+      <text class="th label-primary" x="340" y="36" text-anchor="middle">Validation sequence (one document)</text>
+
+      <!-- Chunk bar -->
+      <g id="ttt-c0" class="fill-gray ttt-step"><rect x="60" y="52" width="150" height="32" rx="4" stroke-width="0.5"/><text class="ts" x="135" y="72" text-anchor="middle">Chunk 0 (512 tok)</text></g>
+      <g id="ttt-c1" class="fill-gray ttt-step"><rect x="218" y="52" width="150" height="32" rx="4" stroke-width="0.5"/><text class="ts" x="293" y="72" text-anchor="middle">Chunk 1</text></g>
+      <g id="ttt-c2" class="fill-gray ttt-step"><rect x="376" y="52" width="150" height="32" rx="4" stroke-width="0.5"/><text class="ts" x="451" y="72" text-anchor="middle">Chunk 2</text></g>
+      <text class="ts label-secondary" x="556" y="72">...</text>
+      <g id="ttt-clast" class="fill-gray ttt-step"><rect x="580" y="52" width="60" height="32" rx="4" stroke-width="0.5"/><text class="ts" x="610" y="72" text-anchor="middle">Last</text></g>
+
+      <path d="M60 92 L60 100 L640 100 L640 92" fill="none" class="stroke-border" stroke-width="0.5" stroke-dasharray="3 2"/>
+
+      <text class="th label-primary" x="340" y="132" text-anchor="middle">Per-sequence loop (model resets between sequences)</text>
+
+      <!-- Load checkpoint -->
+      <g id="ttt-load" class="fill-purple ttt-step"><rect x="220" y="150" width="240" height="44" rx="8" stroke-width="0.5"/><text class="th" x="340" y="172" text-anchor="middle" dominant-baseline="central">Load checkpoint &#x3B8;</text></g>
+      <line x1="340" y1="194" x2="340" y2="226" class="arr" marker-end="url(#arrow)"/>
+
+      <!-- Loop container -->
+      <rect x="60" y="226" width="560" height="380" rx="14" fill="none" class="stroke-border" stroke-width="0.5" stroke-dasharray="4 3"/>
+      <text class="ts label-secondary" x="76" y="248">For each chunk i = 0, 1, ..., n-1</text>
+
+      <!-- Eval forward -->
+      <g id="ttt-eval" class="fill-teal ttt-step"><rect x="100" y="264" width="240" height="56" rx="8" stroke-width="0.5"/><text class="th" x="220" y="284" text-anchor="middle" dominant-baseline="central">Forward pass (eval)</text><text class="ts" x="220" y="304" text-anchor="middle" dominant-baseline="central">Loss on chunk i tokens only</text></g>
+
+      <!-- Annotation -->
+      <g id="ttt-accum" class="ttt-step"><line class="leader" x1="340" y1="292" x2="460" y2="280"/><circle cx="340" cy="292" r="2" fill="#999"/>
+      <g class="fill-amber"><rect x="462" y="264" width="140" height="36" rx="6" stroke-width="0.5"/><text class="ts" x="532" y="286" text-anchor="middle" dominant-baseline="central">Accumulate to val loss</text></g></g>
+
+      <line x1="220" y1="320" x2="220" y2="352" class="arr" marker-end="url(#arrow)"/>
+
+      <!-- Last chunk decision -->
+      <g class="fill-gray"><rect x="140" y="352" width="160" height="44" rx="8" stroke-width="0.5"/><text class="th" x="220" y="374" text-anchor="middle" dominant-baseline="central">Last chunk?</text></g>
+
+      <g id="ttt-skip" class="ttt-step"><line x1="300" y1="374" x2="462" y2="374" class="stroke-muted" stroke-width="0.5" marker-end="url(#arrow)"/>
+      <text class="ts label-secondary" x="370" y="366">Yes</text>
+      <g class="fill-gray"><rect x="462" y="352" width="140" height="44" rx="8" stroke-width="0.5"/><text class="th" x="532" y="374" text-anchor="middle" dominant-baseline="central">Skip (no train)</text></g></g>
+
+      <line x1="220" y1="396" x2="220" y2="428" class="arr" marker-end="url(#arrow)"/>
+      <text class="ts label-secondary" x="232" y="416">No</text>
+
+      <!-- Train forward-backward -->
+      <g id="ttt-train" class="fill-coral ttt-step"><rect x="100" y="428" width="240" height="56" rx="8" stroke-width="0.5"/><text class="th" x="220" y="448" text-anchor="middle" dominant-baseline="central">Forward + backward</text><text class="ts" x="220" y="468" text-anchor="middle" dominant-baseline="central">Train on seq[start:chunk_end]</text></g>
+
+      <line x1="220" y1="484" x2="220" y2="516" class="arr" marker-end="url(#arrow)"/>
+
+      <!-- Adam step -->
+      <g id="ttt-adam" class="fill-coral ttt-step"><rect x="100" y="516" width="240" height="56" rx="8" stroke-width="0.5"/><text class="th" x="220" y="536" text-anchor="middle" dominant-baseline="central">Adam step (&#x3B8; &#x2190; &#x3B8;')</text><text class="ts" x="220" y="556" text-anchor="middle" dominant-baseline="central">NorMuon params frozen</text></g>
+      
+
+      <!-- Loop-back -->
+      <path d="M100 544 L72 544 L72 290 L98 290" fill="none" class="arr loop-back" marker-end="url(#arrow)"/>
+      <text class="ts label-secondary" x="60" y="420" text-anchor="middle" transform="rotate(-90 60 420)">Next chunk</text>
+
+      <!-- Key insight -->
+      <g id="ttt-key" class="ttt-step"><line x1="340" y1="606" x2="340" y2="632" class="arr" marker-end="url(#arrow)"/>
+      <g class="fill-purple"><rect x="110" y="634" width="460" height="56" rx="8" stroke-width="0.5"/><text class="th" x="340" y="654" text-anchor="middle" dominant-baseline="central">Key: loss recorded before any grad update on those tokens</text><text class="ts" x="340" y="674" text-anchor="middle" dominant-baseline="central">&#x2192; valid probability model P(chunk_i | &#x3B8; adapted on chunks 0..i-1)</text></g></g>
+    </svg>
+    <p style="font-size:0.9em; color:var(--text-muted); line-height:1.5; margin-top:0.3em;">The TTT eval loop: for each chunk, score first, then train. The model resets between sequences. (thank claude for figure)</p>
+  </div>
+
+  <script>
+  (function() {
+    var d = document.querySelector('.ttt-diagram');
+    if (!d) return;
+    var steps = [
+      ['ttt-c0','ttt-load'],
+      ['ttt-c0','ttt-eval'],
+      ['ttt-c0','ttt-accum'],
+      ['ttt-c0','ttt-train'],
+      ['ttt-c0','ttt-adam'],
+      ['ttt-c1','ttt-eval'],
+      ['ttt-c1','ttt-accum'],
+      ['ttt-c1','ttt-train'],
+      ['ttt-c1','ttt-adam'],
+      ['ttt-c2','ttt-eval'],
+      ['ttt-c2','ttt-accum'],
+      ['ttt-c2','ttt-train'],
+      ['ttt-c2','ttt-adam'],
+      ['ttt-clast','ttt-eval'],
+      ['ttt-clast','ttt-accum','ttt-skip'],
+      ['ttt-key']
+    ];
+    var ids = {};
+    steps.forEach(function(s) { s.forEach(function(id) { ids[id] = 1; }); });
+    var allIds = Object.keys(ids);
+    var cur = 0;
+    d.classList.add('animated');
+    function tick() {
+      allIds.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+      });
+      steps[cur].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.classList.add('active');
+      });
+      cur = (cur + 1) % steps.length;
+    }
+    tick();
+    setInterval(tick, 1200);
+  })();
+  </script>
+
+  <p>Test-time training was <a href="https://yueatsprograms.github.io/ttt/home.html" target="_blank">originally proposed by Sun et al.</a> as a way to adapt models to distribution shifts at inference time by optimizing a self-supervised objective on each test input. The core insight &mdash; that you can keep learning after deployment, on the input itself &mdash; turns out to be especially useful for language models dealing with long contexts. Recent work by <a href="https://arxiv.org/abs/2512.13898" target="_blank">Bansal et al. (2025)</a> formalizes why: standard self-attention suffers from <em>score dilution</em>, where the attention mass on a relevant token vanishes as the context grows, and they show that adapting the query projections at test time directly counteracts this by increasing the target-distractor logit margin. Generating more "thinking" tokens with fixed weights can't fix this &mdash; you need to actually move the queries toward the right keys.</p>
+
+  <p>Given the relatively small dataset size (&lt; 400m tokens), the validation set is more out-of-distribution than for big pretraining runs. TTT was motivated by distribution shifts, and increased test-time compute <a href="https://github.com/KellerJordan/modded-nanogpt/discussions/23?sort=new#discussioncomment-12109560" target="_blank">was explicitly allowed by the competition</a>, so this was a clear fit.</p>
+
+  <p>There's also a concrete context-length mismatch in this benchmark. Over a third of FineWeb validation sequences are longer than the longest sliding window during training (1664 tokens, covering ~20% of tokens), and over a quarter are longer than the longest window during validation (2560 tokens, ~13% of tokens). For those ~13% of tokens, the model simply isn't conditioning on part of the sequence. Through TTT, we can encode the information of the entire context into the model's weights without any extra training cost.</p>
+
+  <figure class="figure">
+    <img src="https://github.com/user-attachments/assets/f02e209d-26a9-40aa-8fe8-45ea42e243d1" alt="Validation sequence length plot from PR 205" loading="lazy" />
+    <figcaption>Many validation sequences are longer than the model's effective context during training.</figcaption>
+  </figure>
+
+  <p>My PR applies the simplest version of TTT: don't change the training procedure at all, just adapt the model to each validation sequence before scoring it. The sequence is broken into chunks; for each chunk, we first evaluate loss (before any gradient update touches those tokens), then train on the chunk to improve predictions for subsequent chunks. The model resets between sequences, so there's no leakage.</p>
+
+  <p>The eval-time loop looks roughly like this:</p>
+
+  <pre><code class="language-python">for seq in val_sequences:
+    model.load_state_dict(checkpoint)  # reset for each sequence
+    optimizer.reset()
+
+    for i in range(num_chunks):
+        chunk = seq[i * chunk_size : (i+1) * chunk_size]
+
+        # 1. evaluate loss on this chunk (before any TTT update uses these tokens)
+        val_loss += model(seq[:chunk_end], mask=chunk_only)
+
+        # 2. train on the chunk to help with future chunks
+        loss = model(chunk)
+        loss.backward()
+        optimizer.step()  # adam only, muon params frozen</code></pre>
+
+  <p>The key detail is that loss on each chunk is computed <em>before</em> training on it &mdash; so TTT never scores tokens it has already optimized for. The model and optimizer reset between sequences, so there's no information leaking between validation examples or back into the training weights.</p>
+
+  <p>One important implementation detail: only Adam parameters are updated during TTT; the NorMuon parameters (the main weight matrices) are frozen. Updating them led to instability. This makes sense: NorMuon normalizes each update to a fixed norm regardless of gradient magnitude, which is fine during training where gradients are averaged over ~50k tokens per GPU. During TTT, gradients come from a single chunk of ~512 tokens. NorMuon doesn't know the difference &mdash; it applies the same-magnitude update either way, massively overshooting relative to the actual signal. Adam is better behaved here because the update magnitude scales naturally with the gradient.</p>
+
+  <blockquote>this does not change training, but increases the validation performance of a given checkpoint, allowing us to train for less time to reach our target loss.</blockquote>
+
+  <figure class="figure">
+    <img src="https://github.com/user-attachments/assets/5e0bf8f7-c4e7-4ecf-9123-634143be7984" alt="TTT over training plot from PR 205" loading="lazy" />
+    <figcaption>TTT lowers the validation loss across checkpoints loaded from the baseline run.</figcaption>
+  </figure>
+
+  <p>The result was a 95.9s run, cutting the step count from 1600 to 1570 while still reaching the target loss.</p>
+
+  <pre class="stats"><code>losses = [3.2766, 3.2791, 3.2773, 3.2773, 3.2777]
+times  = [95.739, 95.693, 95.760, 95.583, 95.683]
+
+mean loss = 3.2776
+mean time = 95.6916s</code></pre>
+
+  <p>Interestingly, you can show that TTT does in fact help the most on later positions: reinforcing our intuition that the loss in later positions can be aided by adding context in the weights.</p>
+
+  <figure class="figure">
+    <img src="https://github.com/user-attachments/assets/4a17872a-07af-4c89-a787-0626921ed669" alt="Relative TTT performance plot from PR 205 discussion" loading="lazy" />
+    <figcaption>Relative TTT improvement by token position. The gain is exactly zero for positions &lt; 512 (no gradient steps taken yet) and grows for later positions where the context window is exceeded.</figcaption>
+  </figure>
+
+  <h3>Why it became a notable run</h3>
+
+  <p>This one -- although decreasing the time by 3.4s -- was not added to the official track because the implementation made eval ~5' instead of a few seconds, which makes development slower.</p>
+
+  <!-- ─── Triton kernel ─── -->
+  <h2>Backward transpose kernel</h2>
+
+  <p><a href="https://github.com/KellerJordan/modded-nanogpt/pull/240" target="_blank">PR #240</a> was a very different kind of submission. Instead of changing the evaluation procedure, I sped up a hot path in the backward pass of <code>FusedSoftcappedCrossEntropy</code>.</p>
+
+  <figure class="figure">
+    <img src="tiled_transpose_optimization.svg" alt="Tiled transpose optimization diagram showing baseline strided reads vs. coalesced Triton kernel" />
+    <figcaption>Baseline <code>.T.contiguous()</code> uses strided column reads; the Triton kernel reads/writes coalesced tiles via shared memory. (thank claude for figure)</figcaption>
+  </figure>
+
+  <h3>The bottleneck</h3>
+
+  <p>The loss function's backward pass needs to compute a weight gradient via an FP8 matmul. To get the input tensor into the right layout, the existing code called <code>.T.contiguous()</code> &mdash; a transpose followed by a contiguous copy. PyTorch dispatches this as a generic elementwise copy kernel, which is memory-bandwidth-bound and doesn't exploit the block structure of the tensor.</p>
+
+  <p>For the matrix sizes in this model, that copy was surprisingly expensive: it runs once per backward pass, on a tensor that's <code>(vocab_size, hidden_dim)</code> = <code>(50257, 768)</code>, and it shows up clearly in an nsight profile.</p>
+
+  <h3>The fix</h3>
+
+  <p>I replaced the generic copy with a custom Triton tiled transpose-copy kernel that reads and writes in coalesced blocks:</p>
+
+  <pre><code class="language-python"># Before: generic PyTorch copy
+grad_weight_input = activation.T.contiguous()  # elementwise copy kernel
+
+# After: fused Triton transpose-copy
+@triton.jit
+def tiled_transpose_kernel(
+    input_ptr, output_ptr,
+    M, N,
+    BLOCK_M: tl.constexpr, BLOCK_N: tl.constexpr,
+):
+    pid_m = tl.program_id(0)
+    pid_n = tl.program_id(1)
+    offs_m = pid_m * BLOCK_M + tl.arange(0, BLOCK_M)
+    offs_n = pid_n * BLOCK_N + tl.arange(0, BLOCK_N)
+
+    # load a BLOCK_M x BLOCK_N tile from input[offs_m, offs_n]
+    mask = (offs_m[:, None] < M) & (offs_n[None, :] < N)
+    tile = tl.load(input_ptr + offs_m[:, None] * N + offs_n[None, :], mask=mask)
+
+    # store as BLOCK_N x BLOCK_M tile in output[offs_n, offs_m]
+    tl.store(output_ptr + offs_n[:, None] * M + offs_m[None, :], tile.T, mask=mask.T)
+
+grad_weight_input = tiled_transpose(activation, BLOCK_M=64, BLOCK_N=128)</code></pre>
+
+  <p>The Triton kernel reads a tile from the input in row-major order, transposes it in shared memory, and writes it out in the transposed layout &mdash; all in coalesced accesses. The tile size was tuned from the initial 32x32 to 64x128 with 8 warps to better match the H100's memory hierarchy.</p>
+
+  <p>The PR also included a practical fix: casting pointer offsets to <code>int64</code> for larger matrices where <code>int32</code> offsets would overflow.</p>
+
+  <h3>Results</h3>
+
+  <figure class="figure">
+    <img src="https://github.com/user-attachments/assets/ae2db527-31d1-4da7-a285-1c44dcb7bd25" alt="Timing results image from PR 240" loading="lazy" />
+    <figcaption>The accepted record PR reported about a 0.4s end-to-end improvement.</figcaption>
+  </figure>
+
+  <pre class="stats"><code>Baseline  mean time = 88.3765s
+This PR   mean time = 87.9355s
+Delta                -0.4410s
+
+stage 1: 0.769 ms -> 0.588 ms   1.31x
+stage 2: 1.451 ms -> 1.179 ms   1.23x
+stage 3: 2.170 ms -> 1.768 ms   1.23x</code></pre>
+
+  <!-- ─── Closing ─── -->
+  <h2>Next steps</h2>
+
+  <p>I'm a bit bummed that the TTT wasn't accepted. Based on work like <a href="https://www.epfl.ch/labs/sacs/wp-content/uploads/2025/06/2025-spring-alexa.pdf" target="_blank">ALoRA</a>, I think I can make a batchified system with per-sequence LoRAs: making the evaluation *much* faster. Similarly, based on works like the original TTT paper, I'm interested in building in the test-time optimization *into the architecture*. Generally, I want to explore this avenue of reasoning-as-optimization.</p>
+  <p>But, this was a weekend project, H100s are expensive, so I likely won't explore this on this benchmark.</p>
+
+</article>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>Prism.highlightAll();</script>
+</body>
+</html>

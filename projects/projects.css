@@ -3,7 +3,8 @@ body {
   position: absolute;
   width: 100%;
   min-height: 100%;
-  background-color: #f89;
+  /* background-color: #f89; */
+  background-color: #e23b53c7;
   font-family: Open Sans;
   font-weight: 100;
   color: #202020;
@@ -46,8 +47,9 @@ h2 {
 .pages h1 {
   color: #f9ffad;
   font-weight: bold;
-  margin: 0.25em;
-  display: inline-block;
+  margin: 0.7em;
+  font-size: 1.5em;
+  line-height: 2em;
   float: left;
 }
 
@@ -117,8 +119,17 @@ img {
 
 .featured-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 1.5em;
+}
+
+.featured-card:nth-child(1),
+.featured-card:nth-child(2) {
+  grid-column: span 3;
+}
+
+.featured-card:nth-child(n + 3) {
+  grid-column: span 2;
 }
 
 .featured-card {
@@ -299,6 +310,12 @@ img {
   .featured-grid {
     grid-template-columns: 1fr;
     gap: 1em;
+  }
+
+  .featured-card:nth-child(1),
+  .featured-card:nth-child(2),
+  .featured-card:nth-child(n + 3) {
+    grid-column: auto;
   }
 
   .featured-card {
