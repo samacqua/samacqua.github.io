@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-labelledby="title desc">
+  <title id="title">De Bruijn tilings hero image</title>
+  <desc id="desc">A wide banner showing a Penrose tiling on the left and a 12-fold tiling on the right.</desc>
+
+  <defs>
+    <clipPath id="left-panel">
+      <rect x="0" y="0" width="592" height="600" rx="18" ry="18" />
+    </clipPath>
+    <clipPath id="right-panel">
+      <rect x="608" y="0" width="592" height="600" rx="18" ry="18" />
+    </clipPath>
+  </defs>
+
+  <image
+    href="regular/tiling.svg"
+    x="0"
+    y="0"
+    width="592"
+    height="600"
+    preserveAspectRatio="xMidYMid slice"
+    clip-path="url(#left-panel)"
+  />
+
+  <image
+    href="regular_n12/tiling.svg"
+    x="608"
+    y="0"
+    width="592"
+    height="600"
+    preserveAspectRatio="xMidYMid slice"
+    clip-path="url(#right-panel)"
+  />
+</svg>

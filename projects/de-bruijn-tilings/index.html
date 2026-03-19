@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>De Bruijn Tilings</title>
+
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+  <style>
+    :root {
+      --bg: #fafaf8;
+      --bg-alt: #f0efec;
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --accent: #c44b25;
+      --accent-light: #e8d5ce;
+      --border: #ddd;
+      --code-bg: #f5f4f0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Open Sans, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16.5px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    article {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 3rem 2rem 4rem;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      max-width: 720px;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin-bottom: 0.4rem;
+    }
+
+    .subtitle strong { color: var(--text); }
+
+    h2 {
+      font-size: 1.7rem;
+      font-weight: 600;
+      margin: 3.5rem 0 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      max-width: 720px;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 2rem 0 0.6rem;
+      max-width: 720px;
+    }
+
+    p, ul, ol { max-width: 720px; margin-bottom: 1rem; }
+    ul, ol { padding-left: 1.5rem; }
+    li { margin-bottom: 0.3rem; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    strong { font-weight: 600; }
+    code {
+      font-family: monospace;
+      font-size: 0.88em;
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+
+    pre {
+      max-width: 720px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      line-height: 1.55;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.84rem;
+    }
+
+    .top-nav {
+      max-width: 60em;
+      margin: 0 auto 1.5em;
+      padding-right: 1.5em;
+      text-align: right;
+      font-family: Open Sans, sans-serif;
+    }
+
+    .top-nav-title {
+      float: left;
+      margin: 0.7em;
+      color: #f66;
+      font-size: 1.5em;
+      font-weight: bold;
+      line-height: 2em;
+      text-decoration: none;
+    }
+
+    .top-nav-links {
+      display: inline-block;
+    }
+
+    .top-nav-links a {
+      display: inline-block;
+      margin: 0.7em;
+      color: #999;
+      font-size: 1.5em;
+      line-height: 2em;
+      text-decoration: none;
+      transition: color .15s ease-in-out;
+    }
+
+    .top-nav-links a:hover,
+    .top-nav-title:hover {
+      color: rgb(92, 92, 92);
+    }
+
+    /* Hero banner */
+    .hero-img {
+      max-width: 720px;
+      margin: 1.5rem 0 0.3rem;
+      border-radius: 6px;
+      overflow: hidden;
+      aspect-ratio: 2 / 1;
+    }
+
+    .hero-img img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    /* Wide feature image */
+    .feature-media {
+      max-width: 720px;
+      margin: 1.5rem 0 0.3rem;
+    }
+
+    .feature-media img {
+      width: 100%;
+      display: block;
+    }
+
+    /* Crossfade stacks: all variants layered, only .active visible */
+    .n-stack {
+      position: relative;
+    }
+
+    .n-stack > img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .n-stack > img.active {
+      position: relative;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .pipeline-slot {
+      flex: 1;
+      min-width: 0;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    /* N-switcher slider */
+    .n-switcher {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      max-width: 720px;
+      margin: 1.8rem 0 0.2rem;
+    }
+
+    .n-switcher-label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .n-switcher-label .n-value {
+      display: inline-block;
+      min-width: 1.6em;
+      text-align: center;
+      color: var(--accent);
+    }
+
+    .n-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .n-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .n-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    .n-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+      cursor: pointer;
+    }
+
+    /* Pipeline arrow row */
+    .pipeline {
+      display: flex;
+      gap: 0.5rem;
+      max-width: 720px;
+      margin: 1.5rem 0 0.3rem;
+      align-items: center;
+    }
+
+    .pipeline > img {
+      flex: 1;
+      width: 0;
+      min-width: 0;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .pipeline .arrow {
+      flex: 0 0 auto;
+      font-size: 1.4rem;
+      color: var(--text-muted);
+      user-select: none;
+    }
+
+    /* Step-by-step animations */
+    .step-gallery {
+      max-width: 720px;
+      margin: 1.5rem 0 0.5rem;
+    }
+
+    .step-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .step-card {
+      position: relative;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--border);
+    }
+
+    .step-card img {
+      width: 100%;
+      display: block;
+    }
+
+    .step-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.35rem 0.55rem;
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.3rem;
+      height: 1.3rem;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      font-size: 0.68rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step-label span:last-child {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.25;
+    }
+
+    .step-wide {
+      margin-top: 0.75rem;
+    }
+
+    /* Grid gallery */
+    .grid-gallery {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      max-width: 720px;
+      margin: 1.5rem 0 0.3rem;
+    }
+
+    .grid-gallery figure {
+      text-align: center;
+    }
+
+    .grid-gallery img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+    }
+
+    .grid-gallery figcaption {
+      font-size: 0.78rem;
+      margin-top: 0.35rem;
+    }
+
+    figcaption {
+      font-size: 0.88em;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-top: 0.3em;
+      max-width: 720px;
+    }
+
+    .math-block {
+      max-width: 720px;
+      margin: 1.2rem 0 1.5rem;
+      overflow-x: auto;
+      text-align: center;
+    }
+
+    .goal-callout {
+      max-width: 720px;
+      margin: 1.4rem 0 1.5rem;
+      padding: 0.15rem 0 0.15rem 1.1rem;
+      border-left: 4px solid #9a9a92;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      article { padding: 2rem 1rem; }
+      .pipeline { flex-direction: column; }
+      .pipeline img { width: 100%; flex: none; }
+      .pipeline .arrow { transform: rotate(90deg); }
+      .grid-gallery { grid-template-columns: repeat(2, 1fr); }
+      .step-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../../" class="top-nav-title">de bruijn tilings</a>
+  <div class="top-nav-links">
+    <a href="../../">home</a>
+    <a href="../">projects</a>
+    <a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+    <a href="../../bio/">bio</a>
+  </div>
+</nav>
+<article>
+
+  <h1>De Bruijn Tilings</h1>
+  <p class="subtitle">Generating aperiodic rhombus tilings from grid intersections &mdash; Penrose tilings and beyond.</p>
+
+  <figure>
+    <div class="hero-img">
+      <img src="assets/tiling_crop.svg" alt="Wide Penrose tiling hero image">
+    </div>
+    <figcaption>A tiling generated from a de Bruijn grid: <code>python main.py -N 25 --box-width 6 --box-height 3</code></figcaption>
+  </figure>
+
+  <h2>The de Bruijn method</h2>
+
+  <p>In 1981, N.&thinsp;G. de Bruijn discovered that <a href="https://en.wikipedia.org/wiki/Penrose_tiling" target="_blank">Penrose tilings</a> can be constructed with a simple formula:</p>
+  <ol>
+    <li><strong>Draw N families of parallel lines</strong> at evenly spaced angles. For a Penrose tiling, N=5 gives families at 36&deg; apart. Each family has lines at integer spacings, slightly offset so that no three lines ever meet at the same point.</li>
+    <li><strong>At each intersection of two lines</strong>, the angle between the two families determines a rhombus. The rhombus edges are unit-length, perpendicular to the two crossing families. With N=5 families, only two shapes appear: a wide rhombus (72&deg;) and a thin rhombus (36&deg;).</li>
+    <li><strong>Assemble the tiling</strong> by placing rhombi edge-to-edge, walking outward from a seed via BFS along shared grid lines. The result is a gap-free, overlap-free aperiodic tiling of the plane.</li>
+  </ol>
+
+  <figure>
+    <div class="feature-media n-stack" data-n-slot="hero">
+      <img data-n="2" src="assets/N2/hero.svg" alt="N=2 tiling">
+      <img data-n="3" src="assets/N3/hero.svg" alt="N=3 tiling">
+      <img data-n="4" src="assets/N4/hero.svg" alt="N=4 tiling">
+      <img data-n="5" src="assets/N5/hero.svg" alt="N=5 tiling" class="active">
+      <img data-n="6" src="assets/N6/hero.svg" alt="N=6 tiling">
+      <img data-n="7" src="assets/N7/hero.svg" alt="N=7 tiling">
+      <img data-n="8" src="assets/N8/hero.svg" alt="N=8 tiling">
+      <img data-n="9" src="assets/N9/hero.svg" alt="N=9 tiling">
+      <img data-n="10" src="assets/N10/hero.svg" alt="N=10 tiling">
+    </div>
+  </figure>
+
+  <figure>
+    <div class="pipeline">
+      <div class="n-stack pipeline-slot" data-n-slot="grid">
+        <img data-n="2" src="assets/N2/grid.svg" alt="N=2 grid">
+        <img data-n="3" src="assets/N3/grid.svg" alt="N=3 grid">
+        <img data-n="4" src="assets/N4/grid.svg" alt="N=4 grid">
+        <img data-n="5" src="assets/N5/grid.svg" alt="N=5 grid" class="active">
+        <img data-n="6" src="assets/N6/grid.svg" alt="N=6 grid">
+        <img data-n="7" src="assets/N7/grid.svg" alt="N=7 grid">
+        <img data-n="8" src="assets/N8/grid.svg" alt="N=8 grid">
+        <img data-n="9" src="assets/N9/grid.svg" alt="N=9 grid">
+        <img data-n="10" src="assets/N10/grid.svg" alt="N=10 grid">
+      </div>
+      <span class="arrow">&rarr;</span>
+      <div class="n-stack pipeline-slot" data-n-slot="grid_rhombi">
+        <img data-n="2" src="assets/N2/grid_rhombi.svg" alt="N=2 grid + rhombi">
+        <img data-n="3" src="assets/N3/grid_rhombi.svg" alt="N=3 grid + rhombi">
+        <img data-n="4" src="assets/N4/grid_rhombi.svg" alt="N=4 grid + rhombi">
+        <img data-n="5" src="assets/N5/grid_rhombi.svg" alt="N=5 grid + rhombi" class="active">
+        <img data-n="6" src="assets/N6/grid_rhombi.svg" alt="N=6 grid + rhombi">
+        <img data-n="7" src="assets/N7/grid_rhombi.svg" alt="N=7 grid + rhombi">
+        <img data-n="8" src="assets/N8/grid_rhombi.svg" alt="N=8 grid + rhombi">
+        <img data-n="9" src="assets/N9/grid_rhombi.svg" alt="N=9 grid + rhombi">
+        <img data-n="10" src="assets/N10/grid_rhombi.svg" alt="N=10 grid + rhombi">
+      </div>
+      <span class="arrow">&rarr;</span>
+      <div class="n-stack pipeline-slot" data-n-slot="tiling">
+        <img data-n="2" src="assets/N2/tiling.svg" alt="N=2 tiling">
+        <img data-n="3" src="assets/N3/tiling.svg" alt="N=3 tiling">
+        <img data-n="4" src="assets/N4/tiling.svg" alt="N=4 tiling">
+        <img data-n="5" src="assets/N5/tiling.svg" alt="N=5 tiling" class="active">
+        <img data-n="6" src="assets/N6/tiling.svg" alt="N=6 tiling">
+        <img data-n="7" src="assets/N7/tiling.svg" alt="N=7 tiling">
+        <img data-n="8" src="assets/N8/tiling.svg" alt="N=8 tiling">
+        <img data-n="9" src="assets/N9/tiling.svg" alt="N=9 tiling">
+        <img data-n="10" src="assets/N10/tiling.svg" alt="N=10 tiling">
+      </div>
+    </div>
+    <figcaption>Grid lines &rarr; rhombi at intersections &rarr; assembled tiling.</figcaption>
+  </figure>
+
+  <div class="n-switcher">
+    <span class="n-switcher-label">N&thinsp;=&thinsp;<span class="n-value" id="n-display">5</span></span>
+    <input type="range" class="n-slider" id="n-slider" min="2" max="10" value="5" step="1">
+  </div>
+
+  <h3>Assembly walkthrough</h3>
+
+  <p>The key insight is that the grid lines encode <em>all</em> the combinatorial information needed to tile the plane. The assembly step is purely topological &mdash; no optimization or backtracking. Here is that process animated step by step:</p>
+
+  <figure>
+    <div class="step-gallery">
+      <div class="step-grid">
+        <div class="step-card">
+          <div class="step-label">
+            <span class="step-num">1</span>
+            <span>Generate grid lines</span>
+          </div>
+          <img src="assets/join_steps_step1.gif" alt="Step 1: generate grid lines">
+        </div>
+        <div class="step-card">
+          <div class="step-label">
+            <span class="step-num">2</span>
+            <span>Place rhombi at intersections</span>
+          </div>
+          <img src="assets/join_steps_step2.gif" alt="Step 2: place rhombus at each intersection">
+        </div>
+        <div class="step-card">
+          <div class="step-label">
+            <span class="step-num">3</span>
+            <span>Find neighboring pairs</span>
+          </div>
+          <img src="assets/join_steps_step3.gif" alt="Step 3: find neighboring pairs on grid lines">
+        </div>
+        <div class="step-card">
+          <div class="step-label">
+            <span class="step-num">4</span>
+            <span>Assign colors to shapes</span>
+          </div>
+          <img src="assets/join_steps_step4.gif" alt="Step 4: assign colors to shapes">
+        </div>
+      </div>
+      <div class="step-card step-wide">
+        <div class="step-label">
+          <span class="step-num">5</span>
+          <span>Join pairs into tiling</span>
+        </div>
+        <img src="assets/join_steps_step5.gif" alt="Step 5: tiles slide to join neighbors">
+      </div>
+    </div>
+    <figcaption>Tiles are glued one by one along shared grid-line edges, growing outward in breadth-first order.</figcaption>
+  </figure>
+
+  <h3>Why it works: the offset trick</h3>
+
+  <p>Each line in family <em>j</em> satisfies:</p>
+
+  <div class="math-block" id="eq-line"></div>
+
+  <p>Two lines from different families always intersect at exactly one point. But if three lines meet at the same point, the construction breaks &mdash; we'd get an ambiguous vertex. De Bruijn showed this can never happen if the offsets <span id="eq-sigma-inline"></span> are all <strong>rational</strong>, <strong>distinct</strong>, and <strong>no two sum to an integer</strong>. The proof is elegant: at a triple intersection, certain ratios of cosines would need to be rational, but <span id="eq-cos-inline"></span> values produce only irrational ratios (or unity, which distinct offsets exclude).</p>
+
+  <h3>Generalizations</h3>
+
+  <p>The method generalizes beyond N=5. Any N&ge;3 produces a valid tiling with &lfloor;N/2&rfloor; distinct rhombus types. Higher N yields increasingly intricate patterns with higher-order rotational symmetry.</p>
+
+  <h2>Grid types</h2>
+
+  <p>Beyond the classic regular grid, I messed around with a few other grid constructions:</p>
+
+  <ul>
+    <li><strong>Regular</strong> &mdash; the classic de Bruijn grid. N families of parallel lines at angles j&pi;/N. Produces Penrose tilings when N=5.</li>
+    <li><strong>Random</strong> &mdash; N completely random lines crossing the bounding box. Produces wild, asymmetric patches.</li>
+    <li><strong>Random-angle</strong> &mdash; N families with random orientations but regular parallel spacing within each family. A middle ground between structured and chaotic.</li>
+    <li><strong>Projection</strong> &mdash; projects the edges of an N-dimensional hypercube onto 2D via a random orthonormal basis. The parallel edges of the hypercube naturally form line families.</li>
+  </ul>
+
+  <div class="grid-gallery">
+    <figure>
+      <img src="assets/regular/tiling.svg" alt="Regular grid tiling">
+      <figcaption><code>-G regular</code></figcaption>
+    </figure>
+    <figure>
+      <img src="assets/random/tiling.svg" alt="Random grid tiling">
+      <figcaption><code>-N 15 -G random</code></figcaption>
+    </figure>
+    <figure>
+      <img src="assets/random_ang/tiling.svg" alt="Random-angle grid tiling">
+      <figcaption><code>-G random-ang</code></figcaption>
+    </figure>
+    <figure>
+      <img src="assets/projection/tiling.svg" alt="Projection grid tiling">
+      <figcaption><code>-G projection</code></figcaption>
+    </figure>
+  </div>
+  <figcaption>The four grid types. Each produces a valid rhombus tiling with distinct visual character.</figcaption>
+
+  <h2>Usage</h2>
+
+  <p>The code is at <a href="https://github.com/samacqua/tilings">github.com/samacqua/tilings</a>.</p>
+
+  <pre><code class="language-bash"># Generate a classic Penrose tiling
+python main.py -N 5 -B 5 -O out
+
+# Try different grid types
+python main.py -N 5 -G random -S 42 -O out/random
+python main.py -N 5 -G projection -S 42 -O out/projection
+
+# Higher-order symmetry
+python main.py -N 12 -B 4 -O out/n12</code></pre>
+
+  <p>Each run produces SVGs of the grid, the rhombi at intersections, and the final assembled tiling. Rhombi are colored by their smallest internal angle, giving each distinct tile shape its own color.</p>
+
+  <h2>References</h2>
+
+  <ul>
+    <li>de Bruijn, N.&thinsp;G. (1981). &ldquo;Algebraic theory of Penrose's non-periodic tilings of the plane&rdquo;</li>
+    <li><a href="https://preshing.com/20110831/penrose-tiling-explained/">Penrose Tiling Explained</a> &mdash; Preshing</li>
+    <li><a href="https://www.adamponting.com/de-bruijn-tilings/">De Bruijn Tilings</a> &mdash; Adam Ponting</li>
+    <li><a href="https://www.mathpages.com/home/kmath621/kmath621.htm">MathPages: Penrose Tiles</a></li>
+  </ul>
+
+</article>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  katex.render(
+    "x \\cos\\!\\left(\\frac{j\\pi}{N}\\right) + y \\sin\\!\\left(\\frac{j\\pi}{N}\\right) + \\sigma_j = k",
+    document.getElementById("eq-line"),
+    { displayMode: true }
+  );
+  katex.render("\\sigma_j", document.getElementById("eq-sigma-inline"), { displayMode: false });
+  katex.render("\\cos(2\\pi j/5)", document.getElementById("eq-cos-inline"), { displayMode: false });
+
+  // N-switcher: crossfade by toggling .active on pre-loaded stacked images
+  var slider = document.getElementById('n-slider');
+  var display = document.getElementById('n-display');
+  var stacks = document.querySelectorAll('.n-stack');
+
+  function setN(n) {
+    display.textContent = n;
+    stacks.forEach(function(stack) {
+      stack.querySelectorAll('img[data-n]').forEach(function(img) {
+        img.classList.toggle('active', img.getAttribute('data-n') === String(n));
+      });
+    });
+  }
+
+  slider.addEventListener('input', function() { setN(slider.value); });
+});
+</script>
+<script>
+if (window.innerWidth < 700) {
+  var w = document.querySelector('.top-nav-links');
+  w.innerHTML = '<a href="../../">home</a><br><a href="../">projects</a><br><a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a><br><a href="../../bio/">bio</a>';
+  w.style.marginTop = '1em';
+  w.querySelectorAll('a').forEach(function(a) { a.style.lineHeight = '1.5'; a.style.margin = '0'; });
+}
+</script>
+</body>
+</html>
