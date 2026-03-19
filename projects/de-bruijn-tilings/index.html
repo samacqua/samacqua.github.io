@@ -393,9 +393,6 @@
     @media (max-width: 600px) {
       h1 { font-size: 2rem; }
       article { padding: 2rem 1rem; }
-      .pipeline { flex-direction: column; }
-      .pipeline img { width: 100%; flex: none; }
-      .pipeline .arrow { transform: rotate(90deg); }
       .grid-gallery { grid-template-columns: repeat(2, 1fr); }
       .step-grid { grid-template-columns: 1fr; }
     }
@@ -502,28 +499,28 @@
         <div class="step-card">
           <div class="step-label">
             <span class="step-num">1</span>
-            <span>Generate grid lines</span>
+            <span>Generate parallel grid lines</span>
           </div>
           <img src="assets/join_steps_step1.gif" alt="Step 1: generate grid lines">
         </div>
         <div class="step-card">
           <div class="step-label">
             <span class="step-num">2</span>
-            <span>Place rhombi at intersections</span>
+            <span>Place rhombi at each intersection</span>
           </div>
           <img src="assets/join_steps_step2.gif" alt="Step 2: place rhombus at each intersection">
         </div>
         <div class="step-card">
           <div class="step-label">
             <span class="step-num">3</span>
-            <span>Find neighboring pairs</span>
+            <span>Find pairs that are neighbors on a joining line</span>
           </div>
           <img src="assets/join_steps_step3.gif" alt="Step 3: find neighboring pairs on grid lines">
         </div>
         <div class="step-card">
           <div class="step-label">
             <span class="step-num">4</span>
-            <span>Assign colors to shapes</span>
+            <span>Assign a colors to each unique shape</span>
           </div>
           <img src="assets/join_steps_step4.gif" alt="Step 4: assign colors to shapes">
         </div>
@@ -531,7 +528,7 @@
       <div class="step-card step-wide">
         <div class="step-label">
           <span class="step-num">5</span>
-          <span>Join pairs into tiling</span>
+          <span>Join edges of each pair, forming a tiling</span>
         </div>
         <img src="assets/join_steps_step5.gif" alt="Step 5: tiles slide to join neighbors">
       </div>
