@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenAI Parameter Golf: LoRA Test-Time Training</title>
+  <meta name="Description" content="Record submission (bpb=1.195) to OpenAI's Parameter Golf competition using sliding window eval and per-document LoRA test-time training.">
+
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+
+  <style>
+    :root {
+      --bg: #fafaf8;
+      --bg-alt: #f0efec;
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --accent: #c44b25;
+      --border: #ddd;
+      --code-bg: #f5f4f0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Open Sans, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16.5px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    article {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 3rem 2rem 4rem;
+    }
+
+    h1 {
+      font-family: Open Sans, sans-serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      max-width: 720px;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin-bottom: 0.4rem;
+    }
+
+    .subtitle strong { color: var(--text); }
+
+    h2 {
+      font-family: Open Sans, sans-serif;
+      font-size: 1.7rem;
+      font-weight: 600;
+      margin: 3.5rem 0 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      max-width: 720px;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 2rem 0 0.6rem;
+      max-width: 720px;
+    }
+
+    p, ul, ol { max-width: 720px; margin-bottom: 1rem; }
+    ul, ol { padding-left: 1.5rem; }
+    li { margin-bottom: 0.3rem; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    strong { font-weight: 600; }
+
+    code {
+      font-family: monospace;
+      font-size: 0.88em;
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+
+    pre {
+      max-width: 720px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      line-height: 1.55;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.84rem;
+    }
+
+    .top-nav {
+      max-width: 60em;
+      margin: 0 auto 1.5em;
+      padding-right: 1.5em;
+      text-align: right;
+      font-family: Open Sans, sans-serif;
+    }
+
+    .top-nav-title {
+      float: left;
+      margin: 0.7em;
+      color: #f66;
+      font-size: 1.5em;
+      font-weight: bold;
+      line-height: 2em;
+      text-decoration: none;
+    }
+
+    .top-nav-links {
+      display: inline-block;
+    }
+
+    .top-nav-links a {
+      display: inline-block;
+      margin: 0.7em;
+      color: #999;
+      font-size: 1.5em;
+      line-height: 2em;
+      text-decoration: none;
+      transition: color .15s ease-in-out;
+    }
+
+    .top-nav-links a:hover,
+    .top-nav-title:hover {
+      color: rgb(92, 92, 92);
+    }
+
+    blockquote {
+      max-width: 720px;
+      margin: 1.4rem 0 1.5rem;
+      padding: 0.15rem 0 0.15rem 1.1rem;
+      border-left: 4px solid #9a9a92;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .figure {
+      max-width: 720px;
+      margin: 1.5rem 0;
+    }
+
+    .figure img {
+      width: 100%;
+      border-radius: 8px;
+      display: block;
+      border: 1px solid var(--border);
+    }
+
+    .figure figcaption {
+      margin-top: 0.45em;
+      font-size: 0.9em;
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    .stats {
+      max-width: 720px;
+      background: #1e1e1e;
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      border: none;
+    }
+
+    .stats code {
+      background: transparent;
+      color: #d4d4d4;
+      padding: 0;
+      display: block;
+      line-height: 1.55;
+      font-size: 0.84rem;
+    }
+
+    table {
+      max-width: 720px;
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5rem;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      padding: 0.5rem 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-weight: 600;
+      background: var(--bg-alt);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--text-muted);
+    }
+
+    td code {
+      font-size: 0.82rem;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .hero-img {
+      max-width: 720px;
+      margin: 2rem 0;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .hero-img img {
+      width: 100%;
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      article { padding: 2rem 1rem; }
+      table { font-size: 0.82rem; }
+      th, td { padding: 0.4rem 0.5rem; }
+    }
+
+    .token.comment { color: #6a737d; }
+    .token.keyword { color: #d73a49; }
+    .token.string { color: #032f62; }
+    .token.function { color: #6f42c1; }
+    .token.number { color: #005cc5; }
+    .token.operator { color: #d73a49; }
+    .token.builtin { color: #005cc5; }
+    .token { background: transparent !important; }
+
+    /* TTT diagram */
+    .ttt-diagram { margin: 1.5rem 0; }
+    .ttt-diagram svg text { font-family: system-ui, -apple-system, sans-serif; }
+    .ttt-diagram .th { font-size: 14px; font-weight: 500; }
+    .ttt-diagram .ts { font-size: 12px; font-weight: 400; }
+    .ttt-diagram .fill-purple rect { fill: #EEEDFE; stroke: #534AB7; }
+    .ttt-diagram .fill-purple .th { fill: #3C3489; }
+    .ttt-diagram .fill-purple .ts { fill: #534AB7; }
+    .ttt-diagram .fill-teal rect { fill: #E1F5EE; stroke: #0F6E56; }
+    .ttt-diagram .fill-teal .th { fill: #085041; }
+    .ttt-diagram .fill-teal .ts { fill: #0F6E56; }
+    .ttt-diagram .fill-coral rect { fill: #FAECE7; stroke: #993C1D; }
+    .ttt-diagram .fill-coral .th { fill: #712B13; }
+    .ttt-diagram .fill-coral .ts { fill: #993C1D; }
+    .ttt-diagram .fill-amber rect { fill: #FAEEDA; stroke: #854F0B; }
+    .ttt-diagram .fill-amber .th { fill: #633806; }
+    .ttt-diagram .fill-amber .ts { fill: #854F0B; }
+    .ttt-diagram .fill-gray rect { fill: #F1EFE8; stroke: #5F5E5A; }
+    .ttt-diagram .fill-gray .th { fill: #444441; }
+    .ttt-diagram .fill-gray .ts { fill: #5F5E5A; }
+    .ttt-diagram .label-primary { fill: var(--text); }
+    .ttt-diagram .label-secondary { fill: var(--text-muted); }
+    .ttt-diagram .label-tertiary { fill: #999; }
+    .ttt-diagram .stroke-muted { stroke: #999; }
+    .ttt-diagram .stroke-border { stroke: var(--border); }
+    .ttt-diagram .arr { stroke: #999; stroke-width: 1.5; }
+    .ttt-diagram .leader { stroke: #999; stroke-width: 0.5; stroke-dasharray: 3 2; }
+
+    .ttt-diagram.animated .ttt-step { opacity: 0.25; transition: opacity 0.45s ease; }
+    .ttt-diagram.animated .ttt-step.active { opacity: 1; }
+    .ttt-diagram.animated .ttt-phase { opacity: 0; transition: opacity 0.45s ease; }
+    .ttt-diagram.animated .ttt-phase.active { opacity: 1; }
+    .ttt-diagram .loop-back {
+      stroke-dasharray: 8 5;
+      animation: loopFlow 0.8s linear infinite;
+    }
+    @keyframes loopFlow { to { stroke-dashoffset: -13; } }
+
+    .ttt-layout { display: flex; align-items: flex-start; }
+    .ttt-layout > svg { max-width: 520px; width: 100%; height: auto; }
+    @media (max-width: 840px) {
+      .ttt-layout { flex-direction: column; }
+      .ttt-layout > svg { max-width: 100%; }
+    }
+
+    .ttt-combined { display: flex; align-items: center; gap: 1rem; }
+    .ttt-code {
+      flex: 0 0 420px;
+      font-family: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: var(--text);
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.6rem 0;
+      overflow-x: auto;
+    }
+    .code-line {
+      padding: 1px 0.8rem;
+      border-left: 3px solid transparent;
+      transition: background 0.35s ease, border-color 0.35s ease;
+      white-space: pre;
+      min-height: 1.35em;
+    }
+    .code-line.active {
+      background: rgba(196, 75, 37, 0.1);
+      border-left-color: var(--accent);
+    }
+    .ttt-code .kw { color: #d73a49; }
+    .ttt-code .fn { color: #6f42c1; }
+    .ttt-code .cm { color: #6a737d; }
+    .ttt-code .nb { color: #005cc5; }
+    @media (max-width: 900px) {
+      .ttt-combined { flex-direction: column; align-items: stretch; }
+      .ttt-code { flex: none; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../../" class="top-nav-title">parameter golf</a>
+  <div class="top-nav-links">
+    <a href="../../">home</a>
+    <a href="../">projects</a>
+    <a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+    <a href="../../bio/">bio</a>
+  </div>
+</nav>
+<article>
+
+  <h1>OpenAI Parameter Golf Record: LoRA Test-Time Training</h1>
+  <p class="subtitle"><strong>tldr:</strong> a <a href="https://github.com/openai/parameter-golf/pull/77" target="_blank">record</a> (bpb=1.195) in OpenAI's Parameter Golf competition, using only inference-time compute with a novel per-document LoRA test-time training technique.</p>
+
+  <div class="hero-img">
+    <img src="https://github.com/user-attachments/assets/3772d5d3-a29f-4e63-bb08-417311635e2d" alt="Ablation chart showing BPB improvements from doc-isolation, sliding window, and LoRA TTT" />
+  </div>
+
+  <!-- ─── Competition ─── -->
+  <h2>The competition</h2>
+
+  <p><a href="https://github.com/openai/parameter-golf" target="_blank">Parameter Golf</a> is an OpenAI challenge to train the best language model that fits in a 16MB artifact, trains in under 10 minutes on 8xH100s, and evaluates in under 10 minutes. Models are evaluated by compression on the FineWeb validation set, measured in tokenizer-agnostic bits per byte (BPB). Lower is better.</p>
+
+  <p>My submission was the first to use additional inference-time compute to improve performance. The idea was the same one I'd used in the <a href="../nanogpt/">NanoGPT speedrun</a>: adapt the model to each validation sequence before scoring it (<a href="https://yueatsprograms.github.io/ttt/home.html" target="_blank">test-time training</a>, or TTT). However, I implemented a novel use (afaik) of <a href="https://arxiv.org/abs/2106.09685" target="_blank">LoRA</a> to enable ~5x faster inference compared to my previous implementation.</p>
+
+  <!-- ─── Method ─── -->
+  <h2>Method</h2>
+
+  <p><strong>Training</strong> is identical to the naive baseline &mdash; nothing changes. <br><strong>Evaluation</strong> adds per-document LoRA test-time training:</p>
+
+  <div class="ttt-diagram">
+    <div class="ttt-combined">
+    <div class="ttt-code">
+<div class="code-line" id="cl-0"><span class="cm"># Sort by length, batch for efficiency</span></div>
+<div class="code-line" id="cl-1">model.<span class="fn">requires_grad_</span>(<span class="nb">False</span>)</div>
+<div class="code-line" id="cl-2">docs = <span class="fn">split_by_bos</span>(val_tokens)</div>
+<div class="code-line" id="cl-3">sorted_docs = <span class="fn">sorted</span>(docs, key=<span class="nb">len</span>)</div>
+<div class="code-line" id="cl-4"><span class="kw">for</span> batch <span class="kw">in</span> <span class="fn">batched</span>(sorted_docs, <span class="nb">64</span>):</div>
+<div class="code-line" id="cl-5">    lora = <span class="fn">init_per_doc_lora</span>() <span class="cm"># B,A=0</span></div>
+<div class="code-line" id="cl-6">    optimizer.<span class="fn">reset</span>()          <span class="cm"># m,v=0</span></div>
+<div class="code-line" id="cl-7">    chunks = <span class="fn">split</span>(batch, <span class="nb">256</span>)</div>
+<div class="code-line" id="cl-8"></div>
+<div class="code-line" id="cl-9">    <span class="kw">for</span> i, chunk <span class="kw">in</span> <span class="fn">enumerate</span>(chunks):</div>
+<div class="code-line" id="cl-10">        logits = <span class="fn">model</span>(chunk, lora=lora)</div>
+<div class="code-line" id="cl-11">        loss = <span class="fn">cross_entropy</span>(logits, tgt)</div>
+<div class="code-line" id="cl-12">        bpb += loss.<span class="fn">detach</span>() <span class="cm"># record</span></div>
+<div class="code-line" id="cl-13"></div>
+<div class="code-line" id="cl-14">        <span class="kw">if</span> i &lt; <span class="fn">len</span>(chunks) - <span class="nb">1</span>:</div>
+<div class="code-line" id="cl-15">            loss.<span class="fn">backward</span>()   <span class="cm"># LoRA grads</span></div>
+<div class="code-line" id="cl-16">            optimizer.<span class="fn">step</span>() <span class="cm"># Adam</span></div>
+    </div>
+    <div class="ttt-layout">
+    <svg viewBox="0 0 520 700" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+
+      <!-- Title -->
+      <text class="th label-primary" x="248" y="20" text-anchor="middle">Per-batch TTT loop (LoRA resets between batches)</text>
+
+      <!-- Chunk bar -->
+      <g id="p-c0" class="fill-gray ttt-step"><rect x="28" y="34" width="118" height="26" rx="4" stroke-width="0.5"/><text class="ts" x="87" y="51" text-anchor="middle">Chunk 0 (256 tok)</text></g>
+      <g id="p-c1" class="fill-gray ttt-step"><rect x="152" y="34" width="86" height="26" rx="4" stroke-width="0.5"/><text class="ts" x="195" y="51" text-anchor="middle">Chunk 1</text></g>
+      <g id="p-c2" class="fill-gray ttt-step"><rect x="244" y="34" width="86" height="26" rx="4" stroke-width="0.5"/><text class="ts" x="287" y="51" text-anchor="middle">Chunk 2</text></g>
+      <text class="ts label-secondary" x="348" y="51">...</text>
+      <g id="p-clast" class="fill-gray ttt-step"><rect x="370" y="34" width="56" height="26" rx="4" stroke-width="0.5"/><text class="ts" x="398" y="51" text-anchor="middle">Last</text></g>
+
+      <!-- Dashed connector from chunks -->
+      <path d="M28 68 L28 74 L426 74 L426 68" fill="none" class="stroke-border" stroke-width="0.5" stroke-dasharray="3 2"/>
+
+      <!-- Reset box -->
+      <g id="p-reset" class="fill-purple ttt-step">
+        <rect x="120" y="84" width="264" height="36" rx="8" stroke-width="0.5"/>
+        <text class="th" x="252" y="106" text-anchor="middle">Reset LoRA adapters + Adam state</text>
+      </g>
+      <line x1="252" y1="120" x2="252" y2="140" class="arr" marker-end="url(#arrow)"/>
+
+      <!-- Loop container -->
+      <rect x="24" y="144" width="472" height="418" rx="14" fill="none" class="stroke-border" stroke-width="0.5" stroke-dasharray="4 3"/>
+      <text class="ts label-secondary" x="40" y="162">For each chunk i = 0, 1, ..., n-1</text>
+
+      <!-- Phase labels (only one visible at a time) -->
+      <g id="p-phase-fwd" class="ttt-phase"><text class="th" x="215" y="180" text-anchor="middle" style="fill:#0F6E56">&#x25B8; Forward</text></g>
+      <g id="p-phase-score" class="ttt-phase"><text class="th" x="215" y="180" text-anchor="middle" style="fill:#0F6E56">&#x25B8; Store loss for BPB</text></g>
+      <g id="p-phase-bwd" class="ttt-phase"><text class="th" x="215" y="180" text-anchor="middle" style="fill:#993C1D">&#x25B8; Backward (same graph)</text></g>
+      <g id="p-phase-upd" class="ttt-phase"><text class="th" x="215" y="180" text-anchor="middle" style="fill:#854F0B">&#x25B8; Adam update (LoRA only)</text></g>
+
+      <!-- Input tokens -->
+      <g id="p-input" class="ttt-step fill-gray">
+        <rect x="90" y="192" width="230" height="26" rx="6" stroke-width="0.5"/>
+        <text class="ts" x="205" y="209" text-anchor="middle">64 docs &#xD7; 256 tokens</text>
+      </g>
+      <line x1="205" y1="218" x2="205" y2="232" class="arr" marker-end="url(#arrow)"/>
+
+      <!-- Embedding -->
+      <g id="p-embed" class="ttt-step fill-gray">
+        <rect x="90" y="236" width="230" height="24" rx="5" stroke-width="0.5"/>
+        <text class="th" x="205" y="252" text-anchor="middle">Embedding</text>
+      </g>
+      <line x1="205" y1="260" x2="205" y2="274" class="arr" marker-end="url(#arrow)"/>
+
+      <!-- Transformer Block container -->
+      <rect x="62" y="278" width="260" height="160" rx="10" fill="none" class="stroke-border" stroke-width="0.5" stroke-dasharray="4 3"/>
+      <text class="ts label-secondary" x="76" y="294">Transformer Block &#xD7; N</text>
+
+      <!-- Attn projections: W + LoRA -->
+      <g id="p-cq-w" class="ttt-step fill-gray">
+        <rect x="80" y="302" width="130" height="22" rx="4" stroke-width="0.5"/>
+        <text class="ts" x="145" y="317" text-anchor="middle">W_q, W_v</text>
+      </g>
+      <g id="p-cq-lora" class="ttt-step fill-coral">
+        <rect x="216" y="302" width="100" height="22" rx="4" stroke-width="0.5"/>
+        <text class="ts" x="266" y="317" text-anchor="middle">+ B_qA_q, B_vA_v</text>
+      </g>
+
+      <!-- W_k: no LoRA -->
+      <g id="p-ck" class="ttt-step fill-gray">
+        <rect x="80" y="330" width="236" height="22" rx="4" stroke-width="0.5"/>
+        <text class="ts" x="198" y="345" text-anchor="middle">W_k</text>
+      </g>
+
+      <line x1="205" y1="358" x2="205" y2="370" class="arr" marker-end="url(#arrow)"/>
+
+      <!-- Attention -->
+      <g id="p-attn" class="ttt-step fill-gray">
+        <rect x="80" y="374" width="236" height="22" rx="4" stroke-width="0.5"/>
+        <text class="ts" x="198" y="389" text-anchor="middle">Attention &#x2192; Output proj</text>
+      </g>
+      <line x1="205" y1="396" x2="205" y2="406" class="arr" marker-end="url(#arrow)"/>
+
+      <!-- MLP -->
+      <g id="p-mlp" class="ttt-step fill-gray">
+        <rect x="80" y="410" width="236" height="22" rx="4" stroke-width="0.5"/>
+        <text class="ts" x="198" y="425" text-anchor="middle">MLP</text>
+      </g>
+
+      <!-- Arrow from transformer block to LM head -->
+      <line x1="205" y1="436" x2="205" y2="452" class="arr" marker-end="url(#arrow)"/>
+
+      <!-- LM Head -->
+      <g id="p-lm-w" class="ttt-step fill-gray">
+        <rect x="80" y="456" width="130" height="24" rx="4" stroke-width="0.5"/>
+        <text class="ts" x="145" y="472" text-anchor="middle">W_lm</text>
+      </g>
+      <g id="p-lm-lora" class="ttt-step fill-coral">
+        <rect x="216" y="456" width="100" height="24" rx="4" stroke-width="0.5"/>
+        <text class="ts" x="266" y="472" text-anchor="middle">+ B_lmA_lm</text>
+      </g>
+
+      <!-- Arrow to loss -->
+      <line x1="205" y1="480" x2="205" y2="494" class="arr" marker-end="url(#arrow)"/>
+
+      <!-- CE Loss -->
+      <g id="p-loss" class="ttt-step fill-teal">
+        <rect x="80" y="498" width="236" height="30" rx="6" stroke-width="0.5"/>
+        <text class="th" x="198" y="517" text-anchor="middle">CE Loss &#x2192; BPB</text>
+      </g>
+
+      <!-- Accumulate annotation -->
+      <g id="p-accum" class="ttt-step">
+        <line class="leader" x1="316" y1="513" x2="358" y2="502"/><circle cx="316" cy="513" r="2" fill="#999"/>
+        <g class="fill-amber"><rect x="360" y="490" width="110" height="30" rx="6" stroke-width="0.5"/><text class="ts" x="415" y="509" text-anchor="middle">Accumulate BPB</text></g>
+      </g>
+
+      <!-- Skip (last chunk) annotation -->
+      <g id="p-skip" class="ttt-step">
+        <line class="leader" x1="316" y1="513" x2="358" y2="534"/><circle cx="316" cy="513" r="2" fill="#999"/>
+        <g class="fill-gray"><rect x="360" y="524" width="110" height="28" rx="6" stroke-width="0.5"/><text class="ts" x="415" y="542" text-anchor="middle">Skip (no train)</text></g>
+      </g>
+
+      <!-- Loop-back arrow -->
+      <path d="M78 544 L46 544 L46 204 L78 204" fill="none" class="arr loop-back" marker-end="url(#arrow)"/>
+      <text class="ts label-secondary" x="34" y="376" text-anchor="middle" transform="rotate(-90 34 376)">Next chunk</text>
+
+      <!-- Key insight -->
+      <line x1="252" y1="600" x2="252" y2="616" class="arr" marker-end="url(#arrow)"/>
+      <g id="p-key" class="ttt-step fill-purple">
+        <rect x="52" y="620" width="416" height="46" rx="8" stroke-width="0.5"/>
+        <text class="th" x="260" y="638" text-anchor="middle">Key: loss recorded before any grad update on those tokens</text>
+        <text class="ts" x="260" y="654" text-anchor="middle">&#x2192; valid P(chunk_i | &#x3B8; adapted on chunks 0..i-1)</text>
+      </g>
+
+      <!-- Legend -->
+      <rect x="100" y="680" width="12" height="12" rx="3" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+      <text class="ts label-secondary" x="118" y="691">Frozen (shared, no grad)</text>
+      <rect x="280" y="680" width="12" height="12" rx="3" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/>
+      <text class="ts" x="298" y="691" style="fill:#993C1D">LoRA (per-doc, updated)</text>
+    </svg>
+    </div>
+    </div>
+    <p style="font-size:0.9em; color:var(--text-muted); line-height:1.5; margin-top:0.3em;">The TTT eval loop: for each batch of documents, reset LoRA adapters and iterate over chunks. One forward pass computes the loss (stored for BPB), then backprop updates only LoRA adapters. Base weights (gray) stay frozen and shared; only LoRA adapters (coral) are updated per-document.</p>
+  </div>
+
+  <script>
+  (function() {
+    var d = document.querySelector('.ttt-diagram');
+    if (!d) return;
+
+    var fwd = ['p-input', 'p-embed', 'p-cq-w', 'p-cq-lora', 'p-ck', 'p-attn', 'p-mlp', 'p-lm-w', 'p-lm-lora'];
+    var loraOnly = ['p-cq-lora', 'p-lm-lora'];
+    var steps = [
+      ['p-c0', 'p-reset'],
+      ['p-c0', 'p-phase-fwd'].concat(fwd, ['p-loss']),
+      ['p-c0', 'p-phase-score', 'p-loss', 'p-accum'],
+      ['p-c0', 'p-phase-bwd'].concat(loraOnly),
+      ['p-c0', 'p-phase-upd'].concat(loraOnly),
+      ['p-c1', 'p-phase-fwd'].concat(fwd, ['p-loss']),
+      ['p-c1', 'p-phase-score', 'p-loss', 'p-accum'],
+      ['p-c1', 'p-phase-bwd'].concat(loraOnly),
+      ['p-c1', 'p-phase-upd'].concat(loraOnly),
+      ['p-c2', 'p-phase-fwd'].concat(fwd, ['p-loss']),
+      ['p-c2', 'p-phase-score', 'p-loss', 'p-accum'],
+      ['p-c2', 'p-phase-bwd'].concat(loraOnly),
+      ['p-c2', 'p-phase-upd'].concat(loraOnly),
+      ['p-clast', 'p-phase-fwd'].concat(fwd, ['p-loss']),
+      ['p-clast', 'p-phase-score', 'p-loss', 'p-accum', 'p-skip'],
+      ['p-key']
+    ];
+
+    var codeMap = [
+      [4, 5, 6, 7],   // reset
+      [9, 10, 11],     // fwd c0
+      [12],            // score c0
+      [14, 15],        // bwd c0
+      [16],            // upd c0
+      [9, 10, 11],     // fwd c1
+      [12],            // score c1
+      [14, 15],        // bwd c1
+      [16],            // upd c1
+      [9, 10, 11],     // fwd c2
+      [12],            // score c2
+      [14, 15],        // bwd c2
+      [16],            // upd c2
+      [9, 10, 11],     // fwd last
+      [12, 14],        // score last (skip)
+      []               // key
+    ];
+
+    var ids = {};
+    steps.forEach(function(s) { s.forEach(function(id) { ids[id] = 1; }); });
+    var allIds = Object.keys(ids);
+    var cur = 0;
+    d.classList.add('animated');
+
+    function tick() {
+      allIds.forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+      });
+      for (var j = 0; j <= 16; j++) {
+        var cl = document.getElementById('cl-' + j);
+        if (cl) cl.classList.remove('active');
+      }
+      steps[cur].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.classList.add('active');
+      });
+      codeMap[cur].forEach(function(n) {
+        var cl = document.getElementById('cl-' + n);
+        if (cl) cl.classList.add('active');
+      });
+      cur = (cur + 1) % steps.length;
+    }
+    tick();
+    setInterval(tick, 1400);
+  })();
+  </script>
+
+  <p>The critical invariant: loss on each chunk is computed <em>before</em> any gradient update touches those tokens. The model and LoRA adapters reset between documents. This means the dependency graph is identical to standard autoregressive evaluation &mdash; token \(i\) in document \(j\) only depends on tokens \(i' < i\) in the same document \(j\). This is very similar to <a href="https://arxiv.org/abs/2512.13898" target="_blank">Let's (not) just put things in Context: Test-Time Training for Long-Context LLMs</a> and <a href="https://test-time-training.github.io/e2e.pdf" target="_blank">End-to-End Test-Time Training for Long Context</a>.</p>
+
+  <h3>Why LoRA?</h3>
+
+  <p>In the <a href="../nanogpt/">NanoGPT TTT submission</a>, I updated full model weights per-sequence. This was correct but slow: each document's gradient step modifies the shared weights differently, so you can't batch across documents &mdash; document 0's adapted \(W\) is different from document 1's. You need a separate copy of the full weight matrix per document, so you're stuck at <code>batch_size=1</code>.</p>
+
+  <p>LoRA sidesteps this by factoring each weight update into a small low-rank perturbation: the base weights \(\theta\) stay frozen and shared across the entire batch, while each document only owns its own tiny \(B_i A_i\) matrices (rank 8) on a subset of the layers. The forward pass becomes \(xW + x B_i A_i\) &mdash; the first term is a single batched matmul over shared weights, the second is a small per-document matmul. This lets 64 documents adapt in parallel.</p>
+
+  <div class="ttt-diagram" style="max-width:720px">
+    <svg viewBox="0 0 720 310" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow-w" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+
+      <!-- Left: Full-weight TTT -->
+      <text class="th" x="160" y="20" text-anchor="middle" style="fill:#993C1D">Full-weight TTT</text>
+      <text class="ts label-secondary" x="160" y="38" text-anchor="middle">batch_size = 1 (sequential)</text>
+
+      <!-- Shared W -->
+      <g class="fill-gray"><rect x="110" y="50" width="100" height="32" rx="6" stroke-width="0.5"/><text class="th" x="160" y="71" text-anchor="middle">W</text></g>
+      <text class="ts label-tertiary" x="220" y="71">all params</text>
+
+      <!-- Fork arrows -->
+      <line x1="130" y1="82" x2="80" y2="100" class="arr" marker-end="url(#arrow-w)"/>
+      <line x1="190" y1="82" x2="240" y2="100" class="arr" marker-end="url(#arrow-w)"/>
+
+      <!-- Doc 0 gradient -->
+      <g class="fill-coral"><rect x="30" y="104" width="100" height="28" rx="5" stroke-width="0.5"/><text class="ts" x="80" y="122" text-anchor="middle">&#x2207;L&#x2080;(W)</text></g>
+      <line x1="80" y1="132" x2="80" y2="150" class="arr" marker-end="url(#arrow-w)"/>
+
+      <!-- Doc 1 gradient -->
+      <g class="fill-coral"><rect x="190" y="104" width="100" height="28" rx="5" stroke-width="0.5"/><text class="ts" x="240" y="122" text-anchor="middle">&#x2207;L&#x2081;(W)</text></g>
+      <line x1="240" y1="132" x2="240" y2="150" class="arr" marker-end="url(#arrow-w)"/>
+
+      <!-- Resulting weights -->
+      <g class="fill-amber"><rect x="16" y="154" width="128" height="32" rx="5" stroke-width="0.5"/><text class="ts" x="80" y="174" text-anchor="middle">W&#x2080; = W &#x2212; lr&#xB7;&#x2207;L&#x2080;</text></g>
+      <g class="fill-amber"><rect x="176" y="154" width="128" height="32" rx="5" stroke-width="0.5"/><text class="ts" x="240" y="174" text-anchor="middle">W&#x2081; = W &#x2212; lr&#xB7;&#x2207;L&#x2081;</text></g>
+
+      <!-- Problem callout -->
+      <text class="ts" x="160" y="208" text-anchor="middle" style="fill:#993C1D; font-weight:600">W&#x2080; &#x2260; W&#x2081; &#x2014; can't share weights</text>
+      <rect x="36" y="220" width="248" height="44" rx="8" fill="none" stroke="#993C1D" stroke-width="1" stroke-dasharray="4 3"/>
+      <text class="ts" x="160" y="240" text-anchor="middle" style="fill:#993C1D">Each doc needs full copy of W</text>
+      <text class="ts" x="160" y="256" text-anchor="middle" style="fill:#993C1D">Memory: O(N &#xD7; d&#xB2;) &#x2192; batch_size = 1</text>
+
+      <!-- Divider -->
+      <line x1="345" y1="10" x2="345" y2="300" stroke="var(--border)" stroke-width="1" stroke-dasharray="6 4"/>
+
+      <!-- Right: LoRA TTT -->
+      <text class="th" x="540" y="20" text-anchor="middle" style="fill:#0F6E56">LoRA TTT</text>
+      <text class="ts label-secondary" x="540" y="38" text-anchor="middle">batch_size = 64 (parallel)</text>
+
+      <!-- Frozen W -->
+      <g class="fill-gray"><rect x="470" y="50" width="140" height="32" rx="6" stroke-width="0.5"/><text class="th" x="540" y="71" text-anchor="middle">W (frozen)</text></g>
+      <text class="ts label-tertiary" x="620" y="71">1 copy</text>
+
+      <!-- Fork -->
+      <line x1="540" y1="82" x2="540" y2="98" class="arr"/>
+      <line x1="400" y1="98" x2="680" y2="98" class="arr"/>
+      <line x1="400" y1="98" x2="400" y2="112" class="arr" marker-end="url(#arrow-w)"/>
+      <line x1="540" y1="98" x2="540" y2="112" class="arr" marker-end="url(#arrow-w)"/>
+
+      <!-- Shared matmul -->
+      <g class="fill-gray"><rect x="376" y="116" width="48" height="44" rx="5" stroke-width="0.5"/><text class="ts" x="400" y="139" text-anchor="middle">xW</text><text class="ts label-tertiary" x="400" y="153" text-anchor="middle">shared</text></g>
+
+      <!-- Per-doc adapters -->
+      <g class="fill-coral"><rect x="458" y="116" width="28" height="44" rx="4" stroke-width="0.5"/><text class="ts" x="472" y="143" text-anchor="middle" style="font-size:9px">B&#x2080;A&#x2080;</text></g>
+      <g class="fill-coral"><rect x="492" y="116" width="28" height="44" rx="4" stroke-width="0.5"/><text class="ts" x="506" y="143" text-anchor="middle" style="font-size:9px">B&#x2081;A&#x2081;</text></g>
+      <g class="fill-coral"><rect x="526" y="116" width="28" height="44" rx="4" stroke-width="0.5"/><text class="ts" x="540" y="143" text-anchor="middle" style="font-size:9px">B&#x2082;A&#x2082;</text></g>
+      <text class="ts label-tertiary" x="572" y="143">...&#x2086;&#x2083;</text>
+      <text class="ts" x="520" y="178" text-anchor="middle" style="fill:#993C1D; font-size:10px">per-doc, rank 8</text>
+
+      <!-- Plus sign -->
+      <text class="th label-primary" x="440" y="143" text-anchor="middle" style="font-size:16px">+</text>
+
+      <!-- Merge arrows -->
+      <line x1="400" y1="160" x2="400" y2="190" class="arr"/>
+      <line x1="540" y1="160" x2="540" y2="190" class="arr"/>
+      <line x1="400" y1="190" x2="540" y2="190" class="arr"/>
+      <line x1="470" y1="190" x2="470" y2="206" class="arr" marker-end="url(#arrow-w)"/>
+
+      <!-- Output -->
+      <g class="fill-teal"><rect x="400" y="210" width="210" height="28" rx="6" stroke-width="0.5"/><text class="ts" x="505" y="228" text-anchor="middle">output&#x1D62; = xW + xB&#x1D62;A&#x1D62;</text></g>
+
+      <!-- Solution callout -->
+      <rect x="400" y="250" width="280" height="44" rx="8" fill="none" stroke="#0F6E56" stroke-width="1" stroke-dasharray="4 3"/>
+      <text class="ts" x="540" y="270" text-anchor="middle" style="fill:#0F6E56">W shared (1 copy), adapters tiny</text>
+      <text class="ts" x="540" y="286" text-anchor="middle" style="fill:#0F6E56">Memory: O(N &#xD7; r &#xD7; d) &#x2192; batch_size = 64</text>
+    </svg>
+  </div>
+
+  <p>Memory per document drops from a full weight matrix to <code>rank &times; (d_in + d_out)</code> per target layer. With rank 8, 64 independent adaptation states fit comfortably. Documents are sorted by length and batched for efficiency; a single Adam optimizer (<code>lr=0.01, betas=(0.9, 0.95)</code>) trains all LoRA parameters with one gradient step per chunk. The result is ~5x faster TTT that uses only ~1/10th of the evaluation time budget.</p>
+
+  <!-- ─── Ablations ─── -->
+  <h2>Ablations</h2>
+
+  <p>Most of the improvement comes not just from TTT, but from two other eval-time changes: isolating documents (not conditioning across document boundaries) and using a sliding window.</p>
+
+  <table>
+    <thead>
+      <tr><th>Condition</th><th>val_loss</th><th>val_bpb</th><th>&Delta; bpb</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Baseline (cross-doc, flat stream)</td><td>2.0731</td><td>1.2278</td><td>&mdash;</td></tr>
+      <tr><td>+ Doc-isolated</td><td>2.0561</td><td>1.2168</td><td>-0.0110</td></tr>
+      <tr><td>+ Stride (chunk=256)</td><td>2.0177</td><td>1.1941</td><td>-0.0337</td></tr>
+      <tr><td><strong>+ LoRA TTT</strong></td><td><strong>2.0126</strong></td><td><strong>1.1910</strong></td><td><strong>-0.0368</strong></td></tr>
+    </tbody>
+  </table>
+
+  <figure class="figure">
+    <img src="https://github.com/user-attachments/assets/3772d5d3-a29f-4e63-bb08-417311635e2d" alt="Ablation chart showing BPB improvements from doc-isolation, sliding window, and LoRA TTT" loading="lazy" />
+    <figcaption>Ablation of the three eval-time changes. Sliding window gives the largest single gain; LoRA TTT adds on top.</figcaption>
+  </figure>
+
+  <p>Document isolation alone gets -0.011 BPB: the baseline evaluates across document boundaries, so the model wastes context attending to tokens from an unrelated document. The sliding window adds -0.023 more by giving later tokens more context via overlapping chunks. LoRA TTT then encodes earlier context into the weights, adding -0.003 on top &mdash; a small gain, but one that compounds with longer documents.</p>
+
+  <!-- ─── Results ─── -->
+  <h2>Results</h2>
+
+  <p>Validated on the full 50k-document FineWeb validation split across 4 seeds. This was submitted as a record at <code>bpb=1.195</code>.</p>
+
+  <pre class="stats"><code>bpb: [1.1927, 1.1935, 1.1921, 1.1929]
+mean: 1.1928
+std:  0.0005
+p-value < 1.195: 0.00234486</code></pre>
+
+  <p>For context, the naive baseline sits at <code>bpb=1.2244</code>. This submission improved it by 0.032 BPB with zero changes to training &mdash; purely eval-time.</p>
+
+  <!-- ─── Impact ─── -->
+  <h2>An aside: a cautionary tale of self-improvement loops</h2>
+
+  <p>This PR planted a very strange seed in the competition. A day or two after my submission, ~1/2 of the PRs I saw used TTT. This seemed great! Part of my motivation was to push this "inference-as-optimization" to the community.</p>
+
+  <p>Sadly, many of these follow-ups implemented TTT incorrectly &mdash; training on validation tokens <em>before</em> scoring them, which is literally just training on the test set. Funnily enough, these PRs <em>kept citing eachother</em> to say their approach is valid.</p>
+
+  <h3>Why is this happening? Why are so many people training on test?</h3>
+
+  <p>Looking at the PRs, you can tell most are AI-generated. Each AI-generated PR might have a low probability of introducing a cheating bug &mdash; say 1%. But the competition has thousands of people attempting it, and only the ones that beat the current record get submitted. So in the limit of an "unbeatable" baseline, every PR claiming it beats the record will be cheating.</p>
+
+  <p>Worse, it's self-reinforcing. Once one buggy submission gets through and lands on the leaderboard, it becomes a reference point. Agents building on prior work are now more likely to cite and copy the buggy implementation &mdash; it has the best score, after all.</p>
+
+  <p>This points to how careful you have to be with any sort of large-scale incremental improvement loop, independent of "LLM-generated cheats" like this one. For example, if you are implementing a kernel-improvement loop, even small inter-run variance could amplify a sub-optimal kernel due to a "lucky" run.</p>
+  <p>There are three ways you can deal with this problem:</p>
+  <ol>
+    <li><strong>Wait for [insert lab here] to fix your problem:</strong> In my experience, models "cheat" less now than they did 6 months ago, and this trend will likely continue.</li>
+    <li><strong>Make your success criterion more explicit:</strong> Add a test verifying no gradients are calculated on future tokens, or even add a deliberate "don't train on test" to the prompt.</li>
+    <li><strong>Add a human-in-the-loop:</strong> People's failures tend to be very different than LLMs. This is roughly how competitions like this one handle it: the PRs aren't merged by maintainers who can evaluate the code.</li>
+  </ol>
+
+  <p>Generally, I think this points to how claims of RSI are overstated. Yes, these agents are great for very tightly integrated feedback loops, but the problem is not solved.</p>
+
+  <p>I wrote a <a href="https://samacquaviva.com/projects/ttt-clarification/" target="_blank">comment</a> on the leakage issue (<a href="https://github.com/openai/parameter-golf/issues/402#issuecomment-4103826997" target="_blank">#402</a>) categorizing three flavors of TTT from least to most legitimate:</p>
+
+  <ol>
+    <li><strong>Train on val, then score val</strong> &mdash; literally training on test. Invalid, obviously.</li>
+    <li><strong>TTT autoregressively on the token stream</strong> &mdash; score-first within chunks, but adapts across documents. This means more eval data = lower loss in expectation, which breaks the usual semantics of a validation set.</li>
+    <li><strong>TTT autoregressively per document, independently</strong> &mdash; score-first, reset between documents. The dependency graph is identical to standard autoregressive eval. This is the approach used in my PR, and in the TTT literature (<a href="https://arxiv.org/abs/2512.13898" target="_blank">Bansal et al.</a>, <a href="https://arxiv.org/pdf/2507.02092" target="_blank">Energy-based Transformers</a>).</li>
+  </ol>
+
+  <!-- ─── Next steps ─── -->
+  <h2>Next steps</h2>
+
+  <p><strong>Train-test mismatch.</strong> The model is trained conditioning on a stream of concatenated documents, but at eval time we isolate documents and mask cross-document context. This creates a distribution shift &mdash; the model has never seen a sequence that starts cold without prior context. The loss spikes visible at the start of each document in the ablation chart above are a direct symptom. Training with document isolation (or at least sometimes resetting context at document boundaries) would close this gap and likely improve BPB further.</p>
+
+  <p><strong>Hyperparameter tuning.</strong> The current method is barely optimized. LoRA rank, learning rate, chunk size, which layers get adapters, number of TTT steps per chunk &mdash; none of these were seriously searched. I picked reasonable defaults and moved on. A proper sweep would almost certainly find a better operating point.</p>
+
+  <p>I didn't pursue either direction because I'm compute-constrained: this project was limited to inference-only research, which is orders of magnitude cheaper than retraining. Both of these improvements require training runs on 8xH100s, which I don't have easy access to.</p>
+
+</article>
+
+<script>
+if (window.innerWidth < 700) {
+  var w = document.querySelector('.top-nav-links');
+  w.innerHTML = '<a href="../../">home</a><br><a href="../">projects</a><br><a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a><br><a href="../../bio/">bio</a>';
+  w.style.marginTop = '1em';
+  w.querySelectorAll('a').forEach(function(a) { a.style.lineHeight = '1.5'; a.style.margin = '0'; });
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>Prism.highlightAll();</script>
+<script data-goatcounter="https://samacqua.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
