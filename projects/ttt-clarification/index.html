@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>When is Test-Time Training Valid?</title>
+  <meta name="Description" content="A dependency analysis of three test-time training strategies: which ones leak information and which are equivalent to standard autoregressive modeling.">
+
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #fafaf8;
+      --bg-alt: #f0efec;
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --accent: #c44b25;
+      --border: #ddd;
+      --code-bg: #f5f4f0;
+      --green: #0d8065;
+      --green-fill: #d5f0e8;
+      --green-bright: #10a37f;
+      --red: #c0392b;
+      --red-fill: #fce4e0;
+      --red-bright: #e74c3c;
+      --cell-empty: #eae8e2;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Open Sans, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16.5px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    article {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 3rem 2rem 4rem;
+    }
+
+    h1 {
+      font-family: Open Sans, sans-serif;
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      max-width: 720px;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin-bottom: 0.4rem;
+    }
+
+    .subtitle strong { color: var(--text); }
+
+    h2 {
+      font-family: Open Sans, sans-serif;
+      font-size: 1.7rem;
+      font-weight: 600;
+      margin: 3.5rem 0 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      max-width: 720px;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 2rem 0 0.6rem;
+      max-width: 720px;
+    }
+
+    p, ul, ol { max-width: 720px; margin-bottom: 1rem; }
+    ul, ol { padding-left: 1.5rem; }
+    li { margin-bottom: 0.3rem; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    strong { font-weight: 600; }
+
+    code {
+      font-family: monospace;
+      font-size: 0.88em;
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+
+    pre {
+      max-width: 720px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      line-height: 1.55;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.84rem;
+    }
+
+    .top-nav {
+      max-width: 60em;
+      margin: 0 auto 1.5em;
+      padding-right: 1.5em;
+      text-align: right;
+      font-family: Open Sans, sans-serif;
+    }
+
+    .top-nav-title {
+      float: left;
+      margin: 0.7em;
+      color: #f66;
+      font-size: 1.5em;
+      font-weight: bold;
+      line-height: 2em;
+      text-decoration: none;
+    }
+
+    .top-nav-links {
+      display: inline-block;
+    }
+
+    .top-nav-links a {
+      display: inline-block;
+      margin: 0.7em;
+      color: #999;
+      font-size: 1.5em;
+      line-height: 2em;
+      text-decoration: none;
+      transition: color .15s ease-in-out;
+    }
+
+    .top-nav-links a:hover,
+    .top-nav-title:hover {
+      color: rgb(92, 92, 92);
+    }
+
+    blockquote {
+      max-width: 720px;
+      margin: 1.4rem 0 1.5rem;
+      padding: 0.15rem 0 0.15rem 1.1rem;
+      border-left: 4px solid #9a9a92;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .token.comment { color: #6a737d; }
+    .token.keyword { color: #d73a49; }
+    .token.string { color: #032f62; }
+    .token.function { color: #6f42c1; }
+    .token.number { color: #005cc5; }
+    .token.operator { color: #d73a49; }
+    .token.builtin { color: #005cc5; }
+    .token { background: transparent !important; }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      article { padding: 2rem 1rem; }
+    }
+
+    /* ─── Dependency matrix visualization ─── */
+
+    .matrix-vis {
+      max-width: 920px;
+      margin: 2rem 0 2.5rem;
+    }
+
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 700px) {
+      .matrix-grid { grid-template-columns: 1fr; }
+    }
+
+    .m-panel {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px 16px;
+      position: relative;
+      transition: border-color .4s, box-shadow .4s;
+    }
+
+    .m-panel.glow {
+      border-color: var(--green-bright);
+      box-shadow: 0 0 0 2px rgba(16, 163, 127, .12);
+    }
+
+    .m-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 1px;
+    }
+
+    .m-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .m-badge {
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 99px;
+      opacity: 0;
+    }
+
+    .m-badge-ref {
+      color: #555;
+      background: #e8e7e2;
+      border: 1px solid #ccc;
+    }
+
+    .m-badge-ok {
+      color: var(--green);
+      background: var(--green-fill);
+      border: 1px solid rgba(13, 128, 101, .25);
+    }
+
+    .m-badge-no {
+      color: var(--red);
+      background: var(--red-fill);
+      border: 1px solid rgba(192, 57, 43, .2);
+    }
+
+    .m-sub {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .m-wrap { display: flex; align-items: center; justify-content: center; }
+
+    .mc { position: relative; }
+
+    .doc-bar { display: flex; }
+
+    .dtag {
+      font-size: 0.52rem;
+      font-weight: 700;
+      text-align: center;
+      padding: 1px 0;
+      border-radius: 3px;
+      letter-spacing: 0.05em;
+    }
+
+    .d-none { background: var(--cell-empty); border-radius: 1.5px; }
+    .d-valid { background: var(--green-bright); border-radius: 1.5px; opacity: 0; }
+    .d-invalid { background: var(--red-bright); border-radius: 1.5px; opacity: 0; }
+
+    .sep-line { position: absolute; background: rgba(0,0,0,.06); }
+
+    .vis-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+    }
+
+    .vis-legend {
+      display: flex;
+      gap: 14px;
+    }
+
+    .vis-legend span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .vis-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    .vis-btns { display: flex; gap: 6px; }
+
+    .vis-btn {
+      font-family: Open Sans, sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .vis-btn:hover {
+      background: var(--bg-alt);
+      border-color: #bbb;
+    }
+
+    .vis-info {
+      text-align: center;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      min-height: 1.2em;
+      margin-top: 6px;
+    }
+
+    .vis-takeaway {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: var(--green-fill);
+      border: 1px solid rgba(13, 128, 101, .2);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: var(--text);
+      opacity: 0;
+    }
+
+    .vis-takeaway strong { color: var(--green); }
+  </style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../../" class="top-nav-title">ttt clarification</a>
+  <div class="top-nav-links">
+    <a href="../../">home</a>
+    <a href="../">projects</a>
+    <a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+    <a href="../../bio/">bio</a>
+  </div>
+</nav>
+<article>
+
+  <h1>When is Test-Time Training Valid?</h1>
+  <p class="subtitle">A dependency analysis of three TTT strategies, from <a href="https://github.com/openai/parameter-golf/issues/402" target="_blank">this discussion</a>.</p>
+
+  <h2>The question</h2>
+
+  <p>Test-time training (TTT) adapts a model's weights on the input before scoring it. In competitions like <a href="https://github.com/openai/parameter-golf" target="_blank">parameter-golf</a>, this raises an obvious question: when is this actually a valid evaluation, and when is it just training on test?</p>
+
+  <p>The answer depends entirely on the <strong>dependency structure</strong> — which tokens can influence each token's loss. There are three meaningfully different instantiations, from least to most legitimate.</p>
+
+  <h2>Three cases</h2>
+
+  <h3>Case 1: Train on val, then eval on val</h3>
+
+  <p>Train on <em>all</em> validation tokens for multiple epochs, then compute the loss on those same tokens.</p>
+
+  <pre><code class="language-python">def eval_ttt_cheat(model, val_tokens, num_epochs):
+    for epoch in range(num_epochs):
+        for batch in batches(val_tokens):
+            sgd_step(model, loss(model, batch))
+    return mean(loss(model, batch) for batch in batches(val_tokens))</code></pre>
+
+  <p><strong>Invalid.</strong> This is literally training on test. You could initialize a large random model, train for enough epochs, and drive the loss to zero. Every token's evaluation depends on every token — including future tokens and tokens from other documents.</p>
+
+  <h3>Case 2: TTT auto-regressively on the token stream</h3>
+
+  <p>Process the entire validation token stream left-to-right. For each chunk, score it, then train on it.</p>
+
+  <pre><code class="language-python">def eval_ttt_stream(model, val_tokens, chunk_size):
+    ttt_model = deepcopy(model)
+    for chunk in chunks(val_tokens, chunk_size):
+        loss_per_token = ttt_model(chunk)
+        accumulate(loss_per_token)
+        sgd_step(ttt_model, mean(loss_per_token))
+    return total_bpb()</code></pre>
+
+  <p><strong>Invalid.</strong> Each token is scored before training on it (good), but the model is never reset between documents (bad). Tokens in later documents benefit from training on earlier documents, creating cross-document dependencies that don't exist in standard autoregressive modeling.</p>
+
+  <p>Another way to see this: if the validation set had 100k documents instead of 50k, the expected loss would be <em>lower</em> (more training data via TTT), which breaks the basic property that an eval metric should be invariant to the number of samples.</p>
+
+  <h3>Case 3: TTT auto-regressively per document</h3>
+
+  <p>Process each document independently. Within each document, process chunks left-to-right: score, then train. Reset the model between documents.</p>
+
+  <pre><code class="language-python">def eval_ttt_per_doc(model, val_tokens, chunk_size):
+    for doc in split_at_BOS(val_tokens):
+        doc_model = deepcopy(model)
+        for chunk in chunks(doc, chunk_size):
+            loss_per_token = doc_model(chunk)
+            accumulate(loss_per_token)
+            sgd_step(doc_model, mean(loss_per_token))
+    return total_bpb()</code></pre>
+
+  <p><strong>Valid.</strong> Token <em>i</em> in document <em>j</em> depends only on tokens <em>i' &lt; i</em> in document <em>j</em> — <em>exactly</em> the same dependency structure as standard autoregressive modeling. The gradient step is just another operator for conditioning on context, no different from attention or a state update. See <a href="https://arxiv.org/pdf/2507.02092" target="_blank">Energy-based Transformers</a> and <a href="https://test-time-training.github.io/e2e.pdf" target="_blank">E2E Test-Time Training</a> for formal treatments.</p>
+
+  <h2>Dependency matrices</h2>
+
+  <p>The visualization below makes this concrete. Each matrix shows the dependency structure for one strategy: row = token being evaluated, column = token that influences it. <span style="color:var(--green-bright)">Green</span> cells match standard AR; <span style="color:var(--red-bright)">red</span> cells are information leakage.</p>
+
+  <div class="matrix-vis">
+    <div class="matrix-grid" id="grid"></div>
+    <div class="vis-info" id="info">&nbsp;</div>
+    <div class="vis-controls">
+      <div class="vis-legend">
+        <span><span class="vis-swatch" style="background:var(--green-bright)"></span>Valid dep</span>
+        <span><span class="vis-swatch" style="background:var(--red-bright)"></span>Leakage</span>
+        <span><span class="vis-swatch" style="background:var(--cell-empty);border:1px solid #ccc"></span>No dep</span>
+      </div>
+      <div class="vis-btns">
+        <button class="vis-btn" id="playBtn">&#9654; Animate</button>
+        <button class="vis-btn" id="resetBtn">&#8634; Reset</button>
+      </div>
+    </div>
+    <div class="vis-takeaway" id="takeaway">
+      <strong>Key insight:</strong> Case 3's dependency matrix is identical to Standard AR —
+      per-document TTT is just another way of conditioning on context within each document.
+      Cases 1 &amp; 2 introduce cross-document or future-token dependencies that corrupt the evaluation.
+    </div>
+  </div>
+
+  <p>The punchline: Case 3's matrix is <em>identical</em> to the standard autoregressive baseline. TTT per-document doesn't change what information flows into each prediction — it just changes the mechanism (gradient descent instead of attention).</p>
+
+  <h2>Other notes</h2>
+
+  <p><strong>Parallelizing across documents.</strong> If you follow Case 3 and process each document independently, then parallelizing across documents (e.g. via DDP rank) is just an efficiency improvement. The result is bitwise identical to serial processing, since documents are independent.</p>
+
+  <p><strong>Backprop as an operator.</strong> People get hung up on the fact that TTT involves backpropagation at test time. But backprop is just a computation — it computes a function of the input. A model that runs gradient descent on its weights as part of inference is no more "cheating" than a model that uses attention to condition on context. What matters is the dependency graph, not the mechanism.</p>
+
+</article>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script>
+var DOCS=3,TPD=5,N=DOCS*TPD;
+var CS=18,CG=2,DG=6;
+var docOf=function(t){return Math.floor(t/TPD)};
+var sameDoc=function(a,b){return docOf(a)===docOf(b)};
+var isStd=function(r,c){return sameDoc(r,c)&&c<r};
+var pos=function(t){var d=docOf(t),i=t%TPD;return d*(TPD*(CS+CG)+DG)+i*(CS+CG)};
+var SIZE=pos(N-1)+CS;
+
+var DC=['#534AB7','#0F6E56','#854F0B'];
+var DN=['Doc A','Doc B','Doc C'];
+var DCA=['rgba(83,74,183,.1)','rgba(15,110,86,.1)','rgba(133,79,11,.1)'];
+
+var CASES=[
+  {name:'Standard AR',sub:'No TTT — reference',bc:'m-badge-ref',bt:'Reference',dep:isStd},
+  {name:'Case 1',sub:'Train on val, then eval on val',bc:'m-badge-no',bt:'Invalid',dep:function(){return true}},
+  {name:'Case 2',sub:'TTT across token stream',bc:'m-badge-no',bt:'Invalid',dep:function(r,c){return c<r}},
+  {name:'Case 3',sub:'TTT per document',bc:'m-badge-ok',bt:'Valid',dep:isStd},
+];
+
+var grid=document.getElementById('grid');
+var store=[];
+var badges=[];
+var panels=[];
+
+CASES.forEach(function(cs,ci){
+  var p=document.createElement('div');
+  p.className='m-panel';
+  panels.push(p);
+
+  var hd=document.createElement('div');hd.className='m-head';
+  var nm=document.createElement('span');nm.className='m-name';nm.textContent=cs.name;
+  var bd=document.createElement('span');bd.className='m-badge '+cs.bc;bd.textContent=cs.bt;
+  badges.push(bd);
+  hd.appendChild(nm);hd.appendChild(bd);
+  p.appendChild(hd);
+
+  var sub=document.createElement('div');sub.className='m-sub';sub.textContent=cs.sub;
+  p.appendChild(sub);
+
+  var wrap=document.createElement('div');wrap.className='m-wrap';
+  var outer=document.createElement('div');
+
+  var bar=document.createElement('div');bar.className='doc-bar';
+  bar.style.width=SIZE+'px';bar.style.marginBottom='2px';
+  for(var d=0;d<DOCS;d++){
+    var tag=document.createElement('div');tag.className='dtag';
+    tag.style.width=(TPD*(CS+CG)-CG)+'px';
+    tag.style.color=DC[d];tag.style.background=DCA[d];
+    tag.textContent=DN[d];
+    if(d<DOCS-1)tag.style.marginRight=DG+'px';
+    bar.appendChild(tag);
+  }
+  outer.appendChild(bar);
+
+  var mc=document.createElement('div');
+  mc.className='mc';mc.style.width=SIZE+'px';mc.style.height=SIZE+'px';
+
+  var cells=[];
+  for(var r=0;r<N;r++){
+    for(var c=0;c<N;c++){
+      var el=document.createElement('div');
+      el.style.position='absolute';
+      el.style.left=pos(c)+'px';el.style.top=pos(r)+'px';
+      el.style.width=CS+'px';el.style.height=CS+'px';
+      if(cs.dep(r,c)){
+        el.className=isStd(r,c)?'d-valid':'d-invalid';
+      }else{
+        el.className='d-none';
+      }
+      el.dataset.r=r;el.dataset.c=c;
+      mc.appendChild(el);
+      cells.push(el);
+    }
+  }
+
+  for(var dd=1;dd<DOCS;dd++){
+    var x=Math.round((pos(dd*TPD-1)+CS+pos(dd*TPD))/2);
+    var v=document.createElement('div');v.className='sep-line';
+    v.style.cssText='left:'+x+'px;top:0;width:1px;height:'+SIZE+'px';
+    mc.appendChild(v);
+    var h=document.createElement('div');h.className='sep-line';
+    h.style.cssText='top:'+x+'px;left:0;height:1px;width:'+SIZE+'px';
+    mc.appendChild(h);
+  }
+
+  store.push(cells);
+  outer.appendChild(mc);
+  wrap.appendChild(outer);
+  p.appendChild(wrap);
+  grid.appendChild(p);
+
+  mc.addEventListener('mousemove',function(e){
+    var rect=mc.getBoundingClientRect();
+    var mx=e.clientX-rect.left,my=e.clientY-rect.top;
+    var fR=-1,fC=-1;
+    for(var t=0;t<N;t++){var p0=pos(t);if(mx>=p0&&mx<p0+CS)fC=t;if(my>=p0&&my<p0+CS)fR=t;}
+    var info=document.getElementById('info');
+    if(fR>=0&&fC>=0){
+      var hasDep=cs.dep(fR,fC);
+      var dR=DN[docOf(fR)],dC=DN[docOf(fC)],tR=fR%TPD,tC=fC%TPD;
+      if(hasDep){
+        var ok=isStd(fR,fC);
+        info.textContent=cs.name+': '+dR+'['+tR+'] depends on '+dC+'['+tC+'] — '+(ok?'valid':'LEAKAGE');
+        info.style.color=ok?'var(--green)':'var(--red)';
+      }else{
+        info.textContent=cs.name+': '+dR+'['+tR+'] does not depend on '+dC+'['+tC+']';
+        info.style.color='var(--text-muted)';
+      }
+    }
+  });
+  mc.addEventListener('mouseleave',function(){document.getElementById('info').innerHTML='&nbsp;'});
+});
+
+var tl=null;
+
+function resetAll(){
+  if(tl){tl.kill();tl=null}
+  store.forEach(function(cells){cells.forEach(function(c){
+    if(c.className==='d-valid'||c.className==='d-invalid')gsap.set(c,{opacity:0});
+  })});
+  badges.forEach(function(b){gsap.set(b,{opacity:0})});
+  panels.forEach(function(p){p.classList.remove('glow')});
+  gsap.set('#takeaway',{opacity:0});
+}
+
+function animate(){
+  resetAll();
+  tl=gsap.timeline();
+
+  for(var r=0;r<N;r++){
+    for(var c=0;c<N;c++){
+      var t=r*0.08+c*0.005;
+      CASES.forEach(function(_,ci){
+        var cell=store[ci][r*N+c];
+        if(cell.className==='d-valid'){
+          tl.to(cell,{opacity:.92,duration:.04,ease:'power1.out'},t);
+        }else if(cell.className==='d-invalid'){
+          tl.to(cell,{opacity:.75,duration:.04,ease:'power1.out'},t);
+        }
+      });
+    }
+  }
+
+  var end=N*0.08+0.3;
+  badges.forEach(function(b){tl.to(b,{opacity:1,duration:.3},end)});
+
+  tl.call(function(){
+    panels[0].classList.add('glow');
+    panels[3].classList.add('glow');
+  },null,end+0.1);
+
+  tl.to('#takeaway',{opacity:1,duration:.4},end+0.15);
+
+  store.forEach(function(cells){
+    cells.forEach(function(cell){
+      if(cell.className==='d-invalid'){
+        tl.to(cell,{opacity:.4,duration:.7,ease:'sine.inOut',repeat:-1,yoyo:true},end+0.4);
+      }
+    });
+  });
+}
+
+document.getElementById('playBtn').addEventListener('click',animate);
+document.getElementById('resetBtn').addEventListener('click',resetAll);
+
+var obs=new IntersectionObserver(function(entries){
+  if(entries[0].isIntersecting){animate();obs.disconnect()}
+},{threshold:0.3});
+obs.observe(document.getElementById('grid'));
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script>Prism.highlightAll();</script>
+</body>
+</html>
