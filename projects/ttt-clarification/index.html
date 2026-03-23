@@ -130,9 +130,7 @@
       text-decoration: none;
     }
 
-    .top-nav-links {
-      display: inline-block;
-    }
+    .top-nav-links { display: inline-block; }
 
     .top-nav-links a {
       display: inline-block;
@@ -145,9 +143,7 @@
     }
 
     .top-nav-links a:hover,
-    .top-nav-title:hover {
-      color: rgb(92, 92, 92);
-    }
+    .top-nav-title:hover { color: rgb(92, 92, 92); }
 
     blockquote {
       max-width: 720px;
@@ -176,7 +172,7 @@
 
     .matrix-vis {
       max-width: 920px;
-      margin: 2rem 0 2.5rem;
+      margin: 1.5rem 0 2.5rem;
     }
 
     .matrix-grid {
@@ -210,134 +206,132 @@
       margin-bottom: 1px;
     }
 
-    .m-name {
-      font-size: 0.95rem;
-      font-weight: 700;
-    }
+    .m-name { font-size: 0.95rem; font-weight: 700; }
 
     .m-badge {
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 2px 8px;
-      border-radius: 99px;
-      opacity: 0;
+      font-size: 0.6rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: 99px; opacity: 0;
     }
 
-    .m-badge-ref {
-      color: #555;
-      background: #e8e7e2;
-      border: 1px solid #ccc;
-    }
+    .m-badge-ref { color: #555; background: #e8e7e2; border: 1px solid #ccc; }
+    .m-badge-ok { color: var(--green); background: var(--green-fill); border: 1px solid rgba(13,128,101,.25); }
+    .m-badge-no { color: var(--red); background: var(--red-fill); border: 1px solid rgba(192,57,43,.2); }
 
-    .m-badge-ok {
-      color: var(--green);
-      background: var(--green-fill);
-      border: 1px solid rgba(13, 128, 101, .25);
-    }
-
-    .m-badge-no {
-      color: var(--red);
-      background: var(--red-fill);
-      border: 1px solid rgba(192, 57, 43, .2);
-    }
-
-    .m-sub {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-    }
+    .m-sub { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 10px; }
 
     .m-wrap { display: flex; align-items: center; justify-content: center; }
 
-    .mc { position: relative; }
+    .matrix-outer { display: inline-block; }
+
+    .x-header { display: flex; flex-direction: column; }
+
+    .axis-lbl {
+      font-size: 0.52rem;
+      color: #999;
+      letter-spacing: 0.04em;
+      text-align: center;
+      margin-bottom: 1px;
+    }
 
     .doc-bar { display: flex; }
 
     .dtag {
+      font-size: 0.52rem; font-weight: 700; text-align: center;
+      padding: 1px 0; border-radius: 3px; letter-spacing: 0.05em;
+    }
+
+    .matrix-body { display: flex; align-items: stretch; gap: 0; }
+
+    .y-axis {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      margin-right: 3px;
+    }
+
+    .y-lbl {
+      writing-mode: vertical-lr;
+      transform: rotate(180deg);
       font-size: 0.52rem;
-      font-weight: 700;
+      color: #999;
+      letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 2px;
+    }
+
+    .y-doc-bar { display: flex; flex-direction: column; }
+
+    .y-dtag {
+      font-size: 0.44rem; font-weight: 700;
+      writing-mode: vertical-lr;
+      transform: rotate(180deg);
       text-align: center;
-      padding: 1px 0;
       border-radius: 3px;
       letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
     }
+
+    .mc { position: relative; }
 
     .d-none { background: var(--cell-empty); border-radius: 1.5px; }
     .d-valid { background: var(--green-bright); border-radius: 1.5px; opacity: 0; }
     .d-invalid { background: var(--red-bright); border-radius: 1.5px; opacity: 0; }
-
     .sep-line { position: absolute; background: rgba(0,0,0,.06); }
 
     .vis-controls {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 12px;
+      display: flex; align-items: center;
+      justify-content: space-between; margin-top: 12px;
     }
 
-    .vis-legend {
-      display: flex;
-      gap: 14px;
-    }
+    .vis-legend { display: flex; gap: 14px; }
 
     .vis-legend span {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.72rem;
-      color: var(--text-muted);
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.72rem; color: var(--text-muted);
     }
 
-    .vis-swatch {
-      width: 10px;
-      height: 10px;
-      border-radius: 2px;
-      display: inline-block;
-    }
+    .vis-swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
 
     .vis-btns { display: flex; gap: 6px; }
 
     .vis-btn {
       font-family: Open Sans, sans-serif;
-      font-size: 0.72rem;
-      font-weight: 600;
-      padding: 5px 14px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      cursor: pointer;
-      transition: all .15s;
+      font-size: 0.72rem; font-weight: 600;
+      padding: 5px 14px; border-radius: 6px;
+      border: 1px solid var(--border); background: var(--bg);
+      color: var(--text); cursor: pointer; transition: all .15s;
     }
 
-    .vis-btn:hover {
-      background: var(--bg-alt);
-      border-color: #bbb;
-    }
+    .vis-btn:hover { background: var(--bg-alt); border-color: #bbb; }
 
     .vis-info {
-      text-align: center;
-      font-size: 0.68rem;
-      color: var(--text-muted);
-      min-height: 1.2em;
-      margin-top: 6px;
+      text-align: center; font-size: 0.68rem;
+      color: var(--text-muted); min-height: 1.2em; margin-top: 6px;
     }
 
     .vis-takeaway {
-      margin-top: 14px;
-      padding: 10px 14px;
+      margin-top: 14px; padding: 10px 14px;
       background: var(--green-fill);
-      border: 1px solid rgba(13, 128, 101, .2);
-      border-radius: 8px;
-      font-size: 0.82rem;
-      line-height: 1.65;
-      color: var(--text);
-      opacity: 0;
+      border: 1px solid rgba(13,128,101,.2);
+      border-radius: 8px; font-size: 0.82rem;
+      line-height: 1.65; color: var(--text); opacity: 0;
     }
 
     .vis-takeaway strong { color: var(--green); }
+
+    .vis-caption {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      max-width: 920px;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
@@ -354,6 +348,28 @@
 
   <h1>When is Test-Time Training Valid?</h1>
   <p class="subtitle">A dependency analysis of three TTT strategies, from <a href="https://github.com/openai/parameter-golf/issues/402" target="_blank">this discussion</a>.</p>
+
+  <div class="matrix-vis">
+    <p class="vis-caption">Each matrix shows which tokens influence each token's loss. <span style="color:var(--green-bright)">Green</span> = valid dependency (matches standard AR). <span style="color:var(--red-bright)">Red</span> = information leakage.</p>
+    <div class="matrix-grid" id="grid"></div>
+    <div class="vis-info" id="info">&nbsp;</div>
+    <div class="vis-controls">
+      <div class="vis-legend">
+        <span><span class="vis-swatch" style="background:var(--green-bright)"></span>Valid dep</span>
+        <span><span class="vis-swatch" style="background:var(--red-bright)"></span>Leakage</span>
+        <span><span class="vis-swatch" style="background:var(--cell-empty);border:1px solid #ccc"></span>No dep</span>
+      </div>
+      <div class="vis-btns">
+        <button class="vis-btn" id="playBtn">&#9654; Animate</button>
+        <button class="vis-btn" id="resetBtn">&#8634; Reset</button>
+      </div>
+    </div>
+    <div class="vis-takeaway" id="takeaway">
+      <strong>Key insight:</strong> Case 3's dependency matrix is identical to Standard AR —
+      per-document TTT is just another way of conditioning on context within each document.
+      Cases 1 &amp; 2 introduce cross-document or future-token dependencies that corrupt the evaluation.
+    </div>
+  </div>
 
   <h2>The question</h2>
 
@@ -406,33 +422,6 @@
 
   <p><strong>Valid.</strong> Token <em>i</em> in document <em>j</em> depends only on tokens <em>i' &lt; i</em> in document <em>j</em> — <em>exactly</em> the same dependency structure as standard autoregressive modeling. The gradient step is just another operator for conditioning on context, no different from attention or a state update. See <a href="https://arxiv.org/pdf/2507.02092" target="_blank">Energy-based Transformers</a> and <a href="https://test-time-training.github.io/e2e.pdf" target="_blank">E2E Test-Time Training</a> for formal treatments.</p>
 
-  <h2>Dependency matrices</h2>
-
-  <p>The visualization below makes this concrete. Each matrix shows the dependency structure for one strategy: row = token being evaluated, column = token that influences it. <span style="color:var(--green-bright)">Green</span> cells match standard AR; <span style="color:var(--red-bright)">red</span> cells are information leakage.</p>
-
-  <div class="matrix-vis">
-    <div class="matrix-grid" id="grid"></div>
-    <div class="vis-info" id="info">&nbsp;</div>
-    <div class="vis-controls">
-      <div class="vis-legend">
-        <span><span class="vis-swatch" style="background:var(--green-bright)"></span>Valid dep</span>
-        <span><span class="vis-swatch" style="background:var(--red-bright)"></span>Leakage</span>
-        <span><span class="vis-swatch" style="background:var(--cell-empty);border:1px solid #ccc"></span>No dep</span>
-      </div>
-      <div class="vis-btns">
-        <button class="vis-btn" id="playBtn">&#9654; Animate</button>
-        <button class="vis-btn" id="resetBtn">&#8634; Reset</button>
-      </div>
-    </div>
-    <div class="vis-takeaway" id="takeaway">
-      <strong>Key insight:</strong> Case 3's dependency matrix is identical to Standard AR —
-      per-document TTT is just another way of conditioning on context within each document.
-      Cases 1 &amp; 2 introduce cross-document or future-token dependencies that corrupt the evaluation.
-    </div>
-  </div>
-
-  <p>The punchline: Case 3's matrix is <em>identical</em> to the standard autoregressive baseline. TTT per-document doesn't change what information flows into each prediction — it just changes the mechanism (gradient descent instead of attention).</p>
-
   <h2>Other notes</h2>
 
   <p><strong>Parallelizing across documents.</strong> If you follow Case 3 and process each document independently, then parallelizing across documents (e.g. via DDP rank) is just an efficiency improvement. The result is bitwise identical to serial processing, since documents are independent.</p>
@@ -450,9 +439,11 @@ var sameDoc=function(a,b){return docOf(a)===docOf(b)};
 var isStd=function(r,c){return sameDoc(r,c)&&c<r};
 var pos=function(t){var d=docOf(t),i=t%TPD;return d*(TPD*(CS+CG)+DG)+i*(CS+CG)};
 var SIZE=pos(N-1)+CS;
+var DOC_SPAN=TPD*(CS+CG)-CG;
 
 var DC=['#534AB7','#0F6E56','#854F0B'];
 var DN=['Doc A','Doc B','Doc C'];
+var DNS=['A','B','C'];
 var DCA=['rgba(83,74,183,.1)','rgba(15,110,86,.1)','rgba(133,79,11,.1)'];
 
 var CASES=[
@@ -483,20 +474,53 @@ CASES.forEach(function(cs,ci){
   p.appendChild(sub);
 
   var wrap=document.createElement('div');wrap.className='m-wrap';
-  var outer=document.createElement('div');
+  var outer=document.createElement('div');outer.className='matrix-outer';
+
+  // X-axis header (label + doc bar), offset to align with matrix
+  var xHeader=document.createElement('div');xHeader.className='x-header';
+  xHeader.style.marginLeft='19px'; // y-lbl + y-doc-bar + gap
+
+  var xLbl=document.createElement('div');xLbl.className='axis-lbl';
+  xLbl.textContent='depends on \u2192';
+  xLbl.style.width=SIZE+'px';
+  xHeader.appendChild(xLbl);
 
   var bar=document.createElement('div');bar.className='doc-bar';
   bar.style.width=SIZE+'px';bar.style.marginBottom='2px';
   for(var d=0;d<DOCS;d++){
     var tag=document.createElement('div');tag.className='dtag';
-    tag.style.width=(TPD*(CS+CG)-CG)+'px';
+    tag.style.width=DOC_SPAN+'px';
     tag.style.color=DC[d];tag.style.background=DCA[d];
     tag.textContent=DN[d];
     if(d<DOCS-1)tag.style.marginRight=DG+'px';
     bar.appendChild(tag);
   }
-  outer.appendChild(bar);
+  xHeader.appendChild(bar);
+  outer.appendChild(xHeader);
 
+  // Matrix body: y-axis + cells
+  var body=document.createElement('div');body.className='matrix-body';
+
+  // Y-axis: label + doc bar
+  var yAxis=document.createElement('div');yAxis.className='y-axis';
+
+  var yLbl=document.createElement('div');yLbl.className='y-lbl';
+  yLbl.textContent='\u2190 evaluated';
+  yAxis.appendChild(yLbl);
+
+  var yDocBar=document.createElement('div');yDocBar.className='y-doc-bar';
+  for(var d=0;d<DOCS;d++){
+    var ytag=document.createElement('div');ytag.className='y-dtag';
+    ytag.style.height=DOC_SPAN+'px';
+    ytag.style.color=DC[d];ytag.style.background=DCA[d];
+    ytag.textContent=DNS[d];
+    if(d<DOCS-1)ytag.style.marginBottom=DG+'px';
+    yDocBar.appendChild(ytag);
+  }
+  yAxis.appendChild(yDocBar);
+  body.appendChild(yAxis);
+
+  // Matrix cells
   var mc=document.createElement('div');
   mc.className='mc';mc.style.width=SIZE+'px';mc.style.height=SIZE+'px';
 
@@ -529,7 +553,8 @@ CASES.forEach(function(cs,ci){
   }
 
   store.push(cells);
-  outer.appendChild(mc);
+  body.appendChild(mc);
+  outer.appendChild(body);
   wrap.appendChild(outer);
   p.appendChild(wrap);
   grid.appendChild(p);
@@ -545,7 +570,7 @@ CASES.forEach(function(cs,ci){
       var dR=DN[docOf(fR)],dC=DN[docOf(fC)],tR=fR%TPD,tC=fC%TPD;
       if(hasDep){
         var ok=isStd(fR,fC);
-        info.textContent=cs.name+': '+dR+'['+tR+'] depends on '+dC+'['+tC+'] — '+(ok?'valid':'LEAKAGE');
+        info.textContent=cs.name+': '+dR+'['+tR+'] depends on '+dC+'['+tC+'] \u2014 '+(ok?'valid':'LEAKAGE');
         info.style.color=ok?'var(--green)':'var(--red)';
       }else{
         info.textContent=cs.name+': '+dR+'['+tR+'] does not depend on '+dC+'['+tC+']';
