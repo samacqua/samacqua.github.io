@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FlashOptim in JAX: A Journey to Speed</title>
 
+  <meta property="og:title" content="FlashOptim in JAX: A Journey to Speed">
+  <meta property="og:description" content="A JAX-native FlashOptim via Pallas kernels — 4 implementations from DLPack bridge to fused in-place updates, ending ~10% faster than PyTorch.">
+  <meta property="og:image" content="https://samacqua.github.io/projects/flashoptim-jax/twitter_plots2/0_hero.png">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="FlashOptim in JAX: A Journey to Speed">
+  <meta name="twitter:description" content="A JAX-native FlashOptim via Pallas kernels — 4 implementations from DLPack bridge to fused in-place updates, ending ~10% faster than PyTorch.">
+  <meta name="twitter:image" content="https://samacqua.github.io/projects/flashoptim-jax/twitter_plots2/0_hero.png">
+
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans">
   <script src="https://cdn.plot.ly/plotly-2.35.0.min.js" charset="utf-8"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
@@ -831,7 +840,8 @@ function paretoFront(pts) {
 }
 
 // ── Plot rendering ──
-function renderPlot(elId, labels, highlightSet, memMode) {
+function renderPlot(elId, labels, highlightSet, memMode, opts) {
+  opts = opts || {};
   const mm = memMode || "steady";
   const normM = mm === "peak" ? NORM_P : NORM_M;
   const memKey = mm === "peak" ? "p" : "m";
@@ -942,7 +952,8 @@ function renderPlot(elId, labels, highlightSet, memMode) {
     _placed.push({ lx: a.px + a.ax, ly: a.py + a.ay, hw });
   });
   const annotations = annData.map(a => ({
-    x: a.x, y: a.y, text: a.text,
+    x: a.x, y: a.y,
+    text: (opts.highlightOnly && a.isHi) ? `<b>${a.text}</b>` : a.text,
     xref: 'x', yref: 'y',
     showarrow: true,
     arrowhead: 0, arrowwidth: 0.6, arrowcolor: '#ddd', standoff: 6,
@@ -1106,14 +1117,15 @@ function renderSection(idx) {
   const memMode = mode === "peak" ? "peak" : "steady";
   renderTable(sec.tableId, sec.rows, mode);
   renderPlot(sec.plotId, sec.plotLabels, sec.highlight, memMode);
-  if (idx === FINAL) renderPlot("hero-plot", HERO_LABELS, SECTIONS[FINAL].highlight, memMode);
+  if (idx === FINAL) renderPlot("hero-plot", HERO_LABELS, HERO_HIGHLIGHT, memMode, {highlightOnly: true});
 }
 
-// ── Hero plot (same as final section) ──
+// ── Hero plot ──
 const FINAL = SECTIONS.length - 1;
+const HERO_HIGHLIGHT = new Set(["PyTorch FlashOptim", "JAX fused, direct-write + donate"]);
 const HERO_LABELS = SECTIONS[FINAL].plotLabels.filter(label => {
   const mk = MARKERS[label] || '';
-  if (mk.includes('open') && SECTIONS[FINAL].highlight.has(label)) return true;
+  if (mk.includes('open') && HERO_HIGHLIGHT.has(label)) return true;
   return !mk.includes('open');
 });
 document.addEventListener("DOMContentLoaded", () => {
