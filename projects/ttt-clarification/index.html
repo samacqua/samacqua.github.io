@@ -206,7 +206,7 @@
       margin-bottom: 1px;
     }
 
-    .m-name { font-size: 0.95rem; font-weight: 700; }
+    .m-name { font-size: 0.82rem; font-weight: 700; line-height: 1.3; }
 
     .m-badge {
       font-size: 0.6rem; font-weight: 700;
@@ -371,17 +371,11 @@
     </div>
   </div>
 
-  <h2>The question</h2>
-
-  <p>Test-time training (TTT) adapts a model's weights on the input before scoring it. In competitions like <a href="https://github.com/openai/parameter-golf" target="_blank">parameter-golf</a>, this raises an obvious question: when is this actually a valid evaluation, and when is it just training on test?</p>
-
-  <p>The answer depends entirely on the <strong>dependency structure</strong> — which tokens can influence each token's loss. There are three meaningfully different instantiations, from least to most legitimate.</p>
-
   <h2>Three cases</h2>
 
-  <h3>Case 1: Train on val, then eval on val</h3>
+  <p>Here are 3 different instantiations of test-time training (TTT) I see for PRs in this repo, from least-to-most legitimate.</p>
 
-  <p>Train on <em>all</em> validation tokens for multiple epochs, then compute the loss on those same tokens.</p>
+  <h3>1: Train on val, then measure loss on val</h3>
 
   <pre><code class="language-python">def eval_ttt_cheat(model, val_tokens, num_epochs):
     for epoch in range(num_epochs):
@@ -389,44 +383,45 @@
             sgd_step(model, loss(model, batch))
     return mean(loss(model, batch) for batch in batches(val_tokens))</code></pre>
 
-  <p><strong>Invalid.</strong> This is literally training on test. You could initialize a large random model, train for enough epochs, and drive the loss to zero. Every token's evaluation depends on every token — including future tokens and tokens from other documents.</p>
+  <p><strong>No, not even close.</strong> This is <em>literally</em> training on test and obviously invalid. You could just init a large random model and train for many epochs and your loss will be 0.</p>
 
-  <h3>Case 2: TTT auto-regressively on the token stream</h3>
+  <h3>2: TTT auto-regressively on token stream</h3>
 
-  <p>Process the entire validation token stream left-to-right. For each chunk, score it, then train on it.</p>
-
-  <pre><code class="language-python">def eval_ttt_stream(model, val_tokens, chunk_size):
+  <pre><code class="language-python">def eval_ttt_token_stream(model, val_tokens, chunk_size, context_len):
     ttt_model = deepcopy(model)
-    for chunk in chunks(val_tokens, chunk_size):
-        loss_per_token = ttt_model(chunk)
-        accumulate(loss_per_token)
-        sgd_step(ttt_model, mean(loss_per_token))
+    for ci, chunk in enumerate(chunks(val_tokens, chunk_size)):
+        context = val_tokens[max(0, chunk.end - context_len) : chunk.end]
+        loss_per_token = ttt_model(context)
+        accumulate(loss_per_token[chunk.start_in_context:])
+        sgd_step(ttt_model, mean(loss_per_token[chunk.start_in_context:]))
     return total_bpb()</code></pre>
 
-  <p><strong>Invalid.</strong> Each token is scored before training on it (good), but the model is never reset between documents (bad). Tokens in later documents benefit from training on earlier documents, creating cross-document dependencies that don't exist in standard autoregressive modeling.</p>
+  <p>Well, it depends on what the validation set is supposed to measure. The validation token stream in this competition is 50k documents from FineWeb concatenated together with <code>BOS</code> tokens starting each document. So, assuming we want to model <em>the distribution of sequences in FineWeb</em>, then the validation set is 50k samples from that underlying distribution. If the competition chose 10k documents or 100k documents, the expectation of the validation loss should not change: only the variance of the estimator.</p>
 
-  <p>Another way to see this: if the validation set had 100k documents instead of 50k, the expected loss would be <em>lower</em> (more training data via TTT), which breaks the basic property that an eval metric should be invariant to the number of samples.</p>
+  <p>However, if we train <em>on the whole token stream</em>: this is not the case — we have more training data for the 100k document case, so the loss will <em>in expectation</em> be lower. This is clearly broken and differs from the standard definition of what an eval set is, so <strong>this should not be allowed (I think it is under current rules)</strong>. You could say that the point of this competition is to model this exact token sequence (50k docs) which would make this valid, but I think that is quite unnatural.</p>
 
-  <h3>Case 3: TTT auto-regressively per document</h3>
+  <p>Another way to see why this should be disallowed: imagine you were trying to measure your model's "emergent capability", so you make an eval set of 50k examples of something the model was not trained to do (let's say multiply numbers). Then, if you did token-stream TTT at inference time and your model got non-zero accuracy, you cannot say it is an "emergent phenomenon" but rather that your model can learn to multiply numbers when trained on thousands of examples. Token-stream TTT is identical to just continuing to train for 1-epoch on the eval set and reporting the mean loss (in the first epoch losses for each batch are losses before training on them).</p>
 
-  <p>Process each document independently. Within each document, process chunks left-to-right: score, then train. Reset the model between documents.</p>
+  <h3>3: TTT auto-regressively on each document, independently</h3>
 
-  <pre><code class="language-python">def eval_ttt_per_doc(model, val_tokens, chunk_size):
+  <pre><code class="language-python">def eval_ttt_docbased(model, val_tokens, chunk_size, context_len):
     for doc in split_at_BOS(val_tokens):
-        doc_model = deepcopy(model)
-        for chunk in chunks(doc, chunk_size):
-            loss_per_token = doc_model(chunk)
-            accumulate(loss_per_token)
-            sgd_step(doc_model, mean(loss_per_token))
+        eval_ttt_token_stream(model, doc, chunk_size, context_len)
     return total_bpb()</code></pre>
 
-  <p><strong>Valid.</strong> Token <em>i</em> in document <em>j</em> depends only on tokens <em>i' &lt; i</em> in document <em>j</em> — <em>exactly</em> the same dependency structure as standard autoregressive modeling. The gradient step is just another operator for conditioning on context, no different from attention or a state update. See <a href="https://arxiv.org/pdf/2507.02092" target="_blank">Energy-based Transformers</a> and <a href="https://test-time-training.github.io/e2e.pdf" target="_blank">E2E Test-Time Training</a> for formal treatments.</p>
+  <p><strong>Yes! The dependency graph is identical to a non-TTT case</strong>: token <code>i</code> in document <code>j</code> is only dependent on tokens <code>i'&lt;i</code> in document <code>j</code>: there is no dependency on tokens ahead (the problem of just training on test) and no dependency between documents (the problem of doing TTT on the whole sequence).</p>
+
+  <p>I think people get hung up on the fact that it is doing backprop at test-time: it is just another operator — no different than attending to tokens or updating some hidden state. If you attend to the label token: you are leaking the answer — it is the same for TTT. For example, see <a href="https://arxiv.org/pdf/2507.02092" target="_blank">Energy-based Transformers</a>: the <em>entire</em> inference procedure is backprop. Similarly, look at LLM test-time-training papers like <a href="https://test-time-training.github.io/e2e.pdf" target="_blank">End-to-End Test-Time Training for Long Context</a> or <a href="https://arxiv.org/abs/2512.13898" target="_blank">Let's (not) just put things in Context</a>: these papers all do case 3 here.</p>
 
   <h2>Other notes</h2>
 
-  <p><strong>Parallelizing across documents.</strong> If you follow Case 3 and process each document independently, then parallelizing across documents (e.g. via DDP rank) is just an efficiency improvement. The result is bitwise identical to serial processing, since documents are independent.</p>
+  <blockquote>"I've also noticed that people are doing TTT on multiple parts of the evaluation sequence in parallel (via DDP rank), justifying it by only assigning each 'doc' to one rank"</blockquote>
 
-  <p><strong>Backprop as an operator.</strong> People get hung up on the fact that TTT involves backpropagation at test time. But backprop is just a computation — it computes a function of the input. A model that runs gradient descent on its weights as part of inference is no more "cheating" than a model that uses attention to condition on context. What matters is the dependency graph, not the mechanism.</p>
+  <p>This is just an efficiency improvement. Assuming you follow case 3 outlined above (as in <a href="https://github.com/openai/parameter-golf/pull/77" target="_blank">this PR</a>), then parallelizing across documents is <em>identical</em> to doing eval over the token stream autoregressively (since each document is independent of other documents).</p>
+
+  <blockquote>"How does TTT even make sense?"</blockquote>
+
+  <p>Let me know if case 3 above (and referenced papers) clear it up. I agree the first two cases are incoherent.</p>
 
 </article>
 
@@ -447,10 +442,10 @@ var DNS=['A','B','C'];
 var DCA=['rgba(83,74,183,.1)','rgba(15,110,86,.1)','rgba(133,79,11,.1)'];
 
 var CASES=[
-  {name:'Standard AR',sub:'No TTT — reference',bc:'m-badge-ref',bt:'Reference',dep:isStd},
-  {name:'Case 1',sub:'Train on val, then eval on val',bc:'m-badge-no',bt:'Invalid',dep:function(){return true}},
-  {name:'Case 2',sub:'TTT across token stream',bc:'m-badge-no',bt:'Invalid',dep:function(r,c){return c<r}},
-  {name:'Case 3',sub:'TTT per document',bc:'m-badge-ok',bt:'Valid',dep:isStd},
+  {name:'Standard AR',sub:'No TTT \u2014 reference',bc:'m-badge-ref',bt:'Reference',dep:isStd},
+  {name:'Case 1: Train on val, eval on val',sub:'Every token depends on every token',bc:'m-badge-no',bt:'Invalid',dep:function(){return true}},
+  {name:'Case 2: TTT on token stream',sub:'Cross-document leakage via shared weights',bc:'m-badge-no',bt:'Invalid',dep:function(r,c){return c<r}},
+  {name:'Case 3: TTT per document',sub:'Identical dependency graph to standard AR',bc:'m-badge-ok',bt:'Valid',dep:isStd},
 ];
 
 var grid=document.getElementById('grid');
