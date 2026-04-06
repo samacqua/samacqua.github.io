@@ -463,6 +463,34 @@
       font-weight: 600;
     }
 
+    .scrub-loading {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      background: rgba(250,250,248,0.85);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .scrub-loading.hidden { display: none; }
+
+    .scrub-spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     .scrub-pair {
       display: flex;
       gap: 0.75rem;
@@ -719,7 +747,11 @@
 
   <p>So, if we project a \(5\)D hypercube, we are <em>close</em> to a Penrose tiling, but it isn't quite correct because of the uneven spacing. However, one thing we can do is rotate the hypercube and visualize the tiling derived from its 2-d projection:</p>
 
-  <div class="scrub-pair">
+  <div class="scrub-pair" style="position: relative;">
+    <div class="scrub-loading" id="scrub-loading">
+      <div class="scrub-spinner"></div>
+      <span id="scrub-progress">Loading frames…</span>
+    </div>
     <figure>
       <img id="hypercube-frame" src="assets/hypercube_frames/f001.jpg" alt="Hypercube tiling rotation" style="width: 100%; display: block; border-radius: 6px; border: 1px solid var(--border);">
       <figcaption>Tiling</figcaption>
@@ -844,12 +876,29 @@ document.addEventListener("DOMContentLoaded", function() {
 
   var preloaded = [];
   var preloadedGrid = [];
+  var loaded = 0;
+  var totalToLoad = totalFrames * 2;
+  var loadingEl = document.getElementById('scrub-loading');
+  var progressEl = document.getElementById('scrub-progress');
+  var playing = false;
+
+  function onFrameLoad() {
+    loaded++;
+    progressEl.textContent = Math.round(loaded / totalToLoad * 100) + '%';
+    if (loaded === totalToLoad) {
+      loadingEl.classList.add('hidden');
+      playing = true;
+    }
+  }
+
   for (var i = 1; i <= totalFrames; i++) {
     var pad = String(i).padStart(3, '0');
     var img = new Image();
+    img.onload = onFrameLoad;
     img.src = 'assets/hypercube_frames/f' + pad + '.jpg';
     preloaded.push(img);
     var img2 = new Image();
+    img2.onload = onFrameLoad;
     img2.src = 'assets/hypercube_grid_frames/f' + pad + '.jpg';
     preloadedGrid.push(img2);
   }
