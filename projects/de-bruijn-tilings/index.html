@@ -30,6 +30,7 @@
       --code-bg: #f5f4f0;
     }
 
+    html { scroll-behavior: smooth; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
@@ -53,7 +54,6 @@
       line-height: 1.15;
       letter-spacing: -0.02em;
       margin-bottom: 1rem;
-      max-width: 720px;
     }
 
     .subtitle {
@@ -197,12 +197,24 @@
       pointer-events: auto;
     }
 
-    .pipeline-slot {
+    .pipeline-step {
       flex: 1;
       min-width: 0;
+      text-align: center;
+    }
+
+    .pipeline-slot {
+      width: 100%;
       border-radius: 6px;
       border: 1px solid var(--border);
       overflow: hidden;
+    }
+
+    .pipeline-caption {
+      margin-top: 0.45rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.4;
     }
 
     /* N-switcher slider */
@@ -400,6 +412,100 @@
       border-left: 4px solid #9a9a92;
     }
 
+    .section-subtitle {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin: -0.6rem 0 1rem;
+      max-width: 720px;
+    }
+
+    .side-nav {
+      position: fixed;
+      top: 30%;
+      left: max(1rem, calc((100vw - 1120px) / 2 - 180px));
+      transform: translateY(-50%);
+      z-index: 100;
+      width: 160px;
+    }
+
+    .side-nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      border-left: 2px solid var(--border);
+    }
+
+    .side-nav li { margin: 0; }
+
+    .side-nav-link {
+      display: block;
+      padding: 0.35rem 0 0.35rem 0.9rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s, border-color 0.15s;
+      border-left: 2px solid transparent;
+      margin-left: -2px;
+      line-height: 1.4;
+    }
+
+    .side-nav-link:hover {
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .side-nav-link.active {
+      color: var(--accent);
+      border-left-color: var(--accent);
+      font-weight: 600;
+    }
+
+    .scrub-pair {
+      display: flex;
+      gap: 0.75rem;
+      max-width: 720px;
+    }
+
+    .scrub-pair figure {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.85);
+      cursor: zoom-out;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .lightbox.open {
+      display: flex;
+    }
+
+    .lightbox img,
+    .lightbox video {
+      max-width: 92vw;
+      max-height: 92vh;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+
+    article img,
+    article video {
+      cursor: zoom-in;
+    }
+
+    @media (max-width: 1400px) {
+      .side-nav { display: none; }
+    }
+
     @media (max-width: 600px) {
       h1 { font-size: 2rem; }
       article { padding: 2rem 1rem; }
@@ -409,6 +515,15 @@
   </style>
 </head>
 <body>
+<div class="lightbox" id="lightbox"><img id="lightbox-img" alt=""></div>
+<aside class="side-nav" id="side-nav">
+  <ul>
+    <li><a href="#sec-intro" class="side-nav-link active" data-section="sec-intro">Intro</a></li>
+    <li><a href="#sec-parallel-lines" class="side-nav-link" data-section="sec-parallel-lines">Parallel lines</a></li>
+    <li><a href="#sec-hypercubes" class="side-nav-link" data-section="sec-hypercubes">Hypercubes</a></li>
+    <li><a href="#sec-code" class="side-nav-link" data-section="sec-code">Generation code</a></li>
+  </ul>
+</aside>
 <nav class="top-nav">
   <a href="../../" class="top-nav-title">de bruijn tilings</a>
   <div class="top-nav-links">
@@ -420,8 +535,8 @@
 </nav>
 <article>
 
-  <h1>De Bruijn Tilings</h1>
-  <p class="subtitle">Generating aperiodic rhombus tilings from grid intersections &mdash; Penrose tilings and beyond.</p>
+  <h1 id="sec-intro">De Bruijn Tilings</h1>
+  <p class="subtitle">Generating Penrose-ish tilings from from hypercube projections and grid intersections.</p>
 
   <figure>
     <div class="hero-img">
@@ -430,14 +545,24 @@
     <figcaption>A tiling generated from a de Bruijn grid: <code>python main.py -N 25 --box-width 6 --box-height 3</code></figcaption>
   </figure>
 
-  <h2>The de Bruijn method</h2>
+  <p><br>In the 1970s, Roger Penrose explored many tilings, eventually finding a tiling with a few interesting properties: it only requires two shapes, it is aperiodic (no translational symmetry), has reflection symmetry, and has fivefold rotational symmetry. These are now known as <a href="https://en.wikipedia.org/wiki/Penrose_tiling" target="_blank">Penrose tilings</a>:</p>
 
-  <p>In 1981, N.&thinsp;G. de Bruijn discovered that <a href="https://en.wikipedia.org/wiki/Penrose_tiling" target="_blank">Penrose tilings</a> can be constructed with a simple formula:</p>
+  <figure style="max-width: 720px; text-align: center;">
+    <img src="assets/penrose-tiling.svg" alt="Classic Penrose tiling" style="max-width: 320px; width: 100%; display: block; margin: 0.7rem auto 0.2rem; border-radius: 6px;">
+  </figure>
+
+  <p><br>Here, we will present an algorithm for constructing these tilings, and generalize it to higher dimensions. All code to generate it is <a href="https://github.com/samacqua/tilings" target="_blank">here</a>.</p>
+
+  <h2 id="sec-parallel-lines">Generating tilings from parallel lines</h2>
+
+  <p>In 1981, N.&thinsp;G. de Bruijn discovered that these Penrose tilings can be constructed with a simple formula:</p>
   <ol>
-    <li><strong>Draw N families of parallel lines</strong> at evenly spaced angles. For a Penrose tiling, N=5 gives families at 36&deg; apart. Each family has lines at integer spacings, slightly offset so that no three lines ever meet at the same point.</li>
-    <li><strong>At each intersection of two lines</strong>, the angle between the two families determines a rhombus. The rhombus edges are unit-length, perpendicular to the two crossing families. With N=5 families, only two shapes appear: a wide rhombus (72&deg;) and a thin rhombus (36&deg;).</li>
+    <li><strong>Draw \(N\) families of parallel lines</strong> at evenly spaced angles. For a Penrose tiling, \(N=5\) gives families at \(180/5 = 36^\circ\) apart. Each family has lines at integer spacings, slightly offset so that no three lines ever meet at the same point.</li>
+    <li><strong>Draw rhombi</strong> at each intersection: the angle between the two intersecting lines determines the rhombus. The rhombus edges are unit-length, perpendicular to the two crossing families. With \(N=5\) families, only two shapes appear: a wide rhombus \((72^\circ)\) and a thin rhombus \((36^\circ)\).</li>
     <li><strong>Assemble the tiling</strong> by placing rhombi edge-to-edge, walking outward from a seed via BFS along shared grid lines. The result is a gap-free, overlap-free aperiodic tiling of the plane.</li>
   </ol>
+
+  <p>This gives many valid Penrose tilings, as shown below. But what happens if we vary this algorithm slightly? Below, the slider shows what happens as you vary \(N\).</p>
 
   <figure>
     <div class="feature-media n-stack" data-n-slot="hero">
@@ -455,53 +580,61 @@
 
   <figure>
     <div class="pipeline">
-      <div class="n-stack pipeline-slot" data-n-slot="grid">
-        <img data-n="2" src="assets/N2/grid.svg" alt="N=2 grid">
-        <img data-n="3" src="assets/N3/grid.svg" alt="N=3 grid">
-        <img data-n="4" src="assets/N4/grid.svg" alt="N=4 grid">
-        <img data-n="5" src="assets/N5/grid.svg" alt="N=5 grid" class="active">
-        <img data-n="6" src="assets/N6/grid.svg" alt="N=6 grid">
-        <img data-n="7" src="assets/N7/grid.svg" alt="N=7 grid">
-        <img data-n="8" src="assets/N8/grid.svg" alt="N=8 grid">
-        <img data-n="9" src="assets/N9/grid.svg" alt="N=9 grid">
-        <img data-n="10" src="assets/N10/grid.svg" alt="N=10 grid">
+      <div class="pipeline-step">
+        <div class="n-stack pipeline-slot" data-n-slot="grid">
+          <img data-n="2" src="assets/N2/grid.svg" alt="N=2 grid">
+          <img data-n="3" src="assets/N3/grid.svg" alt="N=3 grid">
+          <img data-n="4" src="assets/N4/grid.svg" alt="N=4 grid">
+          <img data-n="5" src="assets/N5/grid.svg" alt="N=5 grid" class="active">
+          <img data-n="6" src="assets/N6/grid.svg" alt="N=6 grid">
+          <img data-n="7" src="assets/N7/grid.svg" alt="N=7 grid">
+          <img data-n="8" src="assets/N8/grid.svg" alt="N=8 grid">
+          <img data-n="9" src="assets/N9/grid.svg" alt="N=9 grid">
+          <img data-n="10" src="assets/N10/grid.svg" alt="N=10 grid">
+        </div>
+        <div class="pipeline-caption">Step 1: Draw parallel lines</div>
       </div>
       <span class="arrow">&rarr;</span>
-      <div class="n-stack pipeline-slot" data-n-slot="grid_rhombi">
-        <img data-n="2" src="assets/N2/grid_rhombi.svg" alt="N=2 grid + rhombi">
-        <img data-n="3" src="assets/N3/grid_rhombi.svg" alt="N=3 grid + rhombi">
-        <img data-n="4" src="assets/N4/grid_rhombi.svg" alt="N=4 grid + rhombi">
-        <img data-n="5" src="assets/N5/grid_rhombi.svg" alt="N=5 grid + rhombi" class="active">
-        <img data-n="6" src="assets/N6/grid_rhombi.svg" alt="N=6 grid + rhombi">
-        <img data-n="7" src="assets/N7/grid_rhombi.svg" alt="N=7 grid + rhombi">
-        <img data-n="8" src="assets/N8/grid_rhombi.svg" alt="N=8 grid + rhombi">
-        <img data-n="9" src="assets/N9/grid_rhombi.svg" alt="N=9 grid + rhombi">
-        <img data-n="10" src="assets/N10/grid_rhombi.svg" alt="N=10 grid + rhombi">
+      <div class="pipeline-step">
+        <div class="n-stack pipeline-slot" data-n-slot="grid_rhombi">
+          <img data-n="2" src="assets/N2/grid_rhombi.svg" alt="N=2 grid + rhombi">
+          <img data-n="3" src="assets/N3/grid_rhombi.svg" alt="N=3 grid + rhombi">
+          <img data-n="4" src="assets/N4/grid_rhombi.svg" alt="N=4 grid + rhombi">
+          <img data-n="5" src="assets/N5/grid_rhombi.svg" alt="N=5 grid + rhombi" class="active">
+          <img data-n="6" src="assets/N6/grid_rhombi.svg" alt="N=6 grid + rhombi">
+          <img data-n="7" src="assets/N7/grid_rhombi.svg" alt="N=7 grid + rhombi">
+          <img data-n="8" src="assets/N8/grid_rhombi.svg" alt="N=8 grid + rhombi">
+          <img data-n="9" src="assets/N9/grid_rhombi.svg" alt="N=9 grid + rhombi">
+          <img data-n="10" src="assets/N10/grid_rhombi.svg" alt="N=10 grid + rhombi">
+        </div>
+        <div class="pipeline-caption">Step 2: Draw rhombi at intersections</div>
       </div>
       <span class="arrow">&rarr;</span>
-      <div class="n-stack pipeline-slot" data-n-slot="tiling">
-        <img data-n="2" src="assets/N2/tiling.svg" alt="N=2 tiling">
-        <img data-n="3" src="assets/N3/tiling.svg" alt="N=3 tiling">
-        <img data-n="4" src="assets/N4/tiling.svg" alt="N=4 tiling">
-        <img data-n="5" src="assets/N5/tiling.svg" alt="N=5 tiling" class="active">
-        <img data-n="6" src="assets/N6/tiling.svg" alt="N=6 tiling">
-        <img data-n="7" src="assets/N7/tiling.svg" alt="N=7 tiling">
-        <img data-n="8" src="assets/N8/tiling.svg" alt="N=8 tiling">
-        <img data-n="9" src="assets/N9/tiling.svg" alt="N=9 tiling">
-        <img data-n="10" src="assets/N10/tiling.svg" alt="N=10 tiling">
+      <div class="pipeline-step">
+        <div class="n-stack pipeline-slot" data-n-slot="tiling">
+          <img data-n="2" src="assets/N2/tiling.svg" alt="N=2 tiling">
+          <img data-n="3" src="assets/N3/tiling.svg" alt="N=3 tiling">
+          <img data-n="4" src="assets/N4/tiling.svg" alt="N=4 tiling">
+          <img data-n="5" src="assets/N5/tiling.svg" alt="N=5 tiling" class="active">
+          <img data-n="6" src="assets/N6/tiling.svg" alt="N=6 tiling">
+          <img data-n="7" src="assets/N7/tiling.svg" alt="N=7 tiling">
+          <img data-n="8" src="assets/N8/tiling.svg" alt="N=8 tiling">
+          <img data-n="9" src="assets/N9/tiling.svg" alt="N=9 tiling">
+          <img data-n="10" src="assets/N10/tiling.svg" alt="N=10 tiling">
+        </div>
+        <div class="pipeline-caption">Step 3: Assemble tiling</div>
       </div>
     </div>
-    <figcaption>Grid lines &rarr; rhombi at intersections &rarr; assembled tiling.</figcaption>
   </figure>
 
   <div class="n-switcher">
-    <span class="n-switcher-label">N&thinsp;=&thinsp;<span class="n-value" id="n-display">5</span></span>
+    <span class="n-switcher-label"><span id="eq-n-inline"></span> <span class="n-value" id="n-display">5</span></span>
     <input type="range" class="n-slider" id="n-slider" min="2" max="10" value="5" step="1">
   </div>
 
   <h3>Assembly walkthrough</h3>
 
-  <p>The key insight is that the grid lines encode <em>all</em> the combinatorial information needed to tile the plane. The assembly step is purely topological &mdash; no optimization or backtracking. Here is that process animated step by step:</p>
+  <p>The key insight is that the grid lines encode <em>all</em> the combinatorial information needed to tile the plane. Here is that process animated step by step:</p>
 
   <figure>
     <div class="step-gallery">
@@ -548,25 +681,73 @@
 
   <h3>Why it works: the offset trick</h3>
 
-  <p>Each line in family <em>j</em> satisfies:</p>
+  <p>Each line in family \(j\) satisfies:</p>
 
   <div class="math-block" id="eq-line"></div>
 
-  <p>Two lines from different families always intersect at exactly one point. But if three lines meet at the same point, the construction breaks &mdash; we'd get an ambiguous vertex. De Bruijn showed this can never happen if the offsets <span id="eq-sigma-inline"></span> are all <strong>rational</strong>, <strong>distinct</strong>, and <strong>no two sum to an integer</strong>. The proof is elegant: at a triple intersection, certain ratios of cosines would need to be rational, but <span id="eq-cos-inline"></span> values produce only irrational ratios (or unity, which distinct offsets exclude).</p>
+  <p>Two lines from different families always intersect at exactly one point (someone should try non-Euclidean tilings!). But if three lines meet at the same point, the construction breaks &mdash; we'd get an ambiguous vertex. De Bruijn showed this can never happen if the offsets <span id="eq-sigma-inline"></span> are all <strong>rational</strong>, <strong>distinct</strong>, and <strong>no two sum to an integer</strong>. The proof is elegant: at a triple intersection, certain ratios of cosines would need to be rational, but <span id="eq-cos-inline"></span> values produce only irrational ratios (or unity, which distinct offsets exclude).</p>
 
   <h3>Generalizations</h3>
 
-  <p>The method generalizes beyond N=5. Any N&ge;3 produces a valid tiling with &lfloor;N/2&rfloor; distinct rhombus types. Higher N yields increasingly intricate patterns with higher-order rotational symmetry.</p>
+  <p>The method generalizes beyond \(N=5\). Any \(N \ge 3\) produces a valid tiling with \(\lfloor N/2 \rfloor\) distinct rhombus types. Higher \(N\) yields increasingly intricate patterns with higher-order rotational symmetry.</p>
 
-  <h2>Grid types</h2>
+  <h2 id="sec-hypercubes">Generating tilings from hypercubes</h2>
+
+  <p>Given that an \(N\)-dimensional hypercube gives \(N\) families of parallel lines, what happens if we place rhombi at the intersections of the projection of a hypercube?</p>
+
+  <p>Let's start in 3D:</p>
+  <ol>
+    <li><strong>Project a cube</strong> from 3D onto a 2D surface via a random orthonormal basis.</li>
+    <li><strong>Extract parallel lines</strong> from the projected edges &mdash; the cube's three edge directions become three families of parallel lines.</li>
+    <li><strong>Draw rhombi</strong> at each intersection, just as before.</li>
+    <li><strong>Assemble the tiling</strong> by joining neighboring rhombi edge-to-edge.</li>
+  </ol>
+
+  <figure>
+    <div class="pipeline">
+      <img src="assets/hypercube/cube_projection.svg" alt="3D cube projected onto 2D">
+      <span class="arrow">&rarr;</span>
+      <img src="assets/hypercube/grid_lines.svg" alt="Grid lines from projected cube edges">
+      <span class="arrow">&rarr;</span>
+      <img src="assets/hypercube/grid_rhombi.svg" alt="Rhombi placed at grid intersections">
+      <span class="arrow">&rarr;</span>
+      <img src="assets/hypercube/tiling.svg" alt="Assembled tiling from cube projection">
+    </div>
+  </figure>
+
+  <p><br>This generalizes: an \(N\)-dimensional hypercube has \(N\) families of parallel edges. Projecting onto 2D via a random orthonormal basis gives \(N\) families of parallel lines &mdash; exactly the input our tiling algorithm needs. Well, almost the input our tiling algorithm needs: the <strong>spacing between lines in each family is not uniform</strong>.</p>
+
+  <p>So, if we project a \(5\)D hypercube, we are <em>close</em> to a Penrose tiling, but it isn't quite correct because of the uneven spacing. However, one thing we can do is rotate the hypercube and visualize the tiling derived from its 2-d projection:</p>
+
+  <div class="scrub-pair">
+    <figure>
+      <img id="hypercube-frame" src="assets/hypercube_frames/f001.jpg" alt="Hypercube tiling rotation" style="width: 100%; display: block; border-radius: 6px; border: 1px solid var(--border);">
+      <figcaption>Tiling</figcaption>
+    </figure>
+    <figure>
+      <img id="hypercube-grid-frame" src="assets/hypercube_grid_frames/f001.jpg" alt="Hypercube grid rotation" style="width: 100%; display: block; border-radius: 6px; border: 1px solid var(--border);">
+      <figcaption>Grid lines</figcaption>
+    </figure>
+  </div>
+
+  <div class="n-switcher">
+    <span class="n-switcher-label">Rotation</span>
+    <input type="range" class="n-slider" id="scrub-slider" min="1" max="119" value="1" step="1">
+  </div>
+
+  <p><br>This was a quick tour of a weekend project to understand de Bruijn's paper on Penrose tilings. Please use the code below to further explore!</p>
+
+  <h2 id="sec-code">Generation code</h2>
+
+  <h3 id="sec-grid-types">Grid types</h3>
 
   <p>Beyond the classic regular grid, I messed around with a few other grid constructions:</p>
 
   <ul>
-    <li><strong>Regular</strong> &mdash; the classic de Bruijn grid. N families of parallel lines at angles j&pi;/N. Produces Penrose tilings when N=5.</li>
-    <li><strong>Random</strong> &mdash; N completely random lines crossing the bounding box. Produces wild, asymmetric patches.</li>
-    <li><strong>Random-angle</strong> &mdash; N families with random orientations but regular parallel spacing within each family. A middle ground between structured and chaotic.</li>
-    <li><strong>Projection</strong> &mdash; projects the edges of an N-dimensional hypercube onto 2D via a random orthonormal basis. The parallel edges of the hypercube naturally form line families.</li>
+    <li><strong>Regular</strong> &mdash; the classic de Bruijn grid. \(N\) families of parallel lines at angles \(j\pi/N\). Produces Penrose tilings when \(N=5\).</li>
+    <li><strong>Random</strong> &mdash; \(N\) completely random lines crossing the bounding box. Produces wild, asymmetric patches.</li>
+    <li><strong>Random-angle</strong> &mdash; \(N\) families with random orientations but regular parallel spacing within each family. A middle ground between structured and chaotic.</li>
+    <li><strong>Projection</strong> &mdash; projects the edges of an \(N\)-dimensional hypercube onto 2D via a random orthonormal basis. The parallel edges of the hypercube naturally form line families.</li>
   </ul>
 
   <div class="grid-gallery">
@@ -589,7 +770,7 @@
   </div>
   <figcaption>The four grid types. Each produces a valid rhombus tiling with distinct visual character.</figcaption>
 
-  <h2>Usage</h2>
+  <h3 id="sec-usage">Usage</h3>
 
   <p>The code is at <a href="https://github.com/samacqua/tilings">github.com/samacqua/tilings</a>.</p>
 
@@ -605,7 +786,7 @@ python main.py -N 12 -B 4 -O out/n12</code></pre>
 
   <p>Each run produces SVGs of the grid, the rhombi at intersections, and the final assembled tiling. Rhombi are colored by their smallest internal angle, giving each distinct tile shape its own color.</p>
 
-  <h2>References</h2>
+  <h2 id="sec-references">References</h2>
 
   <ul>
     <li>de Bruijn, N.&thinsp;G. (1981). &ldquo;Algebraic theory of Penrose's non-periodic tilings of the plane&rdquo;</li>
@@ -617,13 +798,23 @@ python main.py -N 12 -B 4 -O out/n12</code></pre>
 </article>
 
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.querySelector("article"), {
+    delimiters: [
+      { left: "\\(", right: "\\)", display: false },
+      { left: "\\[", right: "\\]", display: true }
+    ],
+    ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+  });
+
   katex.render(
     "x \\cos\\!\\left(\\frac{j\\pi}{N}\\right) + y \\sin\\!\\left(\\frac{j\\pi}{N}\\right) + \\sigma_j = k",
     document.getElementById("eq-line"),
     { displayMode: true }
   );
+  katex.render("N =", document.getElementById("eq-n-inline"), { displayMode: false });
   katex.render("\\sigma_j", document.getElementById("eq-sigma-inline"), { displayMode: false });
   katex.render("\\cos(2\\pi j/5)", document.getElementById("eq-cos-inline"), { displayMode: false });
 
@@ -642,6 +833,53 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   slider.addEventListener('input', function() { setN(slider.value); });
+
+  var scrub = document.getElementById('scrub-slider');
+  var frameImg = document.getElementById('hypercube-frame');
+  var gridFrameImg = document.getElementById('hypercube-grid-frame');
+  var totalFrames = 119;
+  var currentFrame = 1;
+  var playing = true;
+  var dragging = false;
+
+  var preloaded = [];
+  var preloadedGrid = [];
+  for (var i = 1; i <= totalFrames; i++) {
+    var pad = String(i).padStart(3, '0');
+    var img = new Image();
+    img.src = 'assets/hypercube_frames/f' + pad + '.jpg';
+    preloaded.push(img);
+    var img2 = new Image();
+    img2.src = 'assets/hypercube_grid_frames/f' + pad + '.jpg';
+    preloadedGrid.push(img2);
+  }
+
+  function showFrame(n) {
+    currentFrame = n;
+    frameImg.src = preloaded[n - 1].src;
+    gridFrameImg.src = preloadedGrid[n - 1].src;
+    scrub.value = n;
+  }
+
+  scrub.addEventListener('mousedown', function() { dragging = true; playing = false; });
+  scrub.addEventListener('touchstart', function() { dragging = true; playing = false; }, { passive: true });
+  scrub.addEventListener('input', function() { showFrame(parseInt(scrub.value)); });
+
+  function stopDrag() {
+    if (dragging) { dragging = false; playing = true; }
+  }
+  scrub.addEventListener('mouseup', stopDrag);
+  scrub.addEventListener('touchend', stopDrag);
+
+  var last = 0;
+  function animate(ts) {
+    if (playing && ts - last > 33) {
+      last = ts;
+      showFrame(currentFrame % totalFrames + 1);
+    }
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
 });
 </script>
 <script>
@@ -651,6 +889,54 @@ if (window.innerWidth < 700) {
   w.style.marginTop = '1em';
   w.querySelectorAll('a').forEach(function(a) { a.style.lineHeight = '1.5'; a.style.margin = '0'; });
 }
+</script>
+<script>
+(function() {
+  var links = document.querySelectorAll('.side-nav-link');
+  var sections = Array.from(links).map(function(a) {
+    return document.getElementById(a.dataset.section);
+  });
+
+  function update() {
+    var scrollY = window.scrollY + 120;
+    var current = 0;
+    for (var i = 0; i < sections.length; i++) {
+      if (sections[i] && sections[i].offsetTop <= scrollY) current = i;
+    }
+    links.forEach(function(a, i) {
+      a.classList.toggle('active', i === current);
+    });
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+</script>
+<script>
+(function() {
+  var box = document.getElementById('lightbox');
+  var boxImg = document.getElementById('lightbox-img');
+
+  document.querySelector('article').addEventListener('click', function(e) {
+    var el = e.target;
+    if (el.tagName === 'IMG' || el.tagName === 'VIDEO') {
+      boxImg.src = el.src || el.currentSrc;
+      box.classList.add('open');
+    }
+  });
+
+  box.addEventListener('click', function() {
+    box.classList.remove('open');
+    boxImg.src = '';
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      box.classList.remove('open');
+      boxImg.src = '';
+    }
+  });
+})();
 </script>
 <script data-goatcounter="https://samacqua.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
