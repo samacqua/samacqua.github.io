@@ -1,0 +1,52 @@
+{
+    "scorer_name": "gpt2-large",
+    "source": "scorer matrix",
+    "temperature": 1.0,
+    "points": [
+      {
+        "model": "distilgpt2",
+        "size_m": 82,
+        "gen_ppl": 50.091126139208185,
+        "owt_val_ppl": 33.93743479445958,
+        "entropy": 4.588786493812222,
+        "self_bleu": "",
+        "bits_per_byte": ""
+      },
+      {
+        "model": "gpt2",
+        "size_m": 124,
+        "gen_ppl": 122.31491300023754,
+        "owt_val_ppl": 24.70037283439933,
+        "entropy": 5.884173698723316,
+        "self_bleu": "",
+        "bits_per_byte": ""
+      },
+      {
+        "model": "gpt2-medium",
+        "size_m": 355,
+        "gen_ppl": 193.0853109825253,
+        "owt_val_ppl": 18.55776005794706,
+        "entropy": 6.072373356670141,
+        "self_bleu": "",
+        "bits_per_byte": ""
+      },
+      {
+        "model": "gpt2-large",
+        "size_m": 774,
+        "gen_ppl": 35.91833013275303,
+        "owt_val_ppl": 15.670401834679643,
+        "entropy": 5.702256418764591,
+        "self_bleu": "",
+        "bits_per_byte": ""
+      },
+      {
+        "model": "gpt2-xl",
+        "size_m": 1558,
+        "gen_ppl": 41.27296355066974,
+        "owt_val_ppl": 14.09345723185769,
+        "entropy": 5.714516863226891,
+        "self_bleu": "",
+        "bits_per_byte": ""
+      }
+    ]
+  }

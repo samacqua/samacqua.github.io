@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fixing Flow Model Evals</title>
+
+  <meta property="og:title" content="Fixing Flow Model Evals">
+  <meta property="og:description" content="Why generative perplexity and entropy are easy to misread for flow language models, and a few concrete fixes.">
+  <meta property="og:image" content="https://samacqua.github.io/projects/flow-evals/assets/temperature_sweep_tradeoff_comparison_scored_by_gpt2-large.png">
+  <meta property="og:type" content="article">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fixing Flow Model Evals">
+  <meta name="twitter:description" content="Why generative perplexity and entropy are easy to misread for flow language models, and a few concrete fixes.">
+  <meta name="twitter:image" content="https://samacqua.github.io/projects/flow-evals/assets/temperature_sweep_tradeoff_comparison_scored_by_gpt2-large.png">
+
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans">
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [["\\(", "\\)"]] },
+      svg: { fontCache: "global" }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <style>
+    :root {
+      --bg: #fafaf8;
+      --bg-alt: #f0efec;
+      --text: #1a1a1a;
+      --text-muted: #666;
+      --accent: #c44b25;
+      --border: #ddd;
+      --code-bg: #f5f4f0;
+      --table-header: #2c2c2c;
+      --table-header-text: #fff;
+      --highlight-row: #fdf6e3;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Open Sans, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16.5px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .top-nav {
+      max-width: 60em;
+      margin: 0 auto 1.5em;
+      padding-right: 1.5em;
+      text-align: right;
+      font-family: Open Sans, sans-serif;
+    }
+
+    .top-nav-title {
+      float: left;
+      margin: 0.7em;
+      color: #f66;
+      font-size: 1.5em;
+      font-weight: bold;
+      line-height: 2em;
+      text-decoration: none;
+    }
+
+    .top-nav-links { display: inline-block; }
+
+    .top-nav-links a {
+      display: inline-block;
+      margin: 0.7em;
+      color: #999;
+      font-size: 1.5em;
+      line-height: 2em;
+      text-decoration: none;
+      transition: color .15s ease-in-out;
+    }
+
+    .top-nav-links a:hover,
+    .top-nav-title:hover {
+      color: rgb(92, 92, 92);
+    }
+
+    article {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 3rem 2rem 4rem;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      max-width: 720px;
+    }
+
+    h2 {
+      font-size: 1.7rem;
+      font-weight: 600;
+      margin: 3.5rem 0 1rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      max-width: 720px;
+    }
+
+    h3 {
+      max-width: 720px;
+      font-size: 1.18rem;
+      margin: 2rem 0 0.7rem;
+      font-weight: 600;
+    }
+
+    h4 {
+      max-width: 720px;
+      font-size: 1rem;
+      margin: 1.4rem 0 0.5rem;
+      font-weight: 600;
+    }
+
+    p, ul, ol, blockquote { max-width: 720px; margin-bottom: 1rem; }
+    ul, ol { padding-left: 1.5rem; }
+    li { margin-bottom: 0.35rem; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    strong { font-weight: 600; }
+
+    blockquote {
+      padding-left: 1rem;
+      border-left: 4px solid var(--border);
+      color: #333;
+    }
+
+    code {
+      font-family: monospace;
+      font-size: 0.88em;
+      background: var(--code-bg);
+      padding: 0.15em 0.4em;
+      border-radius: 4px;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin-bottom: 0.4rem;
+    }
+
+    .subtitle strong { color: var(--text); }
+
+    .goal-callout {
+      max-width: 720px;
+      margin: 1.4rem 0 1.5rem;
+      padding: 0.15rem 0 0.15rem 1.1rem;
+      border-left: 4px solid #9a9a92;
+    }
+
+    figure {
+      max-width: 920px;
+      margin: 1.7rem 0 2rem;
+    }
+
+    figure.narrow { max-width: 720px; }
+
+    figure img {
+      width: 100%;
+      display: block;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    figcaption {
+      max-width: 720px;
+      font-size: 0.9em;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-top: 0.4em;
+    }
+
+    .table-wrap {
+      max-width: 720px;
+      overflow-x: auto;
+      margin: 1.4rem 0 1.6rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+
+    thead th {
+      background: var(--table-header);
+      color: var(--table-header-text);
+      padding: 0.55rem 0.7rem;
+      text-align: left;
+      font-weight: 500;
+      font-size: 0.82rem;
+      line-height: 1.3;
+    }
+
+    thead th:first-child { border-radius: 6px 0 0 0; }
+    thead th:last-child { border-radius: 0 6px 0 0; }
+
+    tbody td {
+      padding: 0.5rem 0.7rem;
+      border-bottom: 1px solid var(--border);
+      font-variant-numeric: tabular-nums;
+    }
+
+    tbody tr:hover { background: #f5f4f0; }
+    tbody td:first-child { font-weight: 500; }
+
+    .interactive-card {
+      max-width: 1120px;
+      margin: 1.6rem 0 1.8rem;
+      padding: 1rem;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+
+    .intro-metric-grid {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.8fr) minmax(360px, 1.2fr);
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    .intro-metric-grid .table-wrap {
+      max-width: none;
+      margin: 0;
+    }
+
+    .plot-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .plot-controls button {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.35rem 0.75rem;
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .plot-controls button.active {
+      background: var(--table-header);
+      color: var(--table-header-text);
+      border-color: var(--table-header);
+    }
+
+    .interactive-plot svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      overflow: visible;
+    }
+
+    .plot-tooltip {
+      min-height: 1.6rem;
+      margin-top: 0.45rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .note-list {
+      max-width: 720px;
+      margin: 1.3rem 0 1.5rem;
+      padding: 1rem 1.25rem 1rem 2.5rem;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    @media (max-width: 780px) {
+      h1 { font-size: 2rem; }
+      article { padding: 2rem 1rem; }
+      table { font-size: 0.78rem; }
+      .intro-metric-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<nav class="top-nav">
+  <a href="../../" class="top-nav-title">flow-evals</a>
+  <div class="top-nav-links">
+    <a href="../../">home</a>
+    <a href="../">projects</a>
+    <a href="../../assets/Sam Acquaviva.pdf" target="_blank">resume</a>
+    <a href="../../bio/">bio</a>
+  </div>
+</nav>
+
+<article>
+  <h1>Fixing flow model evals</h1>
+
+  <p>Flow models are very promising. Yet, the current way of evaluating these models is ripe for misinterpretation and needs rethinking.</p>
+
+  <p>In the current flow evaluation framework, one would conclude that <code>gpt2-large</code> (762M) is better than <code>gpt2-xl</code> (1.5B), and <code>gpt2-small</code> (117M) is better than <code>gpt2-medium</code> (342M), despite the fact that all measured evaluations in the <a href="https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf">GPT-2 paper</a> smoothly improve as we increase model size.</p>
+
+  <div class="interactive-card" id="model-size-card">
+    <div class="intro-metric-grid">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>model</th>
+              <th style="text-align: right;">gen. ppl</th>
+              <th style="text-align: right;">entropy (data=5.44)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>gpt2</td>
+              <td style="text-align: right;">122.3149</td>
+              <td style="text-align: right;">5.8842</td>
+            </tr>
+            <tr>
+              <td>gpt2-medium</td>
+              <td style="text-align: right;">193.0853</td>
+              <td style="text-align: right;">6.0724</td>
+            </tr>
+            <tr>
+              <td>gpt2-large</td>
+              <td style="text-align: right;">35.9183</td>
+              <td style="text-align: right;">5.7023</td>
+            </tr>
+            <tr>
+              <td>gpt2-xl</td>
+              <td style="text-align: right;">41.2730</td>
+              <td style="text-align: right;">5.7145</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="interactive-plot" id="model-size-plot" aria-label="Interactive model size plot"></div>
+        <div class="plot-tooltip" id="model-size-tooltip"></div>
+      </div>
+    </div>
+  </div>
+
+  <p>The source of this difference is that exact sequence likelihood is intractable for flow models. For an autoregressive model, we can evaluate validation perplexity directly by computing \(p_{\text{model}}(x_i \mid x_{&lt;i})\) for each token in a held-out sequence. For flow models, where exact likelihood is intractible, papers often evaluate generated samples using two proxy metrics:</p>
+
+  <ul>
+    <li><strong>Generative perplexity (gen. ppl):</strong> generate samples from the model, then score those samples under a pretrained autoregressive model such as <code>gpt2-large</code>.</li>
+    <li><strong>Entropy:</strong> compute the empirical token entropy (\(-\sum_i p_i \log p_i\)) of each generated sample, then average across samples.</li>
+  </ul>
+
+  <p>However, as hinted above by the strange ordering of the gpt2 models, this evaluation framework can be problematic. Here, I'll present three issues which explain what went wrong, and I'll propose solutions (which the field is already converging towards) at the end. The issues:</p>
+
+  <ol>
+    <li>It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL</li>
+    <li>Entropy only measures intra-sample diversity: inter-sample diversity is an after thought</li>
+    <li>The best-scoring model is not the best language model, but the most <code>gpt2-large</code>-like</li>
+  </ol>
+
+  <p>Importantly, flow map language models are unambiguously better at small step sizes: the issues pointed out here focus on larger step sizes (1024 steps) to help converge on better practices to improve future works, not to detract from past works. Unless otherwise noted, gen. ppl is scored using <code>gpt2-large</code>.</p>
+
+  <h2>The issues</h2>
+
+  <h3>1. It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL</h3>
+
+  <p>There is an inherent tradeoff to gen. ppl and entropy. I can easily construct a low gen. ppl sequence with very high entropy (e.g. "aaaaaa..." has gen. ppl = 1.01 and entropy = 0.0), or a high gen. ppl sequence with very low entropy (e.g. completely random tokens has gen. ppl ~= 150,000 and entropy = 6.92). Recent works often report gen. ppl and entropy, marking results that have incredibly low entropies as "mode collapsed". The variation in entropy between models is &gt; 0.3 nats in all of three recent papers (<a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>, <a href="https://arxiv.org/abs/2604.09784">Discrete Flow Maps</a>, <a href="https://arxiv.org/pdf/2604.11748">LangFlow</a>). Below we show the results from <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>, a representative example.</p>
+
+  <figure>
+    <img src="assets/fmlm_table.png" alt="FLM table">
+    <figcaption>From Flow Map Language Models.</figcaption>
+  </figure>
+
+  <p>From the main results for OWT, it is natural to read as "entropies are close to eachother, so the one with the lowest gen. ppl must be best": FLM &gt; Duo &gt; MDLM &gt; CANDI. However, the gen. ppl of a given model is <em>incredibly</em> sensitive to the entropy, and this small variation makes a big difference.</p>
+
+  <p>We can easily quantify this sensitivity in autoregressive language models by sweeping over temperatures used to generate sequences: lower temperature generations create low entropy, low gen. ppl samples, and higher temperature generations create high entropy, high gen. ppl samples. Below, we sweep from <code>t=0</code> to <code>t=1</code> and report the gen. ppl and entropy at each temperature.</p>
+
+  <figure>
+    <img src="assets/gpt2_ppl_ent_temp.png" alt="temp affecting ent and ppl">
+  </figure>
+
+  <p>As you can see, a linear increase in entropy leads to an exponential increase in perplexity (note that PPL scale is logarithmic while entropy scale is linear).</p>
+
+  <p>This exponential sensitivity is expected because perplexity is the exponential of cross-entropy: PPL = exp(H(Q) + KL(Q || P)). Entropy alone does not determine PPL, but when the KL-to-scorer term changes smoothly, small linear changes in entropy translate into exponential changes in PPL.</p>
+
+  <p>Going from the lowest reported entropy (5.33) to the highest entropy (5.71) for <em>the same exact model</em> leads to a nearly 3x increase in PPL. In the reported results from FLM, the range in PPL is ~2.3x. So, at least in autoregressive models, <strong>small changes in entropy can lead to huge changes in gen. ppl -- enough to completely inverse the "best" ordering of reported results</strong>.</p>
+
+  <p>Now, can we use this insight (small changes in entropy lead to exponential changes in gen. ppl) to resolve the quandary from earlier (using gen. ppl as a metric, <code>gpt2-small</code> &gt; <code>gpt2-medium</code> and <code>gpt2-xl</code> &gt; <code>gpt2-large</code>)? <strong>Yes (partially)!</strong></p>
+
+  <p>Both gen. ppl and entropy monotonically increase with temperature, so we can plot -- for each <code>gpt2</code> model -- gen. ppl v. entropy using the values of the previous sweep.</p>
+
+  <figure>
+    <img src="assets/gpt2_family_temperature_sweep/temperature_sweep_tradeoff_comparison_scored_by_gpt2-large.png" alt="gen. ppl v entropy">
+  </figure>
+
+  <p>This reveals a pareto frontier of gen. ppl vs. entropy. Under this, <code>gpt2-medium</code> is clearly better than <code>gpt2-small</code>. If you look at the <code>t=1</code> point (the most far right) you can see what caused the earlier discrepancy: <code>gpt2-medium</code> generates higher entropy samples at <code>t=1</code>. Note that, by just changing the sampling temperature and using the flow model evaluation framework, you could conclude <strong>any arbitrary ordering of the gpt2 family models</strong>: each model's lowest gen. ppl in the entropy range is lower than any other model's max gen. ppl in the entropy range.</p>
+
+  <p>But, even after controlling for sample entropy, <code>gpt2-large</code> is slightly better than <code>gpt2-xl</code>. What gives? The answer is in section 3: the best-scoring model is not the best language model, but the most <code>gpt2-large</code>-like. If we swap the scorer from <code>gpt2-large</code> to <code>pythia-2.8b</code>, then at the data entropy, <code>gpt2-xl</code> &gt; <code>gpt2-large</code> &gt; <code>gpt2-medium</code> &gt; <code>gpt2-small</code> as expected.</p>
+
+  <p>But does this hold for flow models and their reported baselines? After all, <code>gpt2</code> models are not compared against. Below, we plot the perplexity and entropy for FLM and LangFlow, and we sweep DUO (a baseline) from <code>t=0.9</code> to <code>t=1.0</code>.</p>
+
+  <figure>
+    <img src="assets/gpt2_family_temperature_sweep_with_flows/temperature_sweep_tradeoff_comparison_scored_by_gpt2-large.png" alt="gen. ppl v entropy w/ duo+flows">
+  </figure>
+
+  <p>As you can see, under <code>t=1</code> sampling (right-most point), DUO has a higher gen. ppl than both FLM and LangFlow, but it is better when entropy-matched.</p>
+
+  <h4>Proposal</h4>
+
+  <p>Fixing this is straightforward: sweep PPL and entropy. Report interpolated gen. PPL at the entropy of the data. This completely eliminates any variance attributable to difference in entropy.</p>
+
+  <h3>2. Entropy only measures intra-sample diversity: inter-sample diversity is an after thought</h3>
+
+  <p>In some recent flow model papers, entropy is referred to as a "diversity" measure. However, it is only measuring diversity <em>within</em> a sequence and <em>averaging</em> across sequences: \(\mathrm{mean}(-\sum_i p_i \log p_i)\). This means that if a model generated the same low gen. ppl, high entropy sequence, under these two metrics it would seem like an incredibly strong model.</p>
+
+  <p>To give an example, if the model recited the following sequence from OWT every single sample, it's PPL would be 4.283 with an entropy of 5.42:</p>
+
+  <blockquote>
+    <p>Rice, 42, was the highest-ranking officer of the six police officers charged in Gray's arrest and death. Prosecutors had alleged that Rice and others caused Gray's death by failing to secure him in a seat belt in the back of the van, where Gray suffered severe spinal cord injuries last year.\n\nRice was suspended without pay from May 1, 2015, when he was charged by the state's attorney's office, until July 18 of this year, when Circuit Judge Barry Williams found Rice not guilty of all charges.\n\n\"Being suspended without pay for over a year has been financially devastating to Lt. Rice and his family,\" said Michael Belsky, Rice's attorney.\n\nWilliams said prosecutors failed to meet their burden of proving the charges against Rice beyond a reasonable doubt, instead asking the court to rely on \"presumptions or assumptions\" — something it cannot do. He said the court \"cannot be swayed by sympathy, prejudice or public opinion.\"\n\nCAPTION Baltimore State's Attorney Marilyn Mosby talks about why her team decided to drop the charges against the officers in the Freddie Gray case. (Kevin Richardson/Baltimore Sun video) Baltimore State's Attorney Marilyn Mosby talks about why her team decided to drop the charges against the officers in the Freddie Gray case. (Kevin Richardson/Baltimore Sun video) CAPTION \"I think most of the blame falls to the prosecutor who failed to prosecute the case and brought cases that she didn't have the evidence for,\" Gov. Larry Hogan said. (Erin Cox/Baltimore Sun video) \"I think most of the blame falls to the prosecutor who failed to prosecute the case and brought cases that she didn't have the evidence for,\" Gov. Larry Hogan said. (Erin Cox/Baltimore Sun video)\n\nMayor Stephanie Rawlings-Blake has said Rice now faces an administrative review.\n\nGray, 25, died April 19, 2015, one week after his arrest. His death sparked weeks of protests and activism against police brutality, and two nights of looting and rioting.\n\nLast month, the spending panel authorized $87,705 in back pay for Officer Caesar Goodson Jr., the driver of the van in which Gray sustained his injuries. He, too, was cleared of all charges at trial. Williams also acquitted Officer Edward Nero, and prosecutors dropped all charges against the other three police officers.\n\nLbroadwater@baltsun.com\n\nTwitter.com/lukebroadwater&lt;|endoftext|&gt;MIAMI, August 9 – The Miami HEAT announced their 2016-17 preseason schedule today, which is highlighted by the team’s three home games at AmericanAirlines Arena. The HEAT will open the preseason on the road on Tuesday, October 4, when they take on the Washington Wizards at 7PM. They will make their first appearance in Miami a week later, when they host the Brooklyn Nets at 7:30PM on Tuesday, October 11. They will also face off with the Orlando Magic in Miami on October 18 at 7:30PM, and conclude the home preseason schedule vs. the Philadelphia 76ers on October 21 at 7:30PM.\n\nTickets for the three home games at AmericanAirlines Arena are on sale now and can be purchased by logging on to HEAT.com, Ticketmaster.com, by visiting any Ticketmaster outlet, or by calling 1-800-4NBA-TIX. Tickets can also be purchased at the AmericanAirlines Arena Ticket Office Monday through Friday from 10AM to 5PM. Ticket prices start at $10 plus applicable fees.\n\nIn addition to the three home games at AmericanAirlines Arena, the HEAT will host two neutral site games vs. the Minnesota Timberwolves. Miami returns to the Sprint Center in Kansas City, MO, for the sixth time on October 8. Tickets to that game are available by visiting SprintCenter.com, Price Chopper Box Office at Sprint Center or by calling (888) 929-7849. The HEAT will also return to the KFC Yum! Center in Louisville, KY, for the third straight season, on October 15. Tickets are available at the KFC Yum! Center Box Office, all Ticketmaster outlets, Ticketmaster.com or by calling (800) 745-3000. Miami will also play road contests against the San Antonio Spurs on October 14, and the Charlotte Hornets on October 21.\n\nThe complete broadcast schedule for the preseason will be released at a later date.\n\nThe preseason schedule is as follows:\n\nDATE OPPONENT LOCATION TIME TICKETS Oct. 4 at Washington Verizon Center, Washington, DC 7:00 PM Oct. 8 vs. Minnesota Sprint Center, Kansas City, MO 7:30 PM Oct. 11 vs. Brooklyn AmericanAirlines Arena, Miami, FL 7:30 PM Buy Tickets Oct. 14 at San Antonio AT&amp;T Center, San Antonio, TX 7:30 PM Oct. 15 vs. Minnesota KFC Yum! Center,</p>
+  </blockquote>
+
+  <p>Obviously, this is very unlikely to occur in any reasonable setup. The point is that <strong>entropy is not measuring diversity of samples at all</strong>, only diversity within a sample.</p>
+
+  <p>The field is aware of this. In <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>, they report self-BLEU scores (geometric average of ngram overlap) in the appendix to check for "mode collapse". This is very useful but now interpretation of results relies on 3 variables: gen. ppl, per-sample entropy, and self-BLEU, which makes it hard to tell when a new method is an improvement or just trading off diversity for quality.</p>
+
+  <h4>Proposal</h4>
+
+  <p>Report self-BLEU as in Flow Language Models. This is not perfect, but it does act as a crude measure of diversity.</p>
+
+  <h3>3. The best-scoring model is not the best language model, but the most <code>gpt2-large</code>-like</h3>
+
+  <p><code>gpt2-large</code> is an imperfect model of language. Even just comparing to <code>gpt2-xl</code>, it has lower accuracy and higher PPL in-distribution on OWT and out-of-distribution on every measured benchmark.</p>
+
+  <figure>
+    <img src="assets/gpt2-table.png" alt="gpt2 results">
+  </figure>
+
+  <p>However, as shown earlier, <code>gpt2-large</code> gives a better gen. ppl to its own samples than to <code>gpt2-xl</code> samples. In fact, <code>gpt2-large</code> assigns a higher probability to its own samples than to actual samples of the data (when matching entropy=5.463). This is unsurprising: by definition, the highest probability (lowest gen. PPL) strings are those greedily (<code>t=0</code>) generated by the scoring model.</p>
+
+  <p>You can also dream up many clear examples to show that the current evaluation is penalizing "correct" behavior: when scoring completions of <code>10753 * 1099 = </code> (just a random multiplication problem, given with 50 in-context examples), <code>gpt2-large</code> gives a PPL of [BLANK] to the correct answer (<code>11_817_547</code>) but a PPL of [BLANK] to the answer [BLANK]. <strong>gen. ppl is not scoring which model matches the data better, but rather it is scoring which model matches (imperfect) <code>gpt2-large</code> better.</strong></p>
+
+  <p>Further, this means that the eval is architecturally biased towards left-to-right autoregressive models. As a way to see this, we trained 2 models: one left-to-right AR model on OWT, and one right-to-left AR model on OWT. We find two checkpoints that have ~the same validation perplexity. Because left-to-right AR is fundamentally easier, this is ~25k steps for right-to-left and ~20k steps for left-to-right. Then, we can plot the entropy v. temperature curve, and note that the right-to-left model is worse compared to the equivalent (by validation ppl) left-to-right model.</p>
+
+  <figure>
+    <img src="assets/for-rev.png" alt="forward v. reverse">
+  </figure>
+
+  <h4>Proposal</h4>
+
+  <p>Fixing this is not straightforward: it is inherent to the idea of using another model as the ground truth. But, if we are going to treat a language model as the ground truth language distribution, we might as well use the better one: <code>gpt2-xl</code>.</p>
+
+  <h2>The fixes</h2>
+
+  <p>As mentioned throughout, there are many ways to easily improve these evals, and the field is already working towards them. As mentioned earlier, <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a> reports self-BLEU scores, <a href="https://arxiv.org/pdf/2604.11748">LangFlow</a> reports PPL bounds on actual validation data. Here, we give a few concrete ideas which address the earlier outlined issues.</p>
+
+  <h3>Small changes: report entropy-matched gen. ppl, self-BLEU, and use <code>gpt2-xl</code> as the scorer</h3>
+
+  <p>As mentioned at the end of each section, the three problems can be ameliorated through small changes.</p>
+
+  <p>As we showed, you can dramatically change the PPL of a model by reducing its entropy a small amount. To make interpreting results easily, we should report gen. ppl <em>at the entropy of the data</em>. This avoids any variance between methods attributable to difference in entropy.</p>
+
+  <p>Additionally, we showed that gen. ppl and entropy do not measure inter-sample diversity at all. To address this, as in <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>, report self-BLEU scores.</p>
+
+  <p>Finally, we showed that using any model as a scorer means that it gives higher scores to models which make the same mistakes. And since we do not have access to the true data generating distribution of language, we must settle for an imperfect scorer. With this being the case, we might as well use the <em>better</em> drop-in replacement model of language: <code>gpt2-xl</code> instead of <code>gpt2-large</code>.</p>
+
+  <h3>Larger changes: Report PPL bounds and focus on downstream metrics</h3>
+
+  <p>The changes above are patching an imperfect framework. I think a bigger improvement is to report PPL bounds on actual data (as in <a href="https://arxiv.org/pdf/2604.11748">LangFlow</a>) and to focus on downstream metrics (like Sudoku in <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>). Calculating PPL bounds on real data sidesteps all of the outlined problems. One issue is that calculating this PPL bound is quite slow, the gap between the bound and the true PPL is unknown, and also new models must derive their own PPL bounds. Work in this area (faster, more general, tighter bounds) is great.</p>
+
+  <p>Furthermore, why do we care about PPL in the first place? On one hand, it is very natural: it is a function of the probability of sequences under the model, it gives ~number of tokens that the model is guessing between with equal probability. On the other hand, we want these models to <em>do</em> useful things: solve our problems, answer questions. So, by focusing on these downstream metrics which only require drawing samples, we can go beyond this gen. ppl fixation.</p>
+
+  <h2>Open questions</h2>
+
+  <p>In writing this up, there are a few things I couldn't get a satisfying answer to.</p>
+
+  <h3>1. Why are flow model gen. ppl scorers largely independent of the scorer</h3>
+
+  <p>If we run generate tokens with a list of models and score them with every model, we get the plot below (left). Note that this confounds sample entropy and does not control for the problem above.</p>
+
+  <figure>
+    <img src="assets/grouped_ppl_by_generator.png" alt="scorers">
+  </figure>
+
+  <p>As you can see, there is lots of variance across the scorers for a given generator for all but 3 models: <code>gpt2</code>, <code>FLM</code>, and <code>LangFlow</code>.</p>
+
+  <p>Why is this? I ran per-token scoring and for these models, it isn't that there is more agreement per token (lower variance), but rather that the disagreement is there (high variance) but it seems to cancel out when averaged across tokens. I don't have an intuitive explanation for why this is or what it means.</p>
+
+  <h3>2. What is the best way to tradeoff entropy v. ppl in flow models?</h3>
+
+  <p>In autoregressive models and (some) masked diffusion models, it is trivial to tradeoff entropy and gen. ppl: just change the temperature. However, in a flow model, I'm not sure what the relevant lever to pull is.</p>
+</article>
+<script>
+  const modelSizeDataUrl = "assets/model_size_vs_gen_ppl_matrix_scored_by_gpt2-large.json";
+  const metricLabels = {
+    gen_ppl: "Generated sample PPL (gpt2-large scorer)",
+    owt_val_ppl: "OWT validation PPL"
+  };
+  const metricColors = {
+    gen_ppl: "#c44b25",
+    owt_val_ppl: "#2f6f9f"
+  };
+
+  function fmt(value) {
+    return Number(value).toFixed(value >= 100 ? 1 : 2);
+  }
+
+  function logScale(value, minValue, maxValue, outMin, outMax) {
+    const logMin = Math.log(minValue);
+    const logMax = Math.log(maxValue);
+    return outMin + (Math.log(value) - logMin) * (outMax - outMin) / (logMax - logMin);
+  }
+
+  function renderModelSizePlot(points) {
+    const el = document.getElementById("model-size-plot");
+    const tooltip = document.getElementById("model-size-tooltip");
+    const width = 860;
+    const height = 430;
+    const margin = { top: 28, right: 42, bottom: 58, left: 72 };
+    const plotW = width - margin.left - margin.right;
+    const plotH = height - margin.top - margin.bottom;
+    const metrics = ["gen_ppl", "owt_val_ppl"];
+    const sizes = points.map(d => d.size_m);
+    const values = metrics.flatMap(metric => points.map(d => Number(d[metric])));
+    const xMin = Math.min(...sizes) * 0.85;
+    const xMax = Math.max(...sizes) * 1.15;
+    const yMin = Math.max(0.01, Math.min(...values) * 0.8);
+    const yMax = Math.max(...values) * 1.2;
+    const x = d => logScale(d.size_m, xMin, xMax, margin.left, margin.left + plotW);
+    const y = (d, metric) => logScale(Number(d[metric]), yMin, yMax, margin.top + plotH, margin.top);
+    const path = metric => points.map((d, i) => `${i === 0 ? "M" : "L"} ${x(d).toFixed(2)} ${y(d, metric).toFixed(2)}`).join(" ");
+    const xTicks = [124, 355, 774, 1558];
+    const yTicks = [10, 20, 50, 100, 200];
+
+    el.innerHTML = `
+      <svg viewBox="0 0 ${width} ${height}" role="img">
+        <rect x="0" y="0" width="${width}" height="${height}" fill="#fff"></rect>
+        ${xTicks.map(t => `<line x1="${logScale(t, xMin, xMax, margin.left, margin.left + plotW)}" y1="${margin.top}" x2="${logScale(t, xMin, xMax, margin.left, margin.left + plotW)}" y2="${margin.top + plotH}" stroke="#eee"></line>`).join("")}
+        ${yTicks.map(t => `<line x1="${margin.left}" y1="${logScale(t, yMin, yMax, margin.top + plotH, margin.top)}" x2="${margin.left + plotW}" y2="${logScale(t, yMin, yMax, margin.top + plotH, margin.top)}" stroke="#eee"></line>`).join("")}
+        <line x1="${margin.left}" y1="${margin.top + plotH}" x2="${margin.left + plotW}" y2="${margin.top + plotH}" stroke="#333"></line>
+        <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + plotH}" stroke="#333"></line>
+        ${xTicks.map(t => `<text x="${logScale(t, xMin, xMax, margin.left, margin.left + plotW)}" y="${height - 24}" text-anchor="middle" font-size="12" fill="#555">${t}M</text>`).join("")}
+        ${yTicks.map(t => `<text x="${margin.left - 10}" y="${logScale(t, yMin, yMax, margin.top + plotH, margin.top) + 4}" text-anchor="end" font-size="12" fill="#555">${t}</text>`).join("")}
+        <text x="${margin.left + plotW / 2}" y="${height - 4}" text-anchor="middle" font-size="13" fill="#333">model size</text>
+        <text x="16" y="${margin.top + plotH / 2}" transform="rotate(-90 16 ${margin.top + plotH / 2})" text-anchor="middle" font-size="13" fill="#333">perplexity</text>
+        ${metrics.map((metric, i) => `
+          <g>
+            <line x1="${margin.left + 18 + i * 220}" y1="${margin.top - 8}" x2="${margin.left + 48 + i * 220}" y2="${margin.top - 8}" stroke="${metricColors[metric]}" stroke-width="2.4"></line>
+            <text x="${margin.left + 56 + i * 220}" y="${margin.top - 4}" font-size="12" fill="#333">${metricLabels[metric]}</text>
+          </g>
+        `).join("")}
+        ${metrics.map(metric => `<path d="${path(metric)}" fill="none" stroke="${metricColors[metric]}" stroke-width="2.4"></path>`).join("")}
+        ${metrics.map(metric => points.map(d => `
+          <g class="model-point" data-model="${d.model}" data-size="${d.size_m}" data-metric="${metric}" data-value="${Number(d[metric])}">
+            <circle cx="${x(d)}" cy="${y(d, metric)}" r="5.5" fill="${metricColors[metric]}" stroke="#fff" stroke-width="1.5"></circle>
+          </g>
+        `).join("")).join("")}
+        ${points.map(d => `<text x="${x(d) + 8}" y="${y(d, "gen_ppl") - 8}" font-size="12" fill="#333">${d.model}</text>`).join("")}
+      </svg>
+    `;
+
+    el.querySelectorAll(".model-point").forEach(point => {
+      point.addEventListener("mouseenter", () => {
+        tooltip.textContent = `${point.dataset.model}: ${point.dataset.size}M params, ${metricLabels[point.dataset.metric]} = ${fmt(Number(point.dataset.value))}`;
+      });
+    });
+    tooltip.textContent = "Showing generated sample PPL and OWT validation PPL together. Hover a point for exact values.";
+  }
+
+  fetch(modelSizeDataUrl)
+    .then(response => response.json())
+    .then(data => {
+      const points = data.points.filter(point => point.model !== "distilgpt2");
+      renderModelSizePlot(points);
+    })
+    .catch(error => {
+      document.getElementById("model-size-plot").textContent = `Could not load plot data: ${error}`;
+    });
+</script>
+</body>
+</html>
