@@ -1,8 +1,8 @@
 # Fixing flow model evals
 
-Flow models are very promising. Yet, the current way of evaluating these models is ripe for misinterpretation and needs rethinking.
+[Flow models](https://flow-maps.github.io/) are very promising. Yet, the current way of evaluating these models is ripe for misinterpretation and needs rethinking.
 
-In the current flow evaluation framework, one would conclude that `gpt2-large` (762M) is better than `gpt2-xl` (1.5B), and `gpt2-small` (117M) is better than `gpt2-medium` (342M), despite the fact that all measured evaluations in the [GPT-2 paper](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) smoothly improve as we increase model size.
+In the current flow evaluation framework, one would conclude that `gpt2-large` (762M) is better than `gpt2-xl` (1.5B), and `gpt2-small` (117M) is better than `gpt2-medium` (342M), despite the fact that all measured evaluations in the [GPT-2 paper](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) smoothly improve as we increase model size. In fact, as we will show later, **it is easy to -- using flow model evals -- "show" that any gpt2 model is better than any other -- a clear contradiction.**
 
 <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
   <div style="flex: 1;">
@@ -16,8 +16,8 @@ In the current flow evaluation framework, one would conclude that `gpt2-large` (
       </thead>
       <tbody>
         <tr>
-          <td>gpt2</td>
-          <td style="text-align: right;">122.3149</td>
+          <td>gpt2-small</td>
+          <td style="text-align: right; background: #f3d1b5; font-weight: 700;">122.3149</td>
           <td style="text-align: right;">5.8842</td>
         </tr>
         <tr>
@@ -27,79 +27,136 @@ In the current flow evaluation framework, one would conclude that `gpt2-large` (
         </tr>
         <tr>
           <td>gpt2-large</td>
-          <td style="text-align: right;">35.9183</td>
+          <td style="text-align: right; background: #fff2b8; font-weight: 700;">35.9183</td>
           <td style="text-align: right;">5.7023</td>
         </tr>
         <tr>
           <td>gpt2-xl</td>
-          <td style="text-align: right;">41.2730</td>
+          <td style="text-align: right; background: #e8edf3; font-weight: 700;">41.2730</td>
           <td style="text-align: right;">5.7145</td>
         </tr>
       </tbody>
     </table>
+    <p style="margin: 0.65rem 0 0; color: #666; font-size: 0.92rem; line-height: 1.45;">Gold, silver, and copper mark the best, second-best, and third-best generative perplexity scores.</p>
   </div>
   <div style="flex: 1;">
-    <img src="assets/model_size_vs_gen_ppl_matrix_scored_by_gpt2-large.png" alt="Model size vs generation perplexity" style="width: 100%;" />
+    <img src="assets/model_size_vs_gen_ppl_matrix_scored_by_gpt2-large.png" alt="Model size vs generative perplexity and validation perplexity" style="width: 100%;" />
   </div>
 </div>
 
-The source of this difference is that exact sequence likelihood is intractable for flow models. For an autoregressive model, we can evaluate validation perplexity directly by computing $p_{\text{model}}(x_i \mid x_{<i})$ for each token in a held-out sequence. For flow models, where exact likelihood is intractible, papers often evaluate generated samples using two proxy metrics:
+For an autoregressive model, we can evaluate validation perplexity directly:
+
+$$
+p_{\text{model}}(x_{\text{val}})=\prod_i p_{\text{model}}(x_i \mid x_{<i})
+$$
+
+Then:
+
+$$
+\mathrm{PPL}(x_{\text{val}})=\exp\left(-\frac{1}{N}\log p_{\text{model}}(x_{\text{val}})\right)
+$$
+
+For flow models, we cannot do this because calculating likelihoods requires solving an intractable integral over the flow, so papers often evaluate generated samples using two proxy metrics:
 
 - **Generative perplexity (gen. ppl):** generate samples from the model, then score those samples under a pretrained autoregressive model such as `gpt2-large`.
 - **Entropy:** compute the empirical token entropy ($-\sum_i p_i \log p_i$) of each generated sample, then average across samples.
 
-However, as hinted above by the strange ordering of the gpt2 models, this evaluation framework can be problematic. Here, I'll present three issues which explain what went wrong, and I'll propose solutions (which the field is already converging towards) at the end. The issues:
+This is how I made the above chart: sample 128 sequences of length 1024 from each model at `t=1`, then score these sequences under `gpt2-large` and calculate the mean sample entropy. However, as shown by the strange ordering of the gpt2 models, this evaluation framework can be problematic. Here, I'll present three issues which explain what went wrong, and I'll propose solutions (which the field is already converging towards) at the end. The issues:
 
-1. It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL
-2. Entropy only measures intra-sample diversity: inter-sample diversity is an after thought
-3. The best-scoring model is not the best language model, but the most `gpt2-large`-like
+1. **It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL**
+2. **The best-scoring model is not the best language model, but the most `gpt2-large`-like**
+3. **Entropy only measures intra-sample diversity: inter-sample diversity is an after thought**
 
-Importantly, flow map language models are unambiguously better at small step sizes: the issues pointed out here focus on larger step sizes (1024 steps) to help converge on better practices to improve future works, not to detract from past works. Unless otherwise noted, gen. ppl is scored using `gpt2-large`.
+Importantly, flow map language models are unambiguously better at small step sizes. I only present papers where these issues caveat minor results instead of the paper's main claim because the point of this is not to invalidate previous results, but to establish more robust evaluation norms. Unless otherwise noted, gen. ppl is scored using `gpt2-large`.
 
 ## The issues
 
 ### 1. It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL
 
-There is an inherent tradeoff to gen. ppl and entropy. I can easily construct a low gen. ppl sequence with very high entropy (e.g. "aaaaaa..." has gen. ppl = 1.01 and entropy = 0.0), or a high gen. ppl sequence with very low entropy (e.g. completely random tokens has gen. ppl ~= 150,000 and entropy = 6.92). Recent works often report gen. ppl and entropy, marking results that have incredibly low entropies as "mode collapsed". The variation in entropy between models is > 0.3 nats in all of three recent papers ([Flow Map Language Models](https://arxiv.org/pdf/2602.16813), [Discrete Flow Maps](https://arxiv.org/abs/2604.09784), [LangFlow](https://arxiv.org/pdf/2604.11748)). Below we show the results from [Flow Map Language Models](https://arxiv.org/pdf/2602.16813), a representative example.
+There is an inherent tradeoff to gen. ppl and entropy. I can easily construct a low gen. ppl sequence with very high entropy (e.g. *"aaaaaa..."* has `gen. ppl = 1.01` and `entropy = 0.0`), or a high gen. ppl sequence with very low entropy (e.g. completely random tokens has `gen. ppl ~= 150,000` and `entropy = 6.92`). Recent works often report gen. ppl and entropy, marking results that have incredibly low entropies as "mode collapsed". The variation in entropy between models is > 0.3 nats in all of three recent papers ([Flow Map Language Models](https://arxiv.org/pdf/2602.16813), [Discrete Flow Maps](https://arxiv.org/abs/2604.09784), [LangFlow](https://arxiv.org/pdf/2604.11748)). Below we show the results from [Flow Map Language Models](https://arxiv.org/pdf/2602.16813), a representative example.
 
 ![FLM table](assets/fmlm_table.png)
-From Flow Map Language Models.
+From [Flow Map Language Models](https://arxiv.org/pdf/2602.16813).
 
-From the main results for OWT, it is natural to read as "entropies are close to eachother, so the one with the lowest gen. ppl must be best": FLM > Duo > MDLM > CANDI. However, the gen. ppl of a given model is *incredibly* sensitive to the entropy, and this small variation makes a big difference.
+From the main results for OWT, it is natural to read as "entropies are close to eachother, so the one with the lowest gen. ppl must be best": FLM > Duo > MDLM > CANDI. However, the gen. ppl of a given model is *incredibly* sensitive to the entropy, and **this small variation is enough to completely flip the ordering of best models**.
 
-We can easily quantify this sensitivity in autoregressive language models by sweeping over temperatures used to generate sequences: lower temperature generations create low entropy, low gen. ppl samples, and higher temperature generations create high entropy, high gen. ppl samples. Below, we sweep from `t=0` to `t=1` and report the gen. ppl and entropy at each temperature.
+We can easily quantify this sensitivity in autoregressive language models by sweeping over temperatures used to generate sequences: lower temperature generations create low entropy, low gen. ppl samples, and higher temperature generations create high entropy, high gen. ppl samples. Below, we sweep sampling from `gpt2-small` with `t=0` to `t=1` and report the gen. ppl and entropy of 128 samples at each temperature.
 
 ![temp affecting ent and ppl](assets/gpt2_ppl_ent_temp.png)
+Generative perplexity (blue) and sample entropy (green) versus temperature. Each point is 128 samples from `gpt2-small`, generations scored by `gpt2-large`. Note that gen. ppl scale is logarithmic.
 
 As you can see, a linear increase in entropy leads to an exponential increase in perplexity (note that PPL scale is logarithmic while entropy scale is linear).
 
-This exponential sensitivity is expected because perplexity is the exponential of cross-entropy: PPL = exp(H(Q) + KL(Q || P)). Entropy alone does not determine PPL, but when the KL-to-scorer term changes smoothly, small linear changes in entropy translate into exponential changes in PPL.
+This exponential sensitivity is expected: perplexity is the exponential of cross-entropy:
 
-Going from the lowest reported entropy (5.33) to the highest entropy (5.71) for *the same exact model* leads to a nearly 3x increase in PPL. In the reported results from FLM, the range in PPL is ~2.3x. So, at least in autoregressive models, **small changes in entropy can lead to huge changes in gen. ppl -- enough to completely inverse the "best" ordering of reported results**.
+$$
+\begin{aligned}
+H(Q, P) &= -\mathbb{E}_{x \sim Q}[\log P(x)] \\
+        &= H(Q) + \mathrm{KL}(Q \| P) \\
+\mathrm{PPL}(Q, P) &= \exp(H(Q, P)) \\
+                   &= \exp(H(Q) + \mathrm{KL}(Q \| P))
+\end{aligned}
+$$
 
-Now, can we use this insight (small changes in entropy lead to exponential changes in gen. ppl) to resolve the quandary from earlier (using gen. ppl as a metric, `gpt2-small` > `gpt2-medium` and `gpt2-xl` > `gpt2-large`)? **Yes (partially)!**
+Entropy alone does not determine PPL, but when the KL-to-scorer term changes smoothly, small linear changes in entropy translate into exponential changes in PPL.
+
+Going from the lowest reported entropy (5.33) to the highest entropy (5.71) for *the same exact model* leads to a nearly 3x increase in PPL (23.3 -> 66.4). In the reported results from FLM, the range in PPL is ~2.3x. So, at least in autoregressive models, **small changes in entropy can lead to huge changes in gen. ppl -- enough to completely inverse the "best" ordering of reported results**.
+
+Now, can we use this insight (small changes in entropy lead to exponential changes in gen. ppl) to resolve the quandary from earlier (using gen. ppl as a metric, `gpt2-small` > `gpt2-medium` and `gpt2-xl` > `gpt2-large`)? **Yes! (Well, partially)**
 
 Both gen. ppl and entropy monotonically increase with temperature, so we can plot -- for each `gpt2` model -- gen. ppl v. entropy using the values of the previous sweep.
 
 ![gen. ppl v entropy](assets/gpt2_family_temperature_sweep/temperature_sweep_tradeoff_comparison_scored_by_gpt2-large.png)
+Generative PPL vs. sample entropy for the GPT-2 models. Note that the highest gen. ppl of the best model (`gpt2-large`) is higher than the lowest gen. ppl of the worst model (`gpt2-small`) in the region of entropy in standard results. This means that just by trading off entropy for gen. ppl, we can claim any model is best.
 
-This reveals a pareto frontier of gen. ppl vs. entropy. Under this, `gpt2-medium` is clearly better than `gpt2-small`. If you look at the `t=1` point (the most far right) you can see what caused the earlier discrepancy: `gpt2-medium` generates higher entropy samples at `t=1`. Note that, by just changing the sampling temperature and using the flow model evaluation framework, you could conclude **any arbitrary ordering of the gpt2 family models**: each model's lowest gen. ppl in the entropy range is lower than any other model's max gen. ppl in the entropy range.
+This reveals a pareto frontier of gen. ppl vs. entropy, which [CANDI](https://arxiv.org/pdf/2510.22510) advocated for as how we should report results, recognizing the same problem we are outlining here. Under this, `gpt2-medium` is clearly better than `gpt2-small`. If you look at the `t=1` point (the most far right) you can see what caused the earlier discrepancy: `gpt2-medium` generates higher entropy samples at `t=1`. Note that, by just changing the sampling temperature and using the flow model evaluation framework, you could conclude **any arbitrary ordering of the gpt2 family models**: each model's lowest gen. ppl in the entropy range is lower than any other model's max gen. ppl in the entropy range.
 
-But, even after controlling for sample entropy, `gpt2-large` is slightly better than `gpt2-xl`. What gives? The answer is in section 3: the best-scoring model is not the best language model, but the most `gpt2-large`-like. If we swap the scorer from `gpt2-large` to `pythia-2.8b`, then at the data entropy, `gpt2-xl` > `gpt2-large` > `gpt2-medium` > `gpt2-small` as expected.
+But, even after controlling for sample entropy, `gpt2-large` is slightly better than `gpt2-xl`. What gives? The answer is in the next section: the best-scoring model is not the best language model, but the most `gpt2-large`-like. If we swap the scorer from `gpt2-large` to `pythia-2.8b`, then at the data entropy, `gpt2-xl` > `gpt2-large` > `gpt2-medium` > `gpt2-small` as expected.
 
-But does this hold for flow models and their reported baselines? After all, `gpt2` models are not compared against. Below, we plot the perplexity and entropy for FLM and LangFlow, and we sweep DUO (a baseline) from `t=0.9` to `t=1.0`.
+So, we've shown that if the baselines in FLM follow the same gen. ppl vs. entropy curves as the GPT-2 models, then we can achieve any ordering of results just by slightly changing entropies. But does this hold for flow models and their reported baselines? After all, `gpt2` models are not compared against. Below, we plot the perplexity and entropy for FLM and LangFlow, and we sweep DUO (a baseline) from `t=0.9` to `t=1.0`.
 
 ![gen. ppl v entropy w/ duo+flows](assets/gpt2_family_temperature_sweep_with_flows/temperature_sweep_tradeoff_comparison_scored_by_gpt2-large.png)
+Generative perplexity versus sample entropy for GPT-2 models, FLM, LangFlow, and a DUO temperature sweep. DUO's apparent ranking changes when comparing at matched entropy.
 
 As you can see, under `t=1` sampling (right-most point), DUO has a higher gen. ppl than both FLM and LangFlow, but it is better when entropy-matched.
 
 #### Proposal
 
-Fixing this is straightforward: sweep PPL and entropy. Report interpolated gen. PPL at the entropy of the data. This completely eliminates any variance attributable to difference in entropy.
+Fixing this is straightforward: sweep PPL and entropy as we have done here and as is suggested by [CANDI](https://arxiv.org/pdf/2510.22510). Include the entire curve in the results. If you are reporting a scalar gen. ppl quantity, report interpolated gen. PPL at the entropy of the data (5.463 for OWT). This completely eliminates any variance attributable to difference in entropy.
 
-### 2. Entropy only measures intra-sample diversity: inter-sample diversity is an after thought
 
-In some recent flow model papers, entropy is referred to as a "diversity" measure. However, it is only measuring diversity *within* a sequence and *averaging* across sequences: $\mathrm{mean}(-\sum_i p_i \log p_i)$. This means that if a model generated the same low gen. ppl, high entropy sequence, under these two metrics it would seem like an incredibly strong model.
+### 2. The best-scoring model is not the best language model, but the most `gpt2-large`-like
+
+`gpt2-large` is an imperfect model of language. Even just comparing to `gpt2-xl`, it has lower accuracy and higher PPL on every measured benchmark:
+
+![gpt2 results](assets/gpt2-table.png)
+From [Language Models are Unsupervised Multitask Learners](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf).
+
+However, as shown earlier, `gpt2-large` gives a better gen. ppl to its own samples than to `gpt2-xl` samples. In fact, `gpt2-large` assigns a higher probability to its own entropy-matched samples than to actual samples of the data. This is unsurprising: by definition, the highest probability (lowest gen. PPL) strings are those greedily (`t=0`) generated by the scoring model. 
+
+You can also dream up many clear examples to show that the current evaluation is penalizing "correct" behavior: when scoring completions of `10753 * 1099 = ` (just a random multiplication problem, given with 50 in-context examples), `gpt2-large` gives a PPL of `22.1773` to the correct answer (`11,817,547`) but a PPL of `9.86017` to the greedy completion (`1,073,868,851`). **gen. ppl is not scoring which model matches the data better, but rather it is scoring which model matches (imperfect) `gpt2-large` better.**
+
+Further, this means that the eval is architecturally biased towards left-to-right autoregressive models. As a way to see this, we trained 2 models: one left-to-right AR model on OWT, and one right-to-left AR model on OWT. We find two checkpoints that have ~the same validation perplexity. Because left-to-right AR is fundamentally easier, this is ~25k steps for right-to-left and ~20k steps for left-to-right. Then, we can plot the entropy v. temperature curve, and note that the right-to-left model is worse compared to the equivalent (by validation ppl) left-to-right model.
+
+![forward v. reverse](assets/for-rev.png)
+Validation set perplexity v. generative perplexity of 256 samples under `gpt2-large` for checkpoints from training a model on OWT. For the same validation perplexity, a model trained left-to-right has lower generative perplexity loss than a model trained right-to-left. This demonstrates generative perplexity under an autoregressive model is biased to giving autoregressive models a better score.
+
+#### Proposal
+
+Fixing this is not straightforward: it is inherent to the idea of using another model as the ground truth. But, if we are going to treat a language model as the ground truth language distribution, we might as well use the better one: `gpt2-xl`.
+
+### 3. Entropy only measures intra-sample diversity: inter-sample diversity is an after thought
+
+In some recent flow model papers, entropy is referred to as a "diversity" measure. However, this entropy is computed within each generated sequence and then averaged across generated sequences:
+
+$$
+\frac{1}{M}\sum_{m=1}^{M}
+\left(
+-\sum_{v \in V} \hat p_m(v)\log \hat p_m(v)
+\right)
+$$
+
+where $\hat p_m(v)$ is the empirical frequency of token $v$ in generated sample $m$. This means that if a model generated the same low gen. ppl, high entropy sequence, under these two metrics it would seem like an incredibly strong model.
 
 To give an example, if the model recited the following sequence from OWT every single sample, it's PPL would be 4.283 with an entropy of 5.42:
 
@@ -112,25 +169,6 @@ The field is aware of this. In [Flow Map Language Models](https://arxiv.org/pdf/
 #### Proposal
 
 Report self-BLEU as in Flow Language Models. This is not perfect, but it does act as a crude measure of diversity.
-
-### 3. The best-scoring model is not the best language model, but the most `gpt2-large`-like
-
-`gpt2-large` is an imperfect model of language. Even just comparing to `gpt2-xl`, it has lower accuracy and higher PPL in-distribution on OWT and out-of-distribution on every measured benchmark.
-
-![gpt2 results](assets/gpt2-table.png)
-
-However, as shown earlier, `gpt2-large` gives a better gen. ppl to its own samples than to `gpt2-xl` samples. In fact, `gpt2-large` assigns a higher probability to its own samples than to actual samples of the data (when matching entropy=5.463). This is unsurprising: by definition, the highest probability (lowest gen. PPL) strings are those greedily (`t=0`) generated by the scoring model. 
-
-You can also dream up many clear examples to show that the current evaluation is penalizing "correct" behavior: when scoring completions of `10753 * 1099 = ` (just a random multiplication problem, given with 50 in-context examples), `gpt2-large` gives a PPL of [BLANK] to the correct answer (`11_817_547`) but a PPL of [BLANK] to the answer [BLANK]. **gen. ppl is not scoring which model matches the data better, but rather it is scoring which model matches (imperfect) `gpt2-large` better.**
-
-Further, this means that the eval is architecturally biased towards left-to-right autoregressive models. As a way to see this, we trained 2 models: one left-to-right AR model on OWT, and one right-to-left AR model on OWT. We find two checkpoints that have ~the same validation perplexity. Because left-to-right AR is fundamentally easier, this is ~25k steps for right-to-left and ~20k steps for left-to-right. Then, we can plot the entropy v. temperature curve, and note that the right-to-left model is worse compared to the equivalent (by validation ppl) left-to-right model.
-
-![forward v. reverse](assets/for-rev.png)
-
-#### Proposal
-
-Fixing this is not straightforward: it is inherent to the idea of using another model as the ground truth. But, if we are going to treat a language model as the ground truth language distribution, we might as well use the better one: `gpt2-xl`.
-
 ## The fixes
 
 As mentioned throughout, there are many ways to easily improve these evals, and the field is already working towards them. As mentioned earlier, [Flow Map Language Models](https://arxiv.org/pdf/2602.16813) reports self-BLEU scores, [LangFlow](https://arxiv.org/pdf/2604.11748) reports PPL bounds on actual validation data. Here, we give a few concrete ideas which address the earlier outlined issues.

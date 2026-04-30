@@ -13,6 +13,7 @@
   <meta name="twitter:title" content="Fixing Flow Model Evals">
   <meta name="twitter:description" content="Why generative perplexity and entropy are easy to misread for flow language models, and a few concrete fixes.">
   <meta name="twitter:image" content="https://samacqua.github.io/projects/flow-evals/assets/temperature_sweep_tradeoff_comparison_scored_by_gpt2-large.png">
+  <base target="_blank">
 
   <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans">
   <script>
@@ -30,6 +31,7 @@
       --text: #1a1a1a;
       --text-muted: #666;
       --accent: #c44b25;
+      --accent-light: #e8d5ce;
       --border: #ddd;
       --code-bg: #f5f4f0;
       --table-header: #2c2c2c;
@@ -38,6 +40,8 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
 
     body {
       font-family: Open Sans, sans-serif;
@@ -83,6 +87,42 @@
       color: rgb(92, 92, 92);
     }
 
+    #toc {
+      position: fixed;
+      top: 112px;
+      left: max(14px, calc(50% - 560px - 180px));
+      width: 168px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      z-index: 5;
+    }
+
+    #toc a {
+      padding: 2px 8px;
+      border-left: 2px solid transparent;
+      color: var(--text-muted);
+      font-size: 0.72rem;
+      line-height: 1.45;
+      text-decoration: none;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+
+    #toc a:hover,
+    #toc a.toc-active {
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    #toc a.toc-active {
+      border-left-color: var(--text);
+    }
+
+    #toc a.toc-h3 {
+      padding-left: 18px;
+      font-size: 0.68rem;
+    }
+
     article {
       max-width: 1120px;
       margin: 0 auto;
@@ -90,6 +130,7 @@
     }
 
     h1 {
+      font-family: Open Sans, sans-serif;
       font-size: 2.8rem;
       font-weight: 700;
       line-height: 1.15;
@@ -99,6 +140,7 @@
     }
 
     h2 {
+      font-family: Open Sans, sans-serif;
       font-size: 1.7rem;
       font-weight: 600;
       margin: 3.5rem 0 1rem;
@@ -108,10 +150,10 @@
     }
 
     h3 {
-      max-width: 720px;
-      font-size: 1.18rem;
+      font-size: 1.15rem;
       margin: 2rem 0 0.7rem;
       font-weight: 600;
+      max-width: 720px;
     }
 
     h4 {
@@ -121,17 +163,35 @@
       font-weight: 600;
     }
 
-    p, ul, ol, blockquote { max-width: 720px; margin-bottom: 1rem; }
+    h1, h2, h3, h4 {
+      scroll-margin-top: 1.25rem;
+    }
+
+    p, ul, ol { max-width: 720px; margin-bottom: 1rem; }
     ul, ol { padding-left: 1.5rem; }
-    li { margin-bottom: 0.35rem; }
+    li { margin-bottom: 0.3rem; }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
     strong { font-weight: 600; }
 
     blockquote {
-      padding-left: 1rem;
-      border-left: 4px solid var(--border);
+      max-width: 720px;
+      max-height: 260px;
+      margin-bottom: 1.5rem;
+      padding: 1rem 1.25rem;
+      overflow: auto;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-left: 4px solid #9a9a92;
+      border-radius: 8px;
       color: #333;
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    blockquote p {
+      max-width: none;
+      margin-bottom: 0;
     }
 
     code {
@@ -140,6 +200,23 @@
       background: var(--code-bg);
       padding: 0.15em 0.4em;
       border-radius: 4px;
+    }
+
+    pre {
+      max-width: 720px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+      line-height: 1.55;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+      font-size: 0.84rem;
     }
 
     .subtitle {
@@ -155,12 +232,15 @@
       max-width: 720px;
       margin: 1.4rem 0 1.5rem;
       padding: 0.15rem 0 0.15rem 1.1rem;
+      background: transparent;
+      border: none;
       border-left: 4px solid #9a9a92;
+      border-radius: 0;
     }
 
     figure {
-      max-width: 920px;
-      margin: 1.7rem 0 2rem;
+      max-width: 720px;
+      margin: 1.5rem 0;
     }
 
     figure.narrow { max-width: 720px; }
@@ -171,26 +251,47 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       background: #fff;
+      cursor: zoom-in;
     }
 
     figcaption {
       max-width: 720px;
-      font-size: 0.9em;
+      font-size: 0.88em;
       color: var(--text-muted);
       line-height: 1.5;
-      margin-top: 0.4em;
+      margin-top: 0.3em;
     }
 
-    .table-wrap {
-      max-width: 720px;
-      overflow-x: auto;
-      margin: 1.4rem 0 1.6rem;
+    #lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.82);
+      cursor: zoom-out;
     }
+
+    #lightbox.active {
+      display: flex;
+    }
+
+    #lightbox img {
+      max-width: 92vw;
+      max-height: 92vh;
+      border-radius: 6px;
+      box-shadow: 0 8px 48px rgba(0, 0, 0, 0.5);
+      object-fit: contain;
+      cursor: zoom-out;
+    }
+
+    .table-wrap { overflow-x: auto; }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       white-space: nowrap;
     }
 
@@ -200,7 +301,8 @@
       padding: 0.55rem 0.7rem;
       text-align: left;
       font-weight: 500;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
+      white-space: normal;
       line-height: 1.3;
     }
 
@@ -214,27 +316,49 @@
     }
 
     tbody tr:hover { background: #f5f4f0; }
-    tbody td:first-child { font-weight: 500; }
+    tbody td:first-child { font-weight: 500; font-size: 0.83rem; }
 
-    .interactive-card {
-      max-width: 1120px;
-      margin: 1.6rem 0 1.8rem;
-      padding: 1rem;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 10px;
+    .results-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 1.5rem;
+      align-items: start;
+      margin: 2rem 0 2.5rem;
     }
 
     .intro-metric-grid {
       display: grid;
-      grid-template-columns: minmax(260px, 0.8fr) minmax(360px, 1.2fr);
-      gap: 1.25rem;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 1.5rem;
       align-items: start;
+      margin: 2rem 0 2.5rem;
     }
 
     .intro-metric-grid .table-wrap {
       max-width: none;
       margin: 0;
+    }
+
+    .rank-gold {
+      background: #fff2b8;
+      font-weight: 700;
+    }
+
+    .rank-silver {
+      background: #e8edf3;
+      font-weight: 700;
+    }
+
+    .rank-copper {
+      background: #f3d1b5;
+      font-weight: 700;
+    }
+
+    .table-note {
+      margin: 0.65rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
     }
 
     .plot-controls {
@@ -270,11 +394,44 @@
       overflow: visible;
     }
 
+    .plot-wrap {
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
     .plot-tooltip {
-      min-height: 1.6rem;
-      margin-top: 0.45rem;
+      position: absolute;
+      z-index: 2;
+      display: none;
+      padding: 0.35rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+      color: var(--text);
       font-size: 0.9rem;
-      color: var(--text-muted);
+      font-weight: 700;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .plot-tooltip.visible {
+      display: block;
+    }
+
+    .model-point {
+      cursor: pointer;
+    }
+
+    .model-point circle {
+      transition: r 80ms ease-out, filter 80ms ease-out;
+    }
+
+    .model-point:hover circle {
+      filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.25));
     }
 
     .note-list {
@@ -286,15 +443,36 @@
       border-radius: 8px;
     }
 
-    @media (max-width: 780px) {
+    @media (max-width: 900px) {
+      .results-grid,
+      .intro-metric-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
       h1 { font-size: 2rem; }
       article { padding: 2rem 1rem; }
       table { font-size: 0.78rem; }
-      .intro-metric-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 1260px) {
+      #toc { display: none; }
     }
   </style>
 </head>
 <body>
+<nav id="toc" aria-label="Section navigation">
+  <a href="#intro" target="_self">Intro</a>
+  <a href="#issues" target="_self">Issues</a>
+  <a class="toc-h3" href="#entropy-ppl-tradeoff" target="_self">Entropy/PPL tradeoff</a>
+  <a class="toc-h3" href="#scorer-bias" target="_self">Scorer bias</a>
+  <a class="toc-h3" href="#intra-sample-diversity" target="_self">Sample diversity</a>
+  <a href="#fixes" target="_self">Fixes</a>
+  <a class="toc-h3" href="#small-fixes" target="_self">Small changes</a>
+  <a class="toc-h3" href="#larger-fixes" target="_self">Larger changes</a>
+  <a href="#open-questions" target="_self">Open questions</a>
+</nav>
 <nav class="top-nav">
   <a href="../../" class="top-nav-title">flow-evals</a>
   <div class="top-nav-links">
@@ -306,13 +484,13 @@
 </nav>
 
 <article>
-  <h1>Fixing flow model evals</h1>
+  <h1 id="intro">Fixing flow model evals</h1>
 
-  <p>Flow models are very promising. Yet, the current way of evaluating these models is ripe for misinterpretation and needs rethinking.</p>
+  <p><a href="https://flow-maps.github.io/">Flow models</a> are very promising. Yet, the current way of evaluating these models is ripe for misinterpretation and needs rethinking.</p>
 
-  <p>In the current flow evaluation framework, one would conclude that <code>gpt2-large</code> (762M) is better than <code>gpt2-xl</code> (1.5B), and <code>gpt2-small</code> (117M) is better than <code>gpt2-medium</code> (342M), despite the fact that all measured evaluations in the <a href="https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf">GPT-2 paper</a> smoothly improve as we increase model size.</p>
+  <p>In the current flow evaluation framework, one would conclude that <code>gpt2-large</code> (762M) is better than <code>gpt2-xl</code> (1.5B), and <code>gpt2-small</code> (117M) is better than <code>gpt2-medium</code> (342M), despite the fact that all measured evaluations in the <a href="https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf">GPT-2 paper</a> smoothly improve as we increase model size. In fact, as we will show later, <strong>it is easy to -- using flow model evals -- "show" that any gpt2 model is better than any other -- a clear contradiction.</strong></p>
 
-  <div class="interactive-card" id="model-size-card">
+  <div id="model-size-card">
     <div class="intro-metric-grid">
       <div class="table-wrap">
         <table>
@@ -325,8 +503,8 @@
           </thead>
           <tbody>
             <tr>
-              <td>gpt2</td>
-              <td style="text-align: right;">122.3149</td>
+              <td>gpt2-small</td>
+              <td class="rank-copper" style="text-align: right;">122.3149</td>
               <td style="text-align: right;">5.8842</td>
             </tr>
             <tr>
@@ -336,93 +514,152 @@
             </tr>
             <tr>
               <td>gpt2-large</td>
-              <td style="text-align: right;">35.9183</td>
+              <td class="rank-gold" style="text-align: right;">35.9183</td>
               <td style="text-align: right;">5.7023</td>
             </tr>
             <tr>
               <td>gpt2-xl</td>
-              <td style="text-align: right;">41.2730</td>
+              <td class="rank-silver" style="text-align: right;">41.2730</td>
               <td style="text-align: right;">5.7145</td>
             </tr>
           </tbody>
         </table>
+        <p class="table-note">Gold, silver, and copper mark the best, second-best, and third-best generative perplexity scores.</p>
       </div>
-      <div>
+      <div class="plot-wrap">
         <div class="interactive-plot" id="model-size-plot" aria-label="Interactive model size plot"></div>
-        <div class="plot-tooltip" id="model-size-tooltip"></div>
       </div>
     </div>
   </div>
 
-  <p>The source of this difference is that exact sequence likelihood is intractable for flow models. For an autoregressive model, we can evaluate validation perplexity directly by computing \(p_{\text{model}}(x_i \mid x_{&lt;i})\) for each token in a held-out sequence. For flow models, where exact likelihood is intractible, papers often evaluate generated samples using two proxy metrics:</p>
+  <p>For an autoregressive model, we can evaluate validation perplexity directly:</p>
+
+  <p>\[
+  p_{\text{model}}(x_{\text{val}})=\prod_i p_{\text{model}}(x_i \mid x_{&lt;i})
+  \]</p>
+
+  <p>Then:</p>
+
+  <p>\[
+  \mathrm{PPL}(x_{\text{val}})=\exp\left(-\frac{1}{N}\log p_{\text{model}}(x_{\text{val}})\right)
+  \]</p>
+
+  <p>For flow models, we cannot do this because calculating likelihoods requires solving an intractable integral over the flow, so papers often evaluate generated samples using two proxy metrics:</p>
 
   <ul>
     <li><strong>Generative perplexity (gen. ppl):</strong> generate samples from the model, then score those samples under a pretrained autoregressive model such as <code>gpt2-large</code>.</li>
     <li><strong>Entropy:</strong> compute the empirical token entropy (\(-\sum_i p_i \log p_i\)) of each generated sample, then average across samples.</li>
   </ul>
 
-  <p>However, as hinted above by the strange ordering of the gpt2 models, this evaluation framework can be problematic. Here, I'll present three issues which explain what went wrong, and I'll propose solutions (which the field is already converging towards) at the end. The issues:</p>
+  <p>This is how I made the above chart: sample 128 sequences of length 1024 from each model at <code>t=1</code>, then score these sequences under <code>gpt2-large</code> and calculate the mean sample entropy. However, as shown by the strange ordering of the gpt2 models, this evaluation framework can be problematic. Here, I'll present three issues which explain what went wrong, and I'll propose solutions (which the field is already converging towards) at the end. The issues:</p>
 
   <ol>
-    <li>It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL</li>
-    <li>Entropy only measures intra-sample diversity: inter-sample diversity is an after thought</li>
-    <li>The best-scoring model is not the best language model, but the most <code>gpt2-large</code>-like</li>
+    <li><strong>It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL</strong></li>
+    <li><strong>The best-scoring model is not the best language model, but the most <code>gpt2-large</code>-like</strong></li>
+    <li><strong>Entropy only measures intra-sample diversity: inter-sample diversity is an after thought</strong></li>
   </ol>
 
-  <p>Importantly, flow map language models are unambiguously better at small step sizes: the issues pointed out here focus on larger step sizes (1024 steps) to help converge on better practices to improve future works, not to detract from past works. Unless otherwise noted, gen. ppl is scored using <code>gpt2-large</code>.</p>
+  <p>Importantly, flow map language models are unambiguously better at small step sizes. I only present papers where these issues caveat minor results instead of the paper's main claim because the point of this is not to invalidate previous results, but to establish more robust evaluation norms. Unless otherwise noted, gen. ppl is scored using <code>gpt2-large</code>.</p>
 
-  <h2>The issues</h2>
+  <h2 id="issues">The issues</h2>
 
-  <h3>1. It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL</h3>
+  <h3 id="entropy-ppl-tradeoff">1. It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL</h3>
 
-  <p>There is an inherent tradeoff to gen. ppl and entropy. I can easily construct a low gen. ppl sequence with very high entropy (e.g. "aaaaaa..." has gen. ppl = 1.01 and entropy = 0.0), or a high gen. ppl sequence with very low entropy (e.g. completely random tokens has gen. ppl ~= 150,000 and entropy = 6.92). Recent works often report gen. ppl and entropy, marking results that have incredibly low entropies as "mode collapsed". The variation in entropy between models is &gt; 0.3 nats in all of three recent papers (<a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>, <a href="https://arxiv.org/abs/2604.09784">Discrete Flow Maps</a>, <a href="https://arxiv.org/pdf/2604.11748">LangFlow</a>). Below we show the results from <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>, a representative example.</p>
+  <p>There is an inherent tradeoff to gen. ppl and entropy. I can easily construct a low gen. ppl sequence with very high entropy (e.g. <em>"aaaaaa..."</em> has <code>gen. ppl = 1.01</code> and <code>entropy = 0.0</code>), or a high gen. ppl sequence with very low entropy (e.g. completely random tokens has <code>gen. ppl ~= 150,000</code> and <code>entropy = 6.92</code>). Recent works often report gen. ppl and entropy, marking results that have incredibly low entropies as "mode collapsed". The variation in entropy between models is &gt; 0.3 nats in all of three recent papers (<a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>, <a href="https://arxiv.org/abs/2604.09784">Discrete Flow Maps</a>, <a href="https://arxiv.org/pdf/2604.11748">LangFlow</a>). Below we show the results from <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>, a representative example.</p>
 
   <figure>
     <img src="assets/fmlm_table.png" alt="FLM table">
-    <figcaption>From Flow Map Language Models.</figcaption>
+    <figcaption>From <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>.</figcaption>
   </figure>
 
-  <p>From the main results for OWT, it is natural to read as "entropies are close to eachother, so the one with the lowest gen. ppl must be best": FLM &gt; Duo &gt; MDLM &gt; CANDI. However, the gen. ppl of a given model is <em>incredibly</em> sensitive to the entropy, and this small variation makes a big difference.</p>
+  <p>From the main results for OWT, it is natural to read as "entropies are close to eachother, so the one with the lowest gen. ppl must be best": FLM &gt; Duo &gt; MDLM &gt; CANDI. However, the gen. ppl of a given model is <em>incredibly</em> sensitive to the entropy, and <strong>this small variation is enough to completely flip the ordering of best models</strong>.</p>
 
-  <p>We can easily quantify this sensitivity in autoregressive language models by sweeping over temperatures used to generate sequences: lower temperature generations create low entropy, low gen. ppl samples, and higher temperature generations create high entropy, high gen. ppl samples. Below, we sweep from <code>t=0</code> to <code>t=1</code> and report the gen. ppl and entropy at each temperature.</p>
+  <p>We can easily quantify this sensitivity in autoregressive language models by sweeping over temperatures used to generate sequences: lower temperature generations create low entropy, low gen. ppl samples, and higher temperature generations create high entropy, high gen. ppl samples. Below, we sweep sampling from <code>gpt2-small</code> with <code>t=0</code> to <code>t=1</code> and report the gen. ppl and entropy of 128 samples at each temperature.</p>
 
   <figure>
     <img src="assets/gpt2_ppl_ent_temp.png" alt="temp affecting ent and ppl">
+    <figcaption>Generative perplexity (blue) and sample entropy (green) versus temperature. Each point is 128 samples from <code>gpt2-small</code>, generations scored by <code>gpt2-large</code>. Note that gen. ppl scale is logarithmic.</figcaption>
   </figure>
 
   <p>As you can see, a linear increase in entropy leads to an exponential increase in perplexity (note that PPL scale is logarithmic while entropy scale is linear).</p>
 
-  <p>This exponential sensitivity is expected because perplexity is the exponential of cross-entropy: PPL = exp(H(Q) + KL(Q || P)). Entropy alone does not determine PPL, but when the KL-to-scorer term changes smoothly, small linear changes in entropy translate into exponential changes in PPL.</p>
+  <p>This exponential sensitivity is expected -- perplexity is the exponential of cross-entropy:</p>
 
-  <p>Going from the lowest reported entropy (5.33) to the highest entropy (5.71) for <em>the same exact model</em> leads to a nearly 3x increase in PPL. In the reported results from FLM, the range in PPL is ~2.3x. So, at least in autoregressive models, <strong>small changes in entropy can lead to huge changes in gen. ppl -- enough to completely inverse the "best" ordering of reported results</strong>.</p>
+  <p>\[
+  \begin{aligned}
+  H(Q, P) &= -\mathbb{E}_{x \sim Q}[\log P(x)] \\
+          &= H(Q) + \mathrm{KL}(Q \| P) \\
+  \mathrm{PPL}(Q, P) &= \exp(H(Q, P)) \\
+                     &= \exp(H(Q) + \mathrm{KL}(Q \| P))
+  \end{aligned}
+  \]</p>
 
-  <p>Now, can we use this insight (small changes in entropy lead to exponential changes in gen. ppl) to resolve the quandary from earlier (using gen. ppl as a metric, <code>gpt2-small</code> &gt; <code>gpt2-medium</code> and <code>gpt2-xl</code> &gt; <code>gpt2-large</code>)? <strong>Yes (partially)!</strong></p>
+  <p>Entropy alone does not determine PPL, but when the KL-to-scorer term changes smoothly, small linear changes in entropy translate into exponential changes in PPL.</p>
+
+  <p>Going from the lowest reported entropy (5.33) to the highest entropy (5.71) for <em>the same exact model</em> leads to a nearly 3x increase in PPL (23.3 -&gt; 66.4). In the reported results from FLM, the range in PPL is ~2.3x. So, at least in autoregressive models, <strong>small changes in entropy can lead to huge changes in gen. ppl -- enough to completely inverse the "best" ordering of reported results</strong>.</p>
+
+  <p>Now, can we use this insight (small changes in entropy lead to exponential changes in gen. ppl) to resolve the quandary from earlier (using gen. ppl as a metric, <code>gpt2-small</code> &gt; <code>gpt2-medium</code> and <code>gpt2-xl</code> &gt; <code>gpt2-large</code>)? <strong>Yes! (Well, partially)</strong></p>
 
   <p>Both gen. ppl and entropy monotonically increase with temperature, so we can plot -- for each <code>gpt2</code> model -- gen. ppl v. entropy using the values of the previous sweep.</p>
 
   <figure>
     <img src="assets/gpt2_family_temperature_sweep/temperature_sweep_tradeoff_comparison_scored_by_gpt2-large.png" alt="gen. ppl v entropy">
+    <figcaption>Generative PPL vs. sample entropy for the GPT-2 models. Note that the highest gen. ppl of the best model (<code>gpt2-large</code>) is higher than the lowest gen. ppl of the worst model (<code>gpt2-small</code>) in the region of entropy in standard results. This means that just by trading off entropy for gen. ppl, we can claim any model is best.</figcaption>
   </figure>
 
-  <p>This reveals a pareto frontier of gen. ppl vs. entropy. Under this, <code>gpt2-medium</code> is clearly better than <code>gpt2-small</code>. If you look at the <code>t=1</code> point (the most far right) you can see what caused the earlier discrepancy: <code>gpt2-medium</code> generates higher entropy samples at <code>t=1</code>. Note that, by just changing the sampling temperature and using the flow model evaluation framework, you could conclude <strong>any arbitrary ordering of the gpt2 family models</strong>: each model's lowest gen. ppl in the entropy range is lower than any other model's max gen. ppl in the entropy range.</p>
+  <p>This reveals a pareto frontier of gen. ppl vs. entropy, which <a href="https://arxiv.org/pdf/2510.22510">CANDI</a> advocated for as how we should report results, recognizing the same problem we are outlining here. Under this, <code>gpt2-medium</code> is clearly better than <code>gpt2-small</code>. If you look at the <code>t=1</code> point (the most far right) you can see what caused the earlier discrepancy: <code>gpt2-medium</code> generates higher entropy samples at <code>t=1</code>. Note that, by just changing the sampling temperature and using the flow model evaluation framework, you could conclude <strong>any arbitrary ordering of the gpt2 family models</strong>: each model's lowest gen. ppl in the entropy range is lower than any other model's max gen. ppl in the entropy range.</p>
 
-  <p>But, even after controlling for sample entropy, <code>gpt2-large</code> is slightly better than <code>gpt2-xl</code>. What gives? The answer is in section 3: the best-scoring model is not the best language model, but the most <code>gpt2-large</code>-like. If we swap the scorer from <code>gpt2-large</code> to <code>pythia-2.8b</code>, then at the data entropy, <code>gpt2-xl</code> &gt; <code>gpt2-large</code> &gt; <code>gpt2-medium</code> &gt; <code>gpt2-small</code> as expected.</p>
+  <p>But, even after controlling for sample entropy, <code>gpt2-large</code> is slightly better than <code>gpt2-xl</code>. What gives? The answer is in the next section: the best-scoring model is not the best language model, but the most <code>gpt2-large</code>-like. If we swap the scorer from <code>gpt2-large</code> to <code>pythia-2.8b</code>, then at the data entropy, <code>gpt2-xl</code> &gt; <code>gpt2-large</code> &gt; <code>gpt2-medium</code> &gt; <code>gpt2-small</code> as expected.</p>
 
-  <p>But does this hold for flow models and their reported baselines? After all, <code>gpt2</code> models are not compared against. Below, we plot the perplexity and entropy for FLM and LangFlow, and we sweep DUO (a baseline) from <code>t=0.9</code> to <code>t=1.0</code>.</p>
+  <p>So, we've shown that if the baselines in FLM follow the same gen. ppl vs. entropy curves as the GPT-2 models, then we can achieve any ordering of results just by slightly changing entropies. But does this hold for flow models and their reported baselines? After all, <code>gpt2</code> models are not compared against. Below, we plot the perplexity and entropy for FLM and LangFlow, and we sweep DUO (a baseline) from <code>t=0.9</code> to <code>t=1.0</code>.</p>
 
   <figure>
     <img src="assets/gpt2_family_temperature_sweep_with_flows/temperature_sweep_tradeoff_comparison_scored_by_gpt2-large.png" alt="gen. ppl v entropy w/ duo+flows">
+    <figcaption>Generative perplexity versus sample entropy for GPT-2 models, FLM, LangFlow, and a DUO temperature sweep. DUO's apparent ranking changes when comparing at matched entropy.</figcaption>
   </figure>
 
   <p>As you can see, under <code>t=1</code> sampling (right-most point), DUO has a higher gen. ppl than both FLM and LangFlow, but it is better when entropy-matched.</p>
 
   <h4>Proposal</h4>
 
-  <p>Fixing this is straightforward: sweep PPL and entropy. Report interpolated gen. PPL at the entropy of the data. This completely eliminates any variance attributable to difference in entropy.</p>
+  <p>Fixing this is straightforward: sweep PPL and entropy as we have done here and as is suggested by <a href="https://arxiv.org/pdf/2510.22510">CANDI</a>. Include the entire curve in the results. If you are reporting a scalar gen. ppl quantity, report interpolated gen. PPL at the entropy of the data (5.463 for OWT). This completely eliminates any variance attributable to difference in entropy.</p>
 
-  <h3>2. Entropy only measures intra-sample diversity: inter-sample diversity is an after thought</h3>
+  <h3 id="scorer-bias">2. The best-scoring model is not the best language model, but the most <code>gpt2-large</code>-like</h3>
 
-  <p>In some recent flow model papers, entropy is referred to as a "diversity" measure. However, it is only measuring diversity <em>within</em> a sequence and <em>averaging</em> across sequences: \(\mathrm{mean}(-\sum_i p_i \log p_i)\). This means that if a model generated the same low gen. ppl, high entropy sequence, under these two metrics it would seem like an incredibly strong model.</p>
+  <p><code>gpt2-large</code> is an imperfect model of language. Even just comparing to <code>gpt2-xl</code>, it has lower accuracy and higher PPL on every measured benchmark:</p>
+
+  <figure>
+    <img src="assets/gpt2-table.png" alt="gpt2 results">
+    <figcaption>From <a href="https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf">Language Models are Unsupervised Multitask Learners</a>.</figcaption>
+  </figure>
+
+  <p>However, as shown earlier, <code>gpt2-large</code> gives a better gen. ppl to its own samples than to <code>gpt2-xl</code> samples. In fact, <code>gpt2-large</code> assigns a higher probability to its own entropy-matched samples than to actual samples of the data. This is unsurprising: by definition, the highest probability (lowest gen. PPL) strings are those greedily (<code>t=0</code>) generated by the scoring model.</p>
+
+  <p>You can also dream up many clear examples to show that the current evaluation is penalizing "correct" behavior: when scoring completions of <code>10753 * 1099 = </code> (just a random multiplication problem, given with 50 in-context examples), <code>gpt2-large</code> gives a PPL of <code>22.1773</code> to the correct answer (<code>11,817,547</code>) but a PPL of <code>9.86017</code> to the greedy completion (<code>1,073,868,851</code>). <strong>gen. ppl is not scoring which model matches the data better, but rather it is scoring which model matches (imperfect) <code>gpt2-large</code> better.</strong></p>
+
+  <p>Further, this means that the eval is architecturally biased towards left-to-right autoregressive models. As a way to see this, we trained 2 models: one left-to-right AR model on OWT, and one right-to-left AR model on OWT. We find two checkpoints that have ~the same validation perplexity. Because left-to-right AR is fundamentally easier, this is ~25k steps for right-to-left and ~20k steps for left-to-right. Then, we can plot the entropy v. temperature curve, and note that the right-to-left model is worse compared to the equivalent (by validation ppl) left-to-right model.</p>
+
+  <figure>
+    <img src="assets/for-rev.png" alt="forward v. reverse">
+    <figcaption>Validation set perplexity v. generative perplexity of 256 samples under <code>gpt2-large</code> for checkpoints from training a model on OWT. For the same validation perplexity, a model trained left-to-right has lower generative perplexity loss than a model trained right-to-left. This demonstrates generative perplexity under an autoregressive model is biased to giving autoregressive models a better score.</figcaption>
+  </figure>
+
+  <h4>Proposal</h4>
+
+  <p>Fixing this is not straightforward: it is inherent to the idea of using another model as the ground truth. But, if we are going to treat a language model as the ground truth language distribution, we might as well use the better one: <code>gpt2-xl</code>.</p>
+
+  <h3 id="intra-sample-diversity">3. Entropy only measures intra-sample diversity: inter-sample diversity is an after thought</h3>
+
+  <p>In some recent flow model papers, entropy is referred to as a "diversity" measure. However, this entropy is computed within each generated sequence and then averaged across generated sequences:</p>
+
+  <p>\[
+  \frac{1}{M}\sum_{m=1}^{M}
+  \left(
+  -\sum_{v \in V} \hat p_m(v)\log \hat p_m(v)
+  \right)
+  \]</p>
+
+  <p>where \(\hat p_m(v)\) is the empirical frequency of token \(v\) in generated sample \(m\). This means that if a model generated the same low gen. ppl, high entropy sequence, under these two metrics it would seem like an incredibly strong model.</p>
 
   <p>To give an example, if the model recited the following sequence from OWT every single sample, it's PPL would be 4.283 with an entropy of 5.42:</p>
 
@@ -438,33 +675,12 @@
 
   <p>Report self-BLEU as in Flow Language Models. This is not perfect, but it does act as a crude measure of diversity.</p>
 
-  <h3>3. The best-scoring model is not the best language model, but the most <code>gpt2-large</code>-like</h3>
 
-  <p><code>gpt2-large</code> is an imperfect model of language. Even just comparing to <code>gpt2-xl</code>, it has lower accuracy and higher PPL in-distribution on OWT and out-of-distribution on every measured benchmark.</p>
-
-  <figure>
-    <img src="assets/gpt2-table.png" alt="gpt2 results">
-  </figure>
-
-  <p>However, as shown earlier, <code>gpt2-large</code> gives a better gen. ppl to its own samples than to <code>gpt2-xl</code> samples. In fact, <code>gpt2-large</code> assigns a higher probability to its own samples than to actual samples of the data (when matching entropy=5.463). This is unsurprising: by definition, the highest probability (lowest gen. PPL) strings are those greedily (<code>t=0</code>) generated by the scoring model.</p>
-
-  <p>You can also dream up many clear examples to show that the current evaluation is penalizing "correct" behavior: when scoring completions of <code>10753 * 1099 = </code> (just a random multiplication problem, given with 50 in-context examples), <code>gpt2-large</code> gives a PPL of [BLANK] to the correct answer (<code>11_817_547</code>) but a PPL of [BLANK] to the answer [BLANK]. <strong>gen. ppl is not scoring which model matches the data better, but rather it is scoring which model matches (imperfect) <code>gpt2-large</code> better.</strong></p>
-
-  <p>Further, this means that the eval is architecturally biased towards left-to-right autoregressive models. As a way to see this, we trained 2 models: one left-to-right AR model on OWT, and one right-to-left AR model on OWT. We find two checkpoints that have ~the same validation perplexity. Because left-to-right AR is fundamentally easier, this is ~25k steps for right-to-left and ~20k steps for left-to-right. Then, we can plot the entropy v. temperature curve, and note that the right-to-left model is worse compared to the equivalent (by validation ppl) left-to-right model.</p>
-
-  <figure>
-    <img src="assets/for-rev.png" alt="forward v. reverse">
-  </figure>
-
-  <h4>Proposal</h4>
-
-  <p>Fixing this is not straightforward: it is inherent to the idea of using another model as the ground truth. But, if we are going to treat a language model as the ground truth language distribution, we might as well use the better one: <code>gpt2-xl</code>.</p>
-
-  <h2>The fixes</h2>
+  <h2 id="fixes">The fixes</h2>
 
   <p>As mentioned throughout, there are many ways to easily improve these evals, and the field is already working towards them. As mentioned earlier, <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a> reports self-BLEU scores, <a href="https://arxiv.org/pdf/2604.11748">LangFlow</a> reports PPL bounds on actual validation data. Here, we give a few concrete ideas which address the earlier outlined issues.</p>
 
-  <h3>Small changes: report entropy-matched gen. ppl, self-BLEU, and use <code>gpt2-xl</code> as the scorer</h3>
+  <h3 id="small-fixes">Small changes: report entropy-matched gen. ppl, self-BLEU, and use <code>gpt2-xl</code> as the scorer</h3>
 
   <p>As mentioned at the end of each section, the three problems can be ameliorated through small changes.</p>
 
@@ -474,13 +690,13 @@
 
   <p>Finally, we showed that using any model as a scorer means that it gives higher scores to models which make the same mistakes. And since we do not have access to the true data generating distribution of language, we must settle for an imperfect scorer. With this being the case, we might as well use the <em>better</em> drop-in replacement model of language: <code>gpt2-xl</code> instead of <code>gpt2-large</code>.</p>
 
-  <h3>Larger changes: Report PPL bounds and focus on downstream metrics</h3>
+  <h3 id="larger-fixes">Larger changes: Report PPL bounds and focus on downstream metrics</h3>
 
   <p>The changes above are patching an imperfect framework. I think a bigger improvement is to report PPL bounds on actual data (as in <a href="https://arxiv.org/pdf/2604.11748">LangFlow</a>) and to focus on downstream metrics (like Sudoku in <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>). Calculating PPL bounds on real data sidesteps all of the outlined problems. One issue is that calculating this PPL bound is quite slow, the gap between the bound and the true PPL is unknown, and also new models must derive their own PPL bounds. Work in this area (faster, more general, tighter bounds) is great.</p>
 
   <p>Furthermore, why do we care about PPL in the first place? On one hand, it is very natural: it is a function of the probability of sequences under the model, it gives ~number of tokens that the model is guessing between with equal probability. On the other hand, we want these models to <em>do</em> useful things: solve our problems, answer questions. So, by focusing on these downstream metrics which only require drawing samples, we can go beyond this gen. ppl fixation.</p>
 
-  <h2>Open questions</h2>
+  <h2 id="open-questions">Open questions</h2>
 
   <p>In writing this up, there are a few things I couldn't get a satisfying answer to.</p>
 
@@ -503,8 +719,8 @@
 <script>
   const modelSizeDataUrl = "assets/model_size_vs_gen_ppl_matrix_scored_by_gpt2-large.json";
   const metricLabels = {
-    gen_ppl: "Generated sample PPL (gpt2-large scorer)",
-    owt_val_ppl: "OWT validation PPL"
+    gen_ppl: "Generative Perplexity (flow model eval)",
+    owt_val_ppl: "Validation Perplexity (AR model eval)"
   };
   const metricColors = {
     gen_ppl: "#c44b25",
@@ -521,12 +737,19 @@
     return outMin + (Math.log(value) - logMin) * (outMax - outMin) / (logMax - logMin);
   }
 
+  function linearScale(value, minValue, maxValue, outMin, outMax) {
+    return outMin + (value - minValue) * (outMax - outMin) / (maxValue - minValue);
+  }
+
+  function displayModelName(model) {
+    return model === "gpt2" ? "gpt2-small" : model;
+  }
+
   function renderModelSizePlot(points) {
     const el = document.getElementById("model-size-plot");
-    const tooltip = document.getElementById("model-size-tooltip");
     const width = 860;
-    const height = 430;
-    const margin = { top: 28, right: 42, bottom: 58, left: 72 };
+    const height = 460;
+    const margin = { top: 56, right: 42, bottom: 62, left: 78 };
     const plotW = width - margin.left - margin.right;
     const plotH = height - margin.top - margin.bottom;
     const metrics = ["gen_ppl", "owt_val_ppl"];
@@ -534,47 +757,72 @@
     const values = metrics.flatMap(metric => points.map(d => Number(d[metric])));
     const xMin = Math.min(...sizes) * 0.85;
     const xMax = Math.max(...sizes) * 1.15;
-    const yMin = Math.max(0.01, Math.min(...values) * 0.8);
-    const yMax = Math.max(...values) * 1.2;
+    const yMin = 0;
+    const yMax = Math.ceil(Math.max(...values) / 50) * 50;
     const x = d => logScale(d.size_m, xMin, xMax, margin.left, margin.left + plotW);
-    const y = (d, metric) => logScale(Number(d[metric]), yMin, yMax, margin.top + plotH, margin.top);
+    const y = (d, metric) => linearScale(Number(d[metric]), yMin, yMax, margin.top + plotH, margin.top);
     const path = metric => points.map((d, i) => `${i === 0 ? "M" : "L"} ${x(d).toFixed(2)} ${y(d, metric).toFixed(2)}`).join(" ");
     const xTicks = [124, 355, 774, 1558];
-    const yTicks = [10, 20, 50, 100, 200];
+    const yTicks = [0, 50, 100, 150, 200, 250];
 
     el.innerHTML = `
       <svg viewBox="0 0 ${width} ${height}" role="img">
         <rect x="0" y="0" width="${width}" height="${height}" fill="#fff"></rect>
         ${xTicks.map(t => `<line x1="${logScale(t, xMin, xMax, margin.left, margin.left + plotW)}" y1="${margin.top}" x2="${logScale(t, xMin, xMax, margin.left, margin.left + plotW)}" y2="${margin.top + plotH}" stroke="#eee"></line>`).join("")}
-        ${yTicks.map(t => `<line x1="${margin.left}" y1="${logScale(t, yMin, yMax, margin.top + plotH, margin.top)}" x2="${margin.left + plotW}" y2="${logScale(t, yMin, yMax, margin.top + plotH, margin.top)}" stroke="#eee"></line>`).join("")}
-        <line x1="${margin.left}" y1="${margin.top + plotH}" x2="${margin.left + plotW}" y2="${margin.top + plotH}" stroke="#333"></line>
-        <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + plotH}" stroke="#333"></line>
-        ${xTicks.map(t => `<text x="${logScale(t, xMin, xMax, margin.left, margin.left + plotW)}" y="${height - 24}" text-anchor="middle" font-size="12" fill="#555">${t}M</text>`).join("")}
-        ${yTicks.map(t => `<text x="${margin.left - 10}" y="${logScale(t, yMin, yMax, margin.top + plotH, margin.top) + 4}" text-anchor="end" font-size="12" fill="#555">${t}</text>`).join("")}
-        <text x="${margin.left + plotW / 2}" y="${height - 4}" text-anchor="middle" font-size="13" fill="#333">model size</text>
-        <text x="16" y="${margin.top + plotH / 2}" transform="rotate(-90 16 ${margin.top + plotH / 2})" text-anchor="middle" font-size="13" fill="#333">perplexity</text>
+        ${yTicks.map(t => `<line x1="${margin.left}" y1="${linearScale(t, yMin, yMax, margin.top + plotH, margin.top)}" x2="${margin.left + plotW}" y2="${linearScale(t, yMin, yMax, margin.top + plotH, margin.top)}" stroke="#eee"></line>`).join("")}
+        <line x1="${margin.left}" y1="${margin.top + plotH}" x2="${margin.left + plotW}" y2="${margin.top + plotH}" stroke="#333" stroke-width="1.4"></line>
+        <line x1="${margin.left}" y1="${margin.top}" x2="${margin.left}" y2="${margin.top + plotH}" stroke="#333" stroke-width="1.4"></line>
+        ${xTicks.map(t => `<text x="${logScale(t, xMin, xMax, margin.left, margin.left + plotW)}" y="${height - 26}" text-anchor="middle" font-size="14" font-weight="600" fill="#444">${t}M</text>`).join("")}
+        ${yTicks.map(t => `<text x="${margin.left - 12}" y="${linearScale(t, yMin, yMax, margin.top + plotH, margin.top) + 5}" text-anchor="end" font-size="14" font-weight="600" fill="#444">${t}</text>`).join("")}
+        <text x="${margin.left + plotW / 2}" y="${height - 6}" text-anchor="middle" font-size="16" font-weight="700" fill="#222">model size</text>
+        <text x="18" y="${margin.top + plotH / 2}" transform="rotate(-90 18 ${margin.top + plotH / 2})" text-anchor="middle" font-size="16" font-weight="700" fill="#222">perplexity</text>
         ${metrics.map((metric, i) => `
           <g>
-            <line x1="${margin.left + 18 + i * 220}" y1="${margin.top - 8}" x2="${margin.left + 48 + i * 220}" y2="${margin.top - 8}" stroke="${metricColors[metric]}" stroke-width="2.4"></line>
-            <text x="${margin.left + 56 + i * 220}" y="${margin.top - 4}" font-size="12" fill="#333">${metricLabels[metric]}</text>
+            <line x1="${margin.left + 18 + i * 360}" y1="${margin.top - 26}" x2="${margin.left + 54 + i * 360}" y2="${margin.top - 26}" stroke="${metricColors[metric]}" stroke-width="3.2"></line>
+            <text x="${margin.left + 64 + i * 360}" y="${margin.top - 21}" font-size="14" font-weight="700" fill="#222">${metricLabels[metric]}</text>
           </g>
         `).join("")}
-        ${metrics.map(metric => `<path d="${path(metric)}" fill="none" stroke="${metricColors[metric]}" stroke-width="2.4"></path>`).join("")}
+        ${metrics.map(metric => `<path d="${path(metric)}" fill="none" stroke="${metricColors[metric]}" stroke-width="3.2"></path>`).join("")}
         ${metrics.map(metric => points.map(d => `
-          <g class="model-point" data-model="${d.model}" data-size="${d.size_m}" data-metric="${metric}" data-value="${Number(d[metric])}">
-            <circle cx="${x(d)}" cy="${y(d, metric)}" r="5.5" fill="${metricColors[metric]}" stroke="#fff" stroke-width="1.5"></circle>
+          <g class="model-point" data-model="${displayModelName(d.model)}" data-size="${d.size_m}" data-metric="${metric}" data-value="${Number(d[metric])}">
+            <circle cx="${x(d)}" cy="${y(d, metric)}" r="6.5" fill="${metricColors[metric]}" stroke="#fff" stroke-width="1.8"></circle>
           </g>
         `).join("")).join("")}
-        ${points.map(d => `<text x="${x(d) + 8}" y="${y(d, "gen_ppl") - 8}" font-size="12" fill="#333">${d.model}</text>`).join("")}
+        ${points.map(d => `<text x="${x(d) + 10}" y="${y(d, "gen_ppl") - 10}" font-size="13" font-weight="600" fill="#222">${displayModelName(d.model)}</text>`).join("")}
       </svg>
     `;
 
+    const plotWrap = el.closest(".plot-wrap");
+    let tooltip = plotWrap.querySelector(".plot-tooltip");
+    if (!tooltip) {
+      tooltip = document.createElement("div");
+      tooltip.className = "plot-tooltip";
+      plotWrap.appendChild(tooltip);
+    }
+    const positionTooltip = event => {
+      const rect = plotWrap.getBoundingClientRect();
+      const offset = 12;
+      const maxLeft = rect.width - tooltip.offsetWidth - offset;
+      tooltip.style.left = `${Math.min(event.clientX - rect.left + offset, Math.max(offset, maxLeft))}px`;
+      tooltip.style.top = `${Math.max(offset, event.clientY - rect.top - tooltip.offsetHeight - offset)}px`;
+    };
+
     el.querySelectorAll(".model-point").forEach(point => {
-      point.addEventListener("mouseenter", () => {
-        tooltip.textContent = `${point.dataset.model}: ${point.dataset.size}M params, ${metricLabels[point.dataset.metric]} = ${fmt(Number(point.dataset.value))}`;
+      const circle = point.querySelector("circle");
+      point.addEventListener("mouseenter", event => {
+        circle.setAttribute("r", "9");
+        tooltip.textContent = `${point.dataset.model}: ${metricLabels[point.dataset.metric]} = ${fmt(Number(point.dataset.value))}`;
+        tooltip.classList.add("visible");
+        positionTooltip(event);
+      });
+      point.addEventListener("mousemove", positionTooltip);
+      point.addEventListener("mouseleave", () => {
+        circle.setAttribute("r", "6.5");
+        tooltip.classList.remove("visible");
+        tooltip.textContent = "";
       });
     });
-    tooltip.textContent = "Showing generated sample PPL and OWT validation PPL together. Hover a point for exact values.";
+    tooltip.textContent = "";
   }
 
   fetch(modelSizeDataUrl)
@@ -586,6 +834,71 @@
     .catch(error => {
       document.getElementById("model-size-plot").textContent = `Could not load plot data: ${error}`;
     });
+</script>
+<script>
+  (() => {
+    const lightbox = document.createElement("div");
+    lightbox.id = "lightbox";
+    const lightboxImg = document.createElement("img");
+    lightbox.appendChild(lightboxImg);
+    document.body.appendChild(lightbox);
+
+    document.querySelectorAll("figure img").forEach(img => {
+      img.addEventListener("click", () => {
+        lightboxImg.src = img.src;
+        lightboxImg.alt = img.alt;
+        lightbox.classList.add("active");
+      });
+    });
+
+    lightbox.addEventListener("click", () => {
+      lightbox.classList.remove("active");
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") lightbox.classList.remove("active");
+    });
+  })();
+</script>
+<script>
+  (() => {
+    const tocLinks = Array.from(document.querySelectorAll("#toc a"));
+    const headings = tocLinks
+      .map(link => document.getElementById(link.getAttribute("href").slice(1)))
+      .filter(Boolean);
+    let paused = false;
+    let resumeTimer = null;
+
+    function setActive(id) {
+      tocLinks.forEach(link => link.classList.remove("toc-active"));
+      const activeLink = document.querySelector(`#toc a[href="#${id}"]`);
+      if (activeLink) activeLink.classList.add("toc-active");
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      if (paused) return;
+      entries.forEach(entry => {
+        if (entry.isIntersecting) setActive(entry.target.id);
+      });
+    }, { rootMargin: "0px 0px -70% 0px", threshold: 0 });
+
+    headings.forEach(heading => observer.observe(heading));
+    if (headings[0]) setActive(headings[0].id);
+
+    tocLinks.forEach(link => {
+      link.addEventListener("click", event => {
+        event.preventDefault();
+        const id = link.getAttribute("href").slice(1);
+        const target = document.getElementById(id);
+        if (!target) return;
+        paused = true;
+        setActive(id);
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        clearTimeout(resumeTimer);
+        resumeTimer = setTimeout(() => { paused = false; }, 800);
+      });
+    });
+  })();
 </script>
 </body>
 </html>
