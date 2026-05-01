@@ -5,9 +5,9 @@
 Unlike autoregressive models, flow models cannot tractably calculate the likelihood of a given string of text. So the standard evaluation is to first sample text from your trained flow model, then score these generated samples using two proxy metrics:
 
 - **Generative perplexity (gen. ppl):** Calculate the perplexity of samples under a pretrained model (`gpt2-large` is the standard). This is analogous but distinct from the standard evaluation of calculating perplexity using your model itself on some held out data.
-- **Entropy:** compute the empirical token entropy ($-\sum_i p_i \log p_i$) of each generated sample, then average across samples. This is to ensure that the generated samples are not degenerate (e.g. *"aaaaa..."* has low gen. perplexity but also an entropy of 0).
+- **Entropy:** Compute the empirical token entropy ($-\sum_i p_i \log p_i$) of each generated sample, then average across samples. This is to ensure that the generated samples are not degenerate (e.g. *"aaaaa..."* has low gen. perplexity but also an entropy of 0).
 
-How can we evaluate these evaluation metrics? Let's apply this framework to a family of models for which we have a clear understanding of model quality: the [GPT-2 family](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf). As we scale from `gpt2-small` (117M) to `gpt2-medium` (342M) to `gpt2-large` (762M) to `gpt2-xl` (1.5B) the perplexity and accuracy across many domains smoothly improves. However, when you sample from these models (t=1) and calculate the generative perplexity (defined above), `gpt2-small` seems better than `gpt2-medium`, and `gpt2-large` seems better than `gpt2-xl` while the entropies only vary by < 0.4 nats.
+How can we evaluate these evaluation metrics? Let's apply this framework to a family of models for which we have a clear understanding of model quality: the [GPT-2 class of models](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf). As we scale from `gpt2-small` (117M) to `gpt2-medium` (342M) to `gpt2-large` (762M) to `gpt2-xl` (1.5B), the perplexity and accuracy smoothly improves on all measured domains. However, when you sample from these models (`t=1`) and calculate the generative perplexity defined above, `gpt2-small` does better than `gpt2-medium`, and `gpt2-large` does better than `gpt2-xl` while the entropies vary by less than 0.4 nats.
 
 <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
   <div style="flex: 1;">
@@ -56,50 +56,169 @@ How can we evaluate these evaluation metrics? Let's apply this framework to a fa
 
 **This should raise a red flag: the standard evaluation for flow models does not track the scaling of GPT-2 models.** I'll present three issues which explain what went wrong, and I'll propose solutions (which the field is already converging towards) at the end. The issues:
 
-1. **It is trivial to generate "SOTA" flow model results by trading off a little entropy for a lot of PPL**
+1. **It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL**
 2. **The best-scoring model is not the best language model, but the most `gpt2-large`-like**
 3. **Entropy only measures intra-sample diversity: inter-sample diversity is an after thought**
 
-Importantly, flow map language models are unambiguously better at small step sizes. I only present papers where these issues caveat minor results instead of the paper's main claim because the point of this is not to invalidate previous results, but to establish more robust evaluation norms. Unless otherwise noted, gen. ppl is scored using `gpt2-large`.
+Importantly, flow map language models are unambiguously better at small NFEs. Here, I focus on the larger NFE=1024 to point out the issues with the evaluation framework, not with any specific paper.
 
 ## The issues
 
 ### 1. It is trivial to generate "SOTA" flow model results by trading off a little entropy for a lot of PPL
 
-There is an inherent tradeoff to gen. ppl and entropy. I can easily construct a low gen. ppl sequence with very high entropy (e.g. *"aaaaaa..."* has `gen. ppl = 1.01` and `entropy = 0.0`), or a high gen. ppl sequence with very low entropy (e.g. completely random tokens has `gen. ppl ~= 150,000` and `entropy = 6.92`). The question is if the variance of entropy in reported results is enough to tangibly change the results.
+There is a fundamental tradeoff between generative perplexity and entropy. Generative perplexity is measuring how predictable the sequence is (under some scoring model) and entropy is measuring how unpredictable the sequence is (based on unigram counts). So, it would be unsurprising if a knob which decreases entropy also decreases generative perplexity.
 
-First, let's see if the variance in entropy between `gpt2-small` (`entropy=5.88`) and `gpt2-medium` (`entropy=6.07`) can explain why we report `gpt2-medium` as having worse generative perplexity than `gpt2-small`. We can probe the sensitivity of generative perplexity to entropy in autoregressive models by sweeping over temperatures used to generate sequences: lower temperature generations create low entropy, low gen. ppl samples, and higher temperature generations create high entropy, high gen. ppl samples. Below, we sweep sampling from `gpt2-small` and `gpt2-medium` with `t=0` to `t=1` and plot the gen. ppl vs. entropy for each point.
+In this section, we will first show that in autoregressive models, not accounting for small entropy differences can lead to deluded conclusions: like `gpt2-small` is a better language model than `gpt2-xl`. We will also show that reporting generative perplexity of models at a fixed entropy fixes the issue from the intro (`gpt2-small` looks better than `gpt2-medium`). We will then show that all of the model quality improvements in the last 3 years (at NFE=1024) are fully attributable to this tradeoff between generative perplexity and entropy -- not better models of language.
 
-<video controls width="100%">
-  <source src="assets/ppl-v-ent.mp4" type="video/mp4">
+#### a). Entropy differences explain deviations from GPT-2 scaling trends
+
+As mentioned in the introduction, sampling from all GPT-2 models with `t=1` and scoring under `gpt2-large` leads to a surprising finding: `gpt2-small` does better than `gpt2-medium`, and `gpt2-large` does better than `gpt2-xl`. However, as shown below, there is a clear relation between the entropy of the generations and their generative perplexity.
+
+<div style="display: flex; gap: 1.5rem; align-items: flex-start;">
+  <div style="flex: 1;">
+    <table>
+      <thead>
+        <tr>
+          <th>model</th>
+          <th style="text-align: right;">val. ppl</th>
+          <th style="text-align: right;">gen. ppl</th>
+          <th style="text-align: right;">entropy (data=5.44)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>gpt2-small</td>
+          <td style="text-align: right;">24.7004</td>
+          <td style="text-align: right; background: #f3d1b5; font-weight: 700;">122.3149</td>
+          <td style="text-align: right;">5.8842</td>
+        </tr>
+        <tr>
+          <td>gpt2-medium</td>
+          <td style="text-align: right; background: #f3d1b5; font-weight: 700;">18.5578</td>
+          <td style="text-align: right;">193.0853</td>
+          <td style="text-align: right;">6.0724</td>
+        </tr>
+        <tr>
+          <td>gpt2-large</td>
+          <td style="text-align: right; background: #e8edf3; font-weight: 700;">15.6704</td>
+          <td style="text-align: right; background: #fff2b8; font-weight: 700;">35.9183</td>
+          <td style="text-align: right;">5.7023</td>
+        </tr>
+        <tr>
+          <td>gpt2-xl</td>
+          <td style="text-align: right; background: #fff2b8; font-weight: 700;">14.0935</td>
+          <td style="text-align: right; background: #e8edf3; font-weight: 700;">41.2730</td>
+          <td style="text-align: right;">5.7145</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="margin: 0.65rem 0 0; color: #666; font-size: 0.92rem; line-height: 1.45;">Gold, silver, and copper mark the best, second-best, and third-best generative perplexity scores.</p>
+  </div>
+  <div style="flex: 1;">
+    <video controls width="100%">
+  <source src="assets/gpt2-t1-ppl-v-ent.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
+  </div>
+</div>
 
-So the generative perplexity is *incredibly* sensitive to entropy. Accounting for the 0.19 nats difference between the entropy of `gpt2-small` and `gpt2-medium` at `t=1` can change the interpretation from "`gpt2-small` is much better (122.3 << 193.1)" to "`gpt2-medium` is much better (84.4 << 122.3). Despite this, the four most prominent papers reporting generative perplexity on OpenWebText (OWT) with 1024 sampling steps have significant variance between the models in their results: 4.95-5.12 (DFM), 5.33-5.71 (LMFM), 5.25-5.62 (LangFlow), and 5.55-5.63 (Duo). 
+Let's see if these entropy differences can explain why `gpt2-medium` at `t=0` has a worse generative perplexity than `gpt2-small`. There is no direct "entropy knob", but sampling temperature is effectively that: lower temperature generations create low entropy/low gen. ppl samples, and higher temperature generations create high entropy/high gen. ppl samples. Below, we sweep sampling from `gpt2-small` and `gpt2-medium` with `t=0` to `t=1` and plot the gen. ppl vs. entropy for each temperature.
 
-<video controls width="100%">
-  <source src="assets/results-chronological.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+<figure style="margin: 1.2em 0;">
+  <video controls width="100%">
+    <source src="assets/ppl-v-ent.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <figcaption style="color: #666; font-size: 0.93rem; margin-top: 0.35em;">
+    Generative perplexity vs. entropy for `gpt2-small` and `gpt2-medium` at various sampling temperatures. Each point is a generation at a specific sampling temperature. When *entropy-matched*, we recover that `gpt2-medium > gpt2-small`, when *temperature-matched*, one would conclude that `gpt2-small > gpt2-medium`.
+  </figcaption>
+</figure>
 
-In fact, if you plot generative perplexity vs. entropy for each of these paper's models and baselines, what you find is that every single paper that has lower perplexity also has lower entropy. Further, if you take a model like DUO and sweep temperature like we did above, it is not stronger than its baselines, and it has not been beaten by any recent baseline. What this means is that, **for high-step diffusions/flows in language modeling, the field has not progressed since 2023 but rather has converged towards methods that give lower entropy samples at default settings.**
+So the generative perplexity is *incredibly* sensitive to entropy. If we match the sampling parameters (temperature), `gpt2-small` has a better gen. ppl (this is bad). If we match the entropy, `gpt2-medium` has a better gen. ppl (this is good).
 
-To further drive home that this unaccounted-for entropy difference is a problem, let's sweep temperatures for all of the GPT-2 models and use the variance window from LangFlow as a "valid entropy" window.
+To further drive home that this unaccounted-for entropy difference is a problem, I'll show that even 0.23 nats is enough to make `gpt2-xl` have a worse gen. ppl than `gpt2-small` does at the entropy of the data.
+
+Below, we show that sampling from `gpt2-xl` at `t=0.99` produces samples with higher generative perplexity than `gpt2-small` at `t=0.91`, with only a difference of 0.23 nats in their respective entropies. 
 
 <video controls width="100%">
   <source src="assets/ppl-v-ent-all.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
-With this variation, one could conclude that `gpt2-small` (entropy=5.33, gen. ppl=23.3) is better than `gpt2-large` (entropy=5.71, gen. ppl=37.0)!
+This variation is well within the variation of results reported in recent papers: 4.95-5.12 (DFM), 5.33-5.71 (LMFM), and 5.25-5.62 (LangFlow).
 
-Now, if you pay close attention to the previous animation, you may have noticed that `gpt2-large` is still slightly better than `gpt2-xl` -- even when entropy matched. Why is this? It is because -- even when fixing the entropy problem -- the model with the best generative perplexity is *not* the one that models the data the best, but the one that matches the scorer the best (in this blog, and in the field enerally, `gpt2-large`).
+#### b). Entropy differences explain gains from recent works
+
+Let's compile three recent flow model papers and their diffusion baselines with reported NFE=1024 on OWT. The right plots the same data, but places points chronologically.
+
+<div style="display: flex; gap: 1.5rem; align-items: flex-start;">
+  <div style="flex: 1;">
+    <table>
+      <thead>
+        <tr>
+          <th>model</th>
+          <th style="text-align: right;">gen. ppl</th>
+          <th style="text-align: right;">entropy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>SEDD-absorbing</td>
+          <td style="text-align: right;">105.03</td>
+          <td style="text-align: right;">5.62</td>
+        </tr>
+        <tr>
+          <td>MDLM</td>
+          <td style="text-align: right;">104.85</td>
+          <td style="text-align: right;">5.63</td>
+        </tr>
+        <tr>
+          <td>SEDD-uniform</td>
+          <td style="text-align: right;">99.90</td>
+          <td style="text-align: right;">5.56</td>
+        </tr>
+        <tr>
+          <td>Duo</td>
+          <td style="text-align: right;">77.69</td>
+          <td style="text-align: right;">5.55</td>
+        </tr>
+        <tr>
+          <td>FMLM</td>
+          <td style="text-align: right;">62.23</td>
+          <td style="text-align: right;">5.33</td>
+        </tr>
+        <tr>
+          <td>DFM</td>
+          <td style="text-align: right;">47.07</td>
+          <td style="text-align: right;">5.12</td>
+        </tr>
+        <tr>
+          <td>LangFlow</td>
+          <td style="text-align: right;">36.53</td>
+          <td style="text-align: right;">5.25</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="flex: 1;">
+    <video controls width="100%">
+      <source src="assets/results-chronological-sweep.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+</div>
+
+As you can see, both generative perplexity and entropy are decreasing over time with each new paper release. Every result since Duo reports a lower gen. ppl and entropy than the results it compares against. This makes it hard to compare these methods because there is an inherent tradeoff to gen. ppl and entropy, and as showed earlier, tiny differences in entropy can lead to large differences in generative perplexity.
+
+Just like in autoregressive models, we can sample from Duo with a temperature. If we, just as with the GPT-2 models, plot generative perplexity vs. entropy as we change the sampling temperature, we can show that since Duo, all gains in generative perplexity can be attributed to just reducing the entropy.
 
 #### Proposal to fix the entropy problem
 
 Fixing this is straightforward: sweep PPL and entropy as we have done here and as is suggested by [CANDI](https://arxiv.org/pdf/2510.22510). Include the entire curve in the results. If you are reporting a scalar gen. ppl quantity, report interpolated gen. PPL at the entropy of the data (5.463 for OWT). This completely eliminates any variance attributable to difference in entropy.
 
 ### 2. The best-scoring model is not the best language model, but the most `gpt2-large`-like
+
+Now, if you paid close attention to the previous section, you may have noticed that `gpt2-large` is still slightly better than `gpt2-xl` even when entropy matched. Why is this? It is because -- even when fixing the entropy problem -- the model with the best generative perplexity is *not* the one that models the data the best, but the one that matches the scorer the best (in this blog, and in the field generally, `gpt2-large`). For models that are poor models of the data, this doesn't matter much as `gpt2-large` may as well be an oracle. But as the models improve, this will become more and more important.
 
 `gpt2-large` is an imperfect model of language. Even just comparing to `gpt2-xl`, it has lower accuracy and higher PPL on every measured benchmark:
 
@@ -108,11 +227,18 @@ From [Language Models are Unsupervised Multitask Learners](https://cdn.openai.co
 
 However, as shown earlier, `gpt2-large` gives a better gen. ppl to its own samples than to `gpt2-xl` samples. In fact, `gpt2-large` assigns a higher probability to its own entropy-matched samples than to actual samples of the data. This is unsurprising: by definition, the highest probability (lowest gen. PPL) strings are those greedily (`t=0`) generated by the scoring model. 
 
-You can also dream up many clear examples to show that the current evaluation is penalizing "correct" behavior: when scoring completions of `10753 * 1099 = ` (just a random multiplication problem, given with 50 in-context examples), `gpt2-large` gives a PPL of `22.1773` to the correct answer (`11,817,547`) but a PPL of `9.86017` to the greedy completion (`1,073,868,851`). **gen. ppl is not scoring which model matches the data better, but rather it is scoring which model matches (imperfect) `gpt2-large` better.**
+#### Generative perplexity can punish correctness
+
+![mult histogram](assets/mult-histogram.png)
+
+You can also dream up many clear examples to show that the current evaluation is penalizing "correct" behavior. When scoring completions of `x * y = ` for different values of 5-digit `x` and `y` with 50 in-context examples, the model assigns an aggregate PPL of 37.9 to the correct answer, and an aggregate PPL of 11.70 to the incorrect answer which `gpt2-large` is most confident in. This means that a model which can do perfect arithmetic would have a *much worse* generative PPL than a model which matches the incorrect answers of `gpt2-large`.
+
+#### Generative perplexity is biased towards autoregressive models
 
 Further, this means that the eval is architecturally biased towards left-to-right autoregressive models. As a way to see this, we trained 2 models: one left-to-right AR model on OWT, and one right-to-left AR model on OWT. We find two checkpoints that have ~the same validation perplexity. Because left-to-right AR is fundamentally easier, this is ~25k steps for right-to-left and ~20k steps for left-to-right. Then, we can plot the entropy v. temperature curve, and note that the right-to-left model is worse compared to the equivalent (by validation ppl) left-to-right model.
 
 ![forward v. reverse](assets/for-rev.png)
+
 Validation set perplexity v. generative perplexity of 256 samples under `gpt2-large` for checkpoints from training a model on OWT. For the same validation perplexity, a model trained left-to-right has lower generative perplexity loss than a model trained right-to-left. This demonstrates generative perplexity under an autoregressive model is biased to giving autoregressive models a better score.
 
 #### Proposal
