@@ -1,8 +1,13 @@
 # Fixing flow model evals
 
-[Flow models](https://flow-maps.github.io/) are very promising. Yet, the current way of evaluating these models is ripe for misinterpretation and needs rethinking.
+[Flow models](https://flow-maps.github.io/) are a very promising alternative to autoregression, especially in the few-step regime. Yet, the current way of evaluating these models is ripe for misinterpretation and needs rethinking.
 
-In the current flow evaluation framework, one would conclude that `gpt2-large` (762M) is better than `gpt2-xl` (1.5B), and `gpt2-small` (117M) is better than `gpt2-medium` (342M), despite the fact that all measured evaluations in the [GPT-2 paper](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) smoothly improve as we increase model size. In fact, as we will show later, **it is easy to -- using flow model evals -- "show" that any gpt2 model is better than any other -- a clear contradiction.**
+Unlike autoregressive models, flow models cannot tractably calculate the likelihood of a given string of text. So the standard evaluation is to first sample text from your trained flow model, then score these generated samples using two proxy metrics:
+
+- **Generative perplexity (gen. ppl):** Calculate the perplexity of samples under a pretrained model (`gpt2-large` is the standard). This is analogous but distinct from the standard evaluation of calculating perplexity using your model itself on some held out data.
+- **Entropy:** compute the empirical token entropy ($-\sum_i p_i \log p_i$) of each generated sample, then average across samples. This is to ensure that the generated samples are not degenerate (e.g. *"aaaaa..."* has low gen. perplexity but also an entropy of 0).
+
+How can we evaluate these evaluation metrics? Let's apply this framework to a family of models for which we have a clear understanding of model quality: the [GPT-2 family](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf). As we scale from `gpt2-small` (117M) to `gpt2-medium` (342M) to `gpt2-large` (762M) to `gpt2-xl` (1.5B) the perplexity and accuracy across many domains smoothly improves. However, when you sample from these models (t=1) and calculate the generative perplexity (defined above), `gpt2-small` seems better than `gpt2-medium`, and `gpt2-large` seems better than `gpt2-xl` while the entropies only vary by < 0.4 nats.
 
 <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
   <div style="flex: 1;">
@@ -10,6 +15,7 @@ In the current flow evaluation framework, one would conclude that `gpt2-large` (
       <thead>
         <tr>
           <th>model</th>
+          <th style="text-align: right;">val. ppl</th>
           <th style="text-align: right;">gen. ppl</th>
           <th style="text-align: right;">entropy (data=5.44)</th>
         </tr>
@@ -17,21 +23,25 @@ In the current flow evaluation framework, one would conclude that `gpt2-large` (
       <tbody>
         <tr>
           <td>gpt2-small</td>
+          <td style="text-align: right;">24.7004</td>
           <td style="text-align: right; background: #f3d1b5; font-weight: 700;">122.3149</td>
           <td style="text-align: right;">5.8842</td>
         </tr>
         <tr>
           <td>gpt2-medium</td>
+          <td style="text-align: right; background: #f3d1b5; font-weight: 700;">18.5578</td>
           <td style="text-align: right;">193.0853</td>
           <td style="text-align: right;">6.0724</td>
         </tr>
         <tr>
           <td>gpt2-large</td>
+          <td style="text-align: right; background: #e8edf3; font-weight: 700;">15.6704</td>
           <td style="text-align: right; background: #fff2b8; font-weight: 700;">35.9183</td>
           <td style="text-align: right;">5.7023</td>
         </tr>
         <tr>
           <td>gpt2-xl</td>
+          <td style="text-align: right; background: #fff2b8; font-weight: 700;">14.0935</td>
           <td style="text-align: right; background: #e8edf3; font-weight: 700;">41.2730</td>
           <td style="text-align: right;">5.7145</td>
         </tr>
@@ -44,26 +54,9 @@ In the current flow evaluation framework, one would conclude that `gpt2-large` (
   </div>
 </div>
 
-For an autoregressive model, we can evaluate validation perplexity directly:
+**This should raise a red flag: the standard evaluation for flow models does not track the scaling of GPT-2 models.** I'll present three issues which explain what went wrong, and I'll propose solutions (which the field is already converging towards) at the end. The issues:
 
-$$
-p_{\text{model}}(x_{\text{val}})=\prod_i p_{\text{model}}(x_i \mid x_{<i})
-$$
-
-Then:
-
-$$
-\mathrm{PPL}(x_{\text{val}})=\exp\left(-\frac{1}{N}\log p_{\text{model}}(x_{\text{val}})\right)
-$$
-
-For flow models, we cannot do this because calculating likelihoods requires solving an intractable integral over the flow, so papers often evaluate generated samples using two proxy metrics:
-
-- **Generative perplexity (gen. ppl):** generate samples from the model, then score those samples under a pretrained autoregressive model such as `gpt2-large`.
-- **Entropy:** compute the empirical token entropy ($-\sum_i p_i \log p_i$) of each generated sample, then average across samples.
-
-This is how I made the above chart: sample 128 sequences of length 1024 from each model at `t=1`, then score these sequences under `gpt2-large` and calculate the mean sample entropy. However, as shown by the strange ordering of the gpt2 models, this evaluation framework can be problematic. Here, I'll present three issues which explain what went wrong, and I'll propose solutions (which the field is already converging towards) at the end. The issues:
-
-1. **It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL**
+1. **It is trivial to generate "SOTA" flow model results by trading off a little entropy for a lot of PPL**
 2. **The best-scoring model is not the best language model, but the most `gpt2-large`-like**
 3. **Entropy only measures intra-sample diversity: inter-sample diversity is an after thought**
 
@@ -71,59 +64,40 @@ Importantly, flow map language models are unambiguously better at small step siz
 
 ## The issues
 
-### 1. It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL
+### 1. It is trivial to generate "SOTA" flow model results by trading off a little entropy for a lot of PPL
 
-There is an inherent tradeoff to gen. ppl and entropy. I can easily construct a low gen. ppl sequence with very high entropy (e.g. *"aaaaaa..."* has `gen. ppl = 1.01` and `entropy = 0.0`), or a high gen. ppl sequence with very low entropy (e.g. completely random tokens has `gen. ppl ~= 150,000` and `entropy = 6.92`). Recent works often report gen. ppl and entropy, marking results that have incredibly low entropies as "mode collapsed". The variation in entropy between models is > 0.3 nats in all of three recent papers ([Flow Map Language Models](https://arxiv.org/pdf/2602.16813), [Discrete Flow Maps](https://arxiv.org/abs/2604.09784), [LangFlow](https://arxiv.org/pdf/2604.11748)). Below we show the results from [Flow Map Language Models](https://arxiv.org/pdf/2602.16813), a representative example.
+There is an inherent tradeoff to gen. ppl and entropy. I can easily construct a low gen. ppl sequence with very high entropy (e.g. *"aaaaaa..."* has `gen. ppl = 1.01` and `entropy = 0.0`), or a high gen. ppl sequence with very low entropy (e.g. completely random tokens has `gen. ppl ~= 150,000` and `entropy = 6.92`). The question is if the variance of entropy in reported results is enough to tangibly change the results.
 
-![FLM table](assets/fmlm_table.png)
-From [Flow Map Language Models](https://arxiv.org/pdf/2602.16813).
+First, let's see if the variance in entropy between `gpt2-small` (`entropy=5.88`) and `gpt2-medium` (`entropy=6.07`) can explain why we report `gpt2-medium` as having worse generative perplexity than `gpt2-small`. We can probe the sensitivity of generative perplexity to entropy in autoregressive models by sweeping over temperatures used to generate sequences: lower temperature generations create low entropy, low gen. ppl samples, and higher temperature generations create high entropy, high gen. ppl samples. Below, we sweep sampling from `gpt2-small` and `gpt2-medium` with `t=0` to `t=1` and plot the gen. ppl vs. entropy for each point.
 
-From the main results for OWT, it is natural to read as "entropies are close to eachother, so the one with the lowest gen. ppl must be best": FLM > Duo > MDLM > CANDI. However, the gen. ppl of a given model is *incredibly* sensitive to the entropy, and **this small variation is enough to completely flip the ordering of best models**.
+<video controls width="100%">
+  <source src="assets/ppl-v-ent.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-We can easily quantify this sensitivity in autoregressive language models by sweeping over temperatures used to generate sequences: lower temperature generations create low entropy, low gen. ppl samples, and higher temperature generations create high entropy, high gen. ppl samples. Below, we sweep sampling from `gpt2-small` with `t=0` to `t=1` and report the gen. ppl and entropy of 128 samples at each temperature.
+So the generative perplexity is *incredibly* sensitive to entropy. Accounting for the 0.19 nats difference between the entropy of `gpt2-small` and `gpt2-medium` at `t=1` can change the interpretation from "`gpt2-small` is much better (122.3 << 193.1)" to "`gpt2-medium` is much better (84.4 << 122.3). Despite this, the four most prominent papers reporting generative perplexity on OpenWebText (OWT) with 1024 sampling steps have significant variance between the models in their results: 4.95-5.12 (DFM), 5.33-5.71 (LMFM), 5.25-5.62 (LangFlow), and 5.55-5.63 (Duo). 
 
-![temp affecting ent and ppl](assets/gpt2_ppl_ent_temp.png)
-Generative perplexity (blue) and sample entropy (green) versus temperature. Each point is 128 samples from `gpt2-small`, generations scored by `gpt2-large`. Note that gen. ppl scale is logarithmic.
+<video controls width="100%">
+  <source src="assets/results-chronological.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-As you can see, a linear increase in entropy leads to an exponential increase in perplexity (note that PPL scale is logarithmic while entropy scale is linear).
+In fact, if you plot generative perplexity vs. entropy for each of these paper's models and baselines, what you find is that every single paper that has lower perplexity also has lower entropy. Further, if you take a model like DUO and sweep temperature like we did above, it is not stronger than its baselines, and it has not been beaten by any recent baseline. What this means is that, **for high-step diffusions/flows in language modeling, the field has not progressed since 2023 but rather has converged towards methods that give lower entropy samples at default settings.**
 
-This exponential sensitivity is expected: perplexity is the exponential of cross-entropy:
+To further drive home that this unaccounted-for entropy difference is a problem, let's sweep temperatures for all of the GPT-2 models and use the variance window from LangFlow as a "valid entropy" window.
 
-$$
-\begin{aligned}
-H(Q, P) &= -\mathbb{E}_{x \sim Q}[\log P(x)] \\
-        &= H(Q) + \mathrm{KL}(Q \| P) \\
-\mathrm{PPL}(Q, P) &= \exp(H(Q, P)) \\
-                   &= \exp(H(Q) + \mathrm{KL}(Q \| P))
-\end{aligned}
-$$
+<video controls width="100%">
+  <source src="assets/ppl-v-ent-all.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
-Entropy alone does not determine PPL, but when the KL-to-scorer term changes smoothly, small linear changes in entropy translate into exponential changes in PPL.
+With this variation, one could conclude that `gpt2-small` (entropy=5.33, gen. ppl=23.3) is better than `gpt2-large` (entropy=5.71, gen. ppl=37.0)!
 
-Going from the lowest reported entropy (5.33) to the highest entropy (5.71) for *the same exact model* leads to a nearly 3x increase in PPL (23.3 -> 66.4). In the reported results from FLM, the range in PPL is ~2.3x. So, at least in autoregressive models, **small changes in entropy can lead to huge changes in gen. ppl -- enough to completely inverse the "best" ordering of reported results**.
+Now, if you pay close attention to the previous animation, you may have noticed that `gpt2-large` is still slightly better than `gpt2-xl` -- even when entropy matched. Why is this? It is because -- even when fixing the entropy problem -- the model with the best generative perplexity is *not* the one that models the data the best, but the one that matches the scorer the best (in this blog, and in the field enerally, `gpt2-large`).
 
-Now, can we use this insight (small changes in entropy lead to exponential changes in gen. ppl) to resolve the quandary from earlier (using gen. ppl as a metric, `gpt2-small` > `gpt2-medium` and `gpt2-xl` > `gpt2-large`)? **Yes! (Well, partially)**
-
-Both gen. ppl and entropy monotonically increase with temperature, so we can plot -- for each `gpt2` model -- gen. ppl v. entropy using the values of the previous sweep.
-
-![gen. ppl v entropy](assets/gpt2_family_temperature_sweep/temperature_sweep_tradeoff_comparison_scored_by_gpt2-large.png)
-Generative PPL vs. sample entropy for the GPT-2 models. Note that the highest gen. ppl of the best model (`gpt2-large`) is higher than the lowest gen. ppl of the worst model (`gpt2-small`) in the region of entropy in standard results. This means that just by trading off entropy for gen. ppl, we can claim any model is best.
-
-This reveals a pareto frontier of gen. ppl vs. entropy, which [CANDI](https://arxiv.org/pdf/2510.22510) advocated for as how we should report results, recognizing the same problem we are outlining here. Under this, `gpt2-medium` is clearly better than `gpt2-small`. If you look at the `t=1` point (the most far right) you can see what caused the earlier discrepancy: `gpt2-medium` generates higher entropy samples at `t=1`. Note that, by just changing the sampling temperature and using the flow model evaluation framework, you could conclude **any arbitrary ordering of the gpt2 family models**: each model's lowest gen. ppl in the entropy range is lower than any other model's max gen. ppl in the entropy range.
-
-But, even after controlling for sample entropy, `gpt2-large` is slightly better than `gpt2-xl`. What gives? The answer is in the next section: the best-scoring model is not the best language model, but the most `gpt2-large`-like. If we swap the scorer from `gpt2-large` to `pythia-2.8b`, then at the data entropy, `gpt2-xl` > `gpt2-large` > `gpt2-medium` > `gpt2-small` as expected.
-
-So, we've shown that if the baselines in FLM follow the same gen. ppl vs. entropy curves as the GPT-2 models, then we can achieve any ordering of results just by slightly changing entropies. But does this hold for flow models and their reported baselines? After all, `gpt2` models are not compared against. Below, we plot the perplexity and entropy for FLM and LangFlow, and we sweep DUO (a baseline) from `t=0.9` to `t=1.0`.
-
-![gen. ppl v entropy w/ duo+flows](assets/gpt2_family_temperature_sweep_with_flows/temperature_sweep_tradeoff_comparison_scored_by_gpt2-large.png)
-Generative perplexity versus sample entropy for GPT-2 models, FLM, LangFlow, and a DUO temperature sweep. DUO's apparent ranking changes when comparing at matched entropy.
-
-As you can see, under `t=1` sampling (right-most point), DUO has a higher gen. ppl than both FLM and LangFlow, but it is better when entropy-matched.
-
-#### Proposal
+#### Proposal to fix the entropy problem
 
 Fixing this is straightforward: sweep PPL and entropy as we have done here and as is suggested by [CANDI](https://arxiv.org/pdf/2510.22510). Include the entire curve in the results. If you are reporting a scalar gen. ppl quantity, report interpolated gen. PPL at the entropy of the data (5.463 for OWT). This completely eliminates any variance attributable to difference in entropy.
-
 
 ### 2. The best-scoring model is not the best language model, but the most `gpt2-large`-like
 
@@ -158,7 +132,7 @@ $$
 
 where $\hat p_m(v)$ is the empirical frequency of token $v$ in generated sample $m$. This means that if a model generated the same low gen. ppl, high entropy sequence, under these two metrics it would seem like an incredibly strong model.
 
-To give an example, if the model recited the following sequence from OWT every single sample, it's PPL would be 4.283 with an entropy of 5.42:
+To give an example, if the model recited the following sequence from OWT every single sample, it's PPL would be 4.283 with an entropy of 5.42 -- less than half of the PPL of `gpt2-xl` at the same entropy:
 
 > Rice, 42, was the highest-ranking officer of the six police officers charged in Gray's arrest and death. Prosecutors had alleged that Rice and others caused Gray's death by failing to secure him in a seat belt in the back of the van, where Gray suffered severe spinal cord injuries last year.\n\nRice was suspended without pay from May 1, 2015, when he was charged by the state's attorney's office, until July 18 of this year, when Circuit Judge Barry Williams found Rice not guilty of all charges.\n\n\"Being suspended without pay for over a year has been financially devastating to Lt. Rice and his family,\" said Michael Belsky, Rice's attorney.\n\nWilliams said prosecutors failed to meet their burden of proving the charges against Rice beyond a reasonable doubt, instead asking the court to rely on \"presumptions or assumptions\" \u2014 something it cannot do. He said the court \"cannot be swayed by sympathy, prejudice or public opinion.\"\n\nCAPTION Baltimore State's Attorney Marilyn Mosby talks about why her team decided to drop the charges against the officers in the Freddie Gray case. (Kevin Richardson/Baltimore Sun video) Baltimore State's Attorney Marilyn Mosby talks about why her team decided to drop the charges against the officers in the Freddie Gray case. (Kevin Richardson/Baltimore Sun video) CAPTION \"I think most of the blame falls to the prosecutor who failed to prosecute the case and brought cases that she didn't have the evidence for,\" Gov. Larry Hogan said. (Erin Cox/Baltimore Sun video) \"I think most of the blame falls to the prosecutor who failed to prosecute the case and brought cases that she didn't have the evidence for,\" Gov. Larry Hogan said. (Erin Cox/Baltimore Sun video)\n\nMayor Stephanie Rawlings-Blake has said Rice now faces an administrative review.\n\nGray, 25, died April 19, 2015, one week after his arrest. His death sparked weeks of protests and activism against police brutality, and two nights of looting and rioting.\n\nLast month, the spending panel authorized $87,705 in back pay for Officer Caesar Goodson Jr., the driver of the van in which Gray sustained his injuries. He, too, was cleared of all charges at trial. Williams also acquitted Officer Edward Nero, and prosecutors dropped all charges against the other three police officers.\n\nLbroadwater@baltsun.com\n\nTwitter.com/lukebroadwater<|endoftext|>MIAMI, August 9 \u2013 The Miami HEAT announced their 2016-17 preseason schedule today, which is highlighted by the team\u2019s three home games at AmericanAirlines Arena. The HEAT will open the preseason on the road on Tuesday, October 4, when they take on the Washington Wizards at 7PM. They will make their first appearance in Miami a week later, when they host the Brooklyn Nets at 7:30PM on Tuesday, October 11. They will also face off with the Orlando Magic in Miami on October 18 at 7:30PM, and conclude the home preseason schedule vs. the Philadelphia 76ers on October 21 at 7:30PM.\n\nTickets for the three home games at AmericanAirlines Arena are on sale now and can be purchased by logging on to HEAT.com, Ticketmaster.com, by visiting any Ticketmaster outlet, or by calling 1-800-4NBA-TIX. Tickets can also be purchased at the AmericanAirlines Arena Ticket Office Monday through Friday from 10AM to 5PM. Ticket prices start at $10 plus applicable fees.\n\nIn addition to the three home games at AmericanAirlines Arena, the HEAT will host two neutral site games vs. the Minnesota Timberwolves. Miami returns to the Sprint Center in Kansas City, MO, for the sixth time on October 8. Tickets to that game are available by visiting SprintCenter.com, Price Chopper Box Office at Sprint Center or by calling (888) 929-7849. The HEAT will also return to the KFC Yum! Center in Louisville, KY, for the third straight season, on October 15. Tickets are available at the KFC Yum! Center Box Office, all Ticketmaster outlets, Ticketmaster.com or by calling (800) 745-3000. Miami will also play road contests against the San Antonio Spurs on October 14, and the Charlotte Hornets on October 21.\n\nThe complete broadcast schedule for the preseason will be released at a later date.\n\nThe preseason schedule is as follows:\n\nDATE OPPONENT LOCATION TIME TICKETS Oct. 4 at Washington Verizon Center, Washington, DC 7:00 PM Oct. 8 vs. Minnesota Sprint Center, Kansas City, MO 7:30 PM Oct. 11 vs. Brooklyn AmericanAirlines Arena, Miami, FL 7:30 PM Buy Tickets Oct. 14 at San Antonio AT&T Center, San Antonio, TX 7:30 PM Oct. 15 vs. Minnesota KFC Yum! Center,
 
