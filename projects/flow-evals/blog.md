@@ -9,8 +9,12 @@ Unlike autoregressive models, flow models cannot tractably calculate the likelih
 
 How can we evaluate these evaluation metrics? Let's apply this framework to a family of models for which we have a clear understanding of model quality: the [GPT-2 class of models](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf). As we scale from `gpt2-small` (117M) to `gpt2-medium` (342M) to `gpt2-large` (762M) to `gpt2-xl` (1.5B), the perplexity and accuracy smoothly improves on all measured domains. However, when you sample from these models (`t=1`) and calculate the generative perplexity defined above, `gpt2-small` does better than `gpt2-medium`, and `gpt2-large` does better than `gpt2-xl` while the entropies vary by less than 0.4 nats.
 
-<div style="display: flex; gap: 1.5rem; align-items: flex-start;">
-  <div style="flex: 1;">
+<div class="tabbed-panel" data-tabs>
+  <div class="plot-controls" role="tablist" aria-label="GPT-2 intro display">
+    <button class="active" type="button" role="tab" aria-selected="true" aria-controls="gpt2-intro-table" data-tab-target="gpt2-intro-table">Table</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="gpt2-intro-image" data-tab-target="gpt2-intro-image">Image</button>
+  </div>
+  <div id="gpt2-intro-table" class="tab-panel active" role="tabpanel">
     <table>
       <thead>
         <tr>
@@ -49,8 +53,8 @@ How can we evaluate these evaluation metrics? Let's apply this framework to a fa
     </table>
     <p style="margin: 0.65rem 0 0; color: #666; font-size: 0.92rem; line-height: 1.45;">Gold, silver, and copper mark the best, second-best, and third-best generative perplexity scores.</p>
   </div>
-  <div style="flex: 1;">
-    <img src="assets/model_size_vs_gen_ppl_matrix_scored_by_gpt2-large.png" alt="Model size vs generative perplexity and validation perplexity" style="width: 100%;" />
+  <div id="gpt2-intro-image" class="tab-panel" role="tabpanel" hidden>
+    <img src="assets/model_size_vs_gen_ppl_matrix_scored_by_gpt2-large.png" alt="Model size vs generative perplexity and validation perplexity">
   </div>
 </div>
 
@@ -74,8 +78,15 @@ In this section, we will first show that in autoregressive models, not accountin
 
 As mentioned in the introduction, sampling from all GPT-2 models with `t=1` and scoring under `gpt2-large` leads to a surprising finding: `gpt2-small` does better than `gpt2-medium`, and `gpt2-large` does better than `gpt2-xl`. However, as shown below, there is a clear relation between the entropy of the generations and their generative perplexity.
 
-<div style="display: flex; gap: 1.5rem; align-items: flex-start;">
-  <div style="flex: 1;">
+<div class="tabbed-panel" data-tabs>
+  <div class="plot-controls" role="tablist" aria-label="GPT-2 scaling display">
+    <button class="active" type="button" role="tab" aria-selected="true" aria-controls="gpt2-scaling-video" data-tab-target="gpt2-scaling-video">Video</button>
+    <button type="button" role="tab" aria-selected="false" aria-controls="gpt2-scaling-table" data-tab-target="gpt2-scaling-table">Table</button>
+  </div>
+  <div id="gpt2-scaling-video" class="tab-panel active" role="tabpanel">
+    <video src="assets/gpt2-gen-ppl-light.mp4" autoplay muted playsinline></video>
+  </div>
+  <div id="gpt2-scaling-table" class="tab-panel" role="tabpanel" hidden>
     <table>
       <thead>
         <tr>
@@ -113,12 +124,6 @@ As mentioned in the introduction, sampling from all GPT-2 models with `t=1` and 
       </tbody>
     </table>
     <p style="margin: 0.65rem 0 0; color: #666; font-size: 0.92rem; line-height: 1.45;">Gold, silver, and copper mark the best, second-best, and third-best generative perplexity scores.</p>
-  </div>
-  <div style="flex: 1;">
-    <video controls width="100%">
-  <source src="assets/gpt2-t1-ppl-v-ent.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
   </div>
 </div>
 
@@ -201,8 +206,8 @@ Let's compile three recent flow model papers and their diffusion baselines with 
     </table>
   </div>
   <div style="flex: 1;">
-    <video controls width="100%">
-      <source src="assets/results-chronological-sweep.mp4" type="video/mp4">
+    <video controls muted playsinline width="100%">
+      <source src="assets/results-chronological-sedd_absorb-sweep-light.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
   </div>
