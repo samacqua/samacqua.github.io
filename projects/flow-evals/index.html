@@ -263,10 +263,135 @@
     article video {
       max-width: 720px;
       display: block;
-      margin: 1.5rem 0;
+      width: 100%;
+      margin: 0;
       border: 0;
       border-radius: 0;
       background: #000;
+    }
+
+    .custom-video-controls {
+      position: absolute;
+      z-index: 2;
+      height: 28px;
+    }
+
+    .custom-video-controls input[type="range"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: calc(100% - 2rem);
+      height: 28px;
+      margin: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .custom-video-controls input[type="range"]::-webkit-slider-runnable-track {
+      height: 2px;
+      border-radius: 0;
+      background: linear-gradient(
+        to right,
+        var(--accent) 0%,
+        var(--accent) var(--progress-percent, 0%),
+        var(--bg) var(--progress-percent, 0%),
+        var(--bg) 100%
+      );
+      transition: height 120ms ease;
+    }
+
+    .custom-video-controls input[type="range"]::-moz-range-track {
+      height: 2px;
+      border-radius: 0;
+      background: var(--bg);
+      transition: height 120ms ease;
+    }
+
+    .custom-video-controls input[type="range"]::-moz-range-progress {
+      height: 2px;
+      border-radius: 0;
+      background: var(--accent);
+      transition: height 120ms ease;
+    }
+
+    .custom-video-controls input[type="range"]::-webkit-slider-thumb {
+      width: 22px;
+      height: 22px;
+      margin-top: -10px;
+      border: 0;
+      border-radius: 50%;
+      opacity: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      background: radial-gradient(circle, var(--accent) 0 6px, transparent 6.5px);
+      transition: opacity 120ms ease;
+    }
+
+    .custom-video-controls input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border: 0;
+      border-radius: 50%;
+      opacity: 0;
+      background: radial-gradient(circle, var(--accent) 0 6px, transparent 6.5px);
+      transition: opacity 120ms ease;
+    }
+
+    .custom-video-controls.show-controls input[type="range"]::-webkit-slider-runnable-track,
+    .custom-video-controls:hover input[type="range"]::-webkit-slider-runnable-track,
+    .custom-video-controls input[type="range"]:hover::-webkit-slider-runnable-track,
+    .custom-video-controls input[type="range"]:focus-visible::-webkit-slider-runnable-track {
+      height: 5px;
+    }
+
+    .custom-video-controls.show-controls input[type="range"]::-moz-range-track,
+    .custom-video-controls.show-controls input[type="range"]::-moz-range-progress,
+    .custom-video-controls:hover input[type="range"]::-moz-range-track,
+    .custom-video-controls:hover input[type="range"]::-moz-range-progress,
+    .custom-video-controls input[type="range"]:hover::-moz-range-track,
+    .custom-video-controls input[type="range"]:hover::-moz-range-progress,
+    .custom-video-controls input[type="range"]:focus-visible::-moz-range-track,
+    .custom-video-controls input[type="range"]:focus-visible::-moz-range-progress {
+      height: 5px;
+    }
+
+    .custom-video-controls.show-controls input[type="range"]::-webkit-slider-thumb,
+    .custom-video-controls:hover input[type="range"]::-webkit-slider-thumb,
+    .custom-video-controls input[type="range"]:hover::-webkit-slider-thumb,
+    .custom-video-controls input[type="range"]:focus-visible::-webkit-slider-thumb {
+      margin-top: -8.5px;
+      opacity: 1;
+    }
+
+    .custom-video-controls.show-controls input[type="range"]::-moz-range-thumb,
+    .custom-video-controls:hover input[type="range"]::-moz-range-thumb,
+    .custom-video-controls input[type="range"]:hover::-moz-range-thumb,
+    .custom-video-controls input[type="range"]:focus-visible::-moz-range-thumb {
+      opacity: 1;
+    }
+
+    .custom-video-controls button {
+      position: absolute;
+      right: 0;
+      top: -1px;
+      display: grid;
+      width: 2rem;
+      height: 30px;
+      place-items: center;
+      border: none;
+      padding: 0;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font: inherit;
+      font-size: 1.25rem;
+      line-height: 1;
+    }
+
+    .custom-video-controls button:hover {
+      color: var(--accent);
     }
 
     .hero-video {
@@ -289,7 +414,7 @@
     details.metric-explainer {
       max-width: 720px;
       margin: 0.35rem 0 1.35rem;
-      padding: 0.15rem 0 0.15rem 1.35rem;
+      padding: 0.15rem 0 0.15rem 1.65rem;
       border-left: 2px solid var(--border);
       color: var(--text-muted);
     }
@@ -297,6 +422,7 @@
     details.metric-explainer summary {
       cursor: pointer;
       width: fit-content;
+      padding-left: 0.25rem;
       color: var(--accent);
       font-weight: 600;
       list-style-position: outside;
@@ -563,8 +689,8 @@
   <a class="toc-h3" href="#intra-sample-diversity" target="_self">Sample diversity</a>
   <a class="toc-h4" href="#diversity-proposal" target="_self">Diversity proposal</a>
   <a href="#fixes" target="_self">Fixes</a>
-  <a class="toc-h3" href="#small-fixes" target="_self">Small changes</a>
-  <a class="toc-h3" href="#larger-fixes" target="_self">Larger changes</a>
+  <a class="toc-h3" href="#ppl-bounds" target="_self">PPL bounds</a>
+  <a class="toc-h3" href="#downstream-metrics" target="_self">Downstream metrics</a>
   <a href="#open-questions" target="_self">Open questions</a>
   <a class="toc-h3" href="#scorer-independence" target="_self">Scorer independence</a>
   <a class="toc-h3" href="#flow-entropy-ppl-tradeoff" target="_self">Flow tradeoff</a>
@@ -588,8 +714,8 @@
     <summary>What is the standard for evaluating these models?</summary>
     <p>Unlike autoregressive models, flow models cannot tractably calculate the likelihood of a given string of text. So the standard evaluation is to first sample text from your trained flow model, then score these generated samples using two metrics:</p>
     <ol>
-      <li><strong>Generative perplexity (gen. ppl):</strong> Calculate the perplexity of samples under a pretrained model (almost always <code>gpt2-large</code>). This is analogous to, but distinct from, the standard <strong>validation perplexity</strong> where you calculate the perplexity of some ground-truth data using your model itself.</li>
-      <li><strong>Entropy:</strong> Compute the empirical token entropy (\(-\sum_i p_i \log p_i\)) of each generated sample, then average across samples. This is to ensure that the generated samples are not degenerate (e.g. <em>"aaaaa..."</em> has low gen. perplexity but also an entropy of 0).</li>
+      <li><strong>Generative perplexity (gen. PPL):</strong> Calculate the perplexity of samples under a pretrained model (almost always <code>gpt2-large</code>). This is analogous to, but distinct from, the standard <strong>validation perplexity</strong> where you calculate the perplexity of some ground-truth data using your model itself.</li>
+      <li><strong>Entropy:</strong> Compute the empirical token entropy (\(-\sum_i p_i \log p_i\)) of each generated sample, then average across samples. This is to ensure that the generated samples are not degenerate (e.g. <em>"aaaaa..."</em> has low gen. PPL but also an entropy of 0).</li>
     </ol>
   </details>
 
@@ -618,7 +744,7 @@
           <tr>
             <th>model</th>
             <th style="text-align: right;">OWT val. ppl</th>
-            <th style="text-align: right;">gen. ppl</th>
+            <th style="text-align: right;">gen. PPL</th>
             <th style="text-align: right;">entropy (data=5.44)</th>
           </tr>
         </thead>
@@ -660,15 +786,15 @@
   <ol>
     <li><strong>It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL</strong></li>
     <li><strong>The best-scoring model is not the best language model, but the most <code>gpt2-large</code>-like</strong></li>
-    <li><strong>Entropy only measures intra-sample diversity: inter-sample diversity is an after thought</strong></li>
+    <li><strong>Entropy only measures intra-sample diversity: inter-sample diversity is an afterthought</strong></li>
   </ol>
   <p>Importantly, flow map language models are unambiguously better at small NFEs. Here, I focus on the larger NFE=1024 to point out the issues with the evaluation framework, not with any specific paper. Additionally, the first point -- that entropy must be reported because it can affect result ordering -- was first pointed out in <a href="https://arxiv.org/abs/2510.22510">CANDI</a>.</p>
   <h2 id="issues">The issues</h2>
   <h3 id="entropy-ppl-tradeoff">1. It is trivial to generate "SOTA" results by trading off a little entropy for a lot of PPL</h3>
   <p>There is a fundamental tradeoff between generative perplexity and entropy. Generative perplexity is measuring how predictable the sequence is (under some scoring model) and entropy is measuring how unpredictable the sequence is (based on unigram counts). So, it would be unsurprising if a knob which decreases entropy also decreases generative perplexity.</p>
-  <p>In this section, we will first show that in autoregressive models, not accounting for small entropy differences can lead to incorrect conclusion, e.g. <code>gpt2-small</code> is a better language model than <code>gpt2-xl</code> despite being over 10x smaller. We will also show that reporting generative perplexity at a matched entropy fixes this issue and explains the difference in GPT-2 scaling from the introduction. We will then show that all of the model quality improvements in the last 3 years (at NFE=1024) are fully attributable to this tradeoff between generative perplexity and entropy -- not better models of language.</p>
+  <p>In this section, we will show that by holding <em>entropy</em> constant rather than <em>temperature</em> across the GPT-2 models, we recover clean GPT-2 scaling improvements. We further show that not controlling for a small entropy difference can lead to the erroneous conclusion that <code>gpt2-small</code> is a better language model than <code>gpt2-xl</code>. We will then connect this to flow models, showing that model improvements in gen. PPL from the last 3 years (at NFE=1024) are almost entirely attributable to this tradeoff between generative perplexity and entropy.</p>
   <h4 id="gpt2-scaling-deviations">Entropy differences explain deviations from GPT-2 scaling trends</h4>
-  <p>As mentioned in the introduction, sampling from all GPT-2 models with <code>t=1</code> and scoring under <code>gpt2-large</code> leads to a surprising finding: <code>gpt2-small</code> does better than <code>gpt2-medium</code>, and <code>gpt2-large</code> does better than <code>gpt2-xl</code>. However, as shown below, there is a clear relation between the entropy of the generations and their generative perplexity.</p>
+  <p>As mentioned in the introduction, there is not a clear scaling law for the GPT-2 models with generative perplexity. However, as shown below, there is one clear pattern: increasing entropy increases generative perplexity.</p>
   <div class="tabbed-panel" data-tabs>
     <div class="plot-controls" role="tablist" aria-label="GPT-2 scaling display">
       <button class="active" type="button" role="tab" aria-selected="true" aria-controls="gpt2-scaling-video" data-tab-target="gpt2-scaling-video">Plot</button>
@@ -684,7 +810,7 @@
           <tr>
             <th>model</th>
             <th style="text-align: right;">OWT val. ppl</th>
-            <th style="text-align: right;">gen. ppl</th>
+            <th style="text-align: right;">gen. PPL</th>
             <th style="text-align: right;">entropy (data=5.44)</th>
           </tr>
         </thead>
@@ -718,47 +844,116 @@
       <p style="margin: 0.65rem 0 0; color: #666; font-size: 0.92rem; line-height: 1.45;">Gold, silver, and copper mark the best, second-best, and third-best generative perplexity scores. Note the disagreement between the OWT validation perplexity and the generative perplexity.</p>
     </div>
   </div>
-  <p>Let's see if these entropy differences can explain why <code>gpt2-medium</code> at <code>t=0</code> has a worse generative perplexity than <code>gpt2-small</code>. We can treat the sampling temperature as an "entropy knob": lower temperature generations create low entropy/low gen. ppl samples, and higher temperature generations create high entropy/high gen. ppl samples. Below, we sweep sampling from <code>gpt2-small</code> and <code>gpt2-medium</code> with <code>t=0</code> to <code>t=1</code> and plot the gen. ppl vs. entropy for each temperature.</p>
+  <p>Let's see if these entropy differences can explain why samples from <code>gpt2-medium</code> have a worse generative perplexity than samples from <code>gpt2-small</code> (both with <code>temp=1</code>). We can treat the sampling temperature as an "entropy knob": lower temperature generations create low entropy/low gen. PPL samples, and higher temperature generations create high entropy/high gen. PPL samples. Below, we sweep sampling from <code>gpt2-small</code> and <code>gpt2-medium</code> with <code>t=0</code> to <code>t=1</code> and plot the gen. PPL vs. entropy for each temperature.</p>
   <figure style="margin: 1.2em 0;">
-    <video controls muted playsinline width="100%">
+    <video data-custom-controls muted playsinline width="100%">
       <source src="assets/ppl-v-ent-light.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
     <figcaption style="color: #666; font-size: 0.93rem; margin-top: 0.35em;">
-      Generative perplexity vs. entropy for <code>gpt2-small</code> and <code>gpt2-medium</code> at various sampling temperatures. Each point is a generation at a specific sampling temperature. When <em>entropy-matched</em>, we recover that <code>gpt2-medium &gt; gpt2-small</code>, when <em>temperature-matched</em>, one would conclude that <code>gpt2-small &gt; gpt2-medium</code>.
+      Generative perplexity vs. entropy for <code>gpt2-small</code> and <code>gpt2-medium</code> at various sampling temperatures. Each point is the average gen. PPL / entropy from 128 samples at a given sampling temperature. When <em>entropy-matched</em>, we recover that <code>gpt2-medium &gt; gpt2-small</code>, when <em>temperature-matched</em>, one would conclude that <code>gpt2-small &gt; gpt2-medium</code>.
     </figcaption>
   </figure>
-  <p>So the generative perplexity is <em>incredibly</em> sensitive to entropy. If we match the sampling parameters (temperature), <code>gpt2-small</code> has a better gen. ppl (this is bad). If we match the entropy, <code>gpt2-medium</code> has a better gen. ppl (this is good). In the introduction, we were temperature matching: explaining why we measured `gpt2-small` as being the better model.</p>
-  <p>To further drive home that this unaccounted-for entropy difference is a problem, I'll show that even 0.23 nats is enough to make <code>gpt2-xl</code> have a worse gen. ppl than <code>gpt2-small</code> does at the entropy of the data.</p>
-  <p>Below, we show that sampling from <code>gpt2-xl</code> at <code>t=0.99</code> produces samples with higher generative perplexity than <code>gpt2-small</code> at <code>t=0.91</code>, with only a difference of 0.23 nats in their respective entropies.</p>
+  <p>So the generative perplexity is <em>incredibly</em> sensitive to entropy. If we match the sampling parameters, <code>gpt2-small</code> has a better gen. PPL (this is bad). If we match the entropy, <code>gpt2-medium</code> has a better gen. PPL (this is good). In the introduction, we were temperature matching: explaining why we measured <code>gpt2-small</code> as being the better model.</p>
+
+  <p>Let's look at an even more extreme example of the erroneous conclusions that an unaccounted-for entropy difference can cause. From our previous plot, we can derive that if we sample <code>gpt2-small</code> with <code>temp=0.91</code>, we will generate samples with roughly the same entropy as the actual data: 5.44 nats. At this entropy, <code>gpt2-xl</code> will have a lower gen. PPL, but there is some entropy where it has a higher gen. PPL. How much entropy do we have to add to get there?</p>
+
   <figure>
-    <video controls muted playsinline width="100%">
+    <video data-custom-controls muted playsinline width="100%">
       <source src="assets/ppl-v-ent-all-light.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
     <figcaption>A small entropy shift can make <code>gpt2-xl</code> look worse than <code>gpt2-small</code> under generative perplexity.</figcaption>
   </figure>
-  <p>This variation is well within the variation of results reported in recent papers: 4.95-5.12 (DFM), 5.33-5.71 (LMFM), and 5.25-5.62 (LangFlow).</p>
+
+  <p>The answer is <strong>0.23 nats</strong>. </p>
+
+  <p>That 0.23-nat gap is small compared to the entropy spread seen <em>within</em> single recent flow-model papers across their reported baselines and methods:</p>
+
+  <figure>
+    <svg id="entropy-ranges-chart" viewBox="0 0 800 320" preserveAspectRatio="xMidYMid meet" style="display:block;width:100%;height:auto;font-family:inherit;"></svg>
+    <figcaption>Reported sample-entropy ranges (nats) across baselines and methods within recent flow-model papers, alongside the 0.23-nat range that flips <code>gpt2-xl</code> below <code>gpt2-small</code> under gen. PPL.</figcaption>
+  </figure>
+
+  <script>
+  (function () {
+    const ROWS = [
+      { name: "DFM",      lo: 4.95, hi: 5.12 },
+      { name: "LMFM",     lo: 5.33, hi: 5.71 },
+      { name: "LangFlow", lo: 5.25, hi: 5.62 },
+      { name: "ours (gpt2-small \u2192 xl)", lo: 5.44, hi: 5.67, highlight: true }
+    ];
+    const DATA_H = 5.44;
+    const W = 800, H = 320;
+    const M = { top: 36, right: 48, bottom: 48, left: 180 };
+    const innerW = W - M.left - M.right;
+    const innerH = H - M.top - M.bottom;
+    const allX = [DATA_H, ...ROWS.flatMap(r => [r.lo, r.hi])];
+    const xMin = Math.floor(Math.min(...allX) * 10) / 10 - 0.05;
+    const xMax = Math.ceil(Math.max(...allX) * 10) / 10 + 0.05;
+    const x = v => M.left + ((v - xMin) / (xMax - xMin)) * innerW;
+    const rowH = innerH / ROWS.length;
+    const barH = 16;
+    const ACCENT = "#c44b25";
+    const GRID = "#ececea";
+    const MUTED = "#888";
+    const TEXT = "#1a1a1a";
+
+    let s = "";
+    for (let v = Math.ceil(xMin * 10) / 10; v <= xMax + 1e-9; v += 0.1) {
+      v = Math.round(v * 10) / 10;
+      const xp = x(v);
+      const major = Math.round(v * 10) % 5 === 0;
+      if (major) {
+        s += `<line x1="${xp}" y1="${M.top}" x2="${xp}" y2="${M.top + innerH}" stroke="${GRID}" stroke-width="1"/>`;
+        s += `<text x="${xp}" y="${M.top + innerH + 22}" text-anchor="middle" font-size="11" fill="${MUTED}">${v.toFixed(1)}</text>`;
+      } else {
+        s += `<line x1="${xp}" y1="${M.top + innerH - 4}" x2="${xp}" y2="${M.top + innerH}" stroke="${GRID}" stroke-width="1"/>`;
+      }
+    }
+    s += `<line x1="${M.left}" y1="${M.top + innerH}" x2="${M.left + innerW}" y2="${M.top + innerH}" stroke="#444" stroke-width="1"/>`;
+    s += `<text x="${M.left + innerW / 2}" y="${M.top + innerH + 40}" text-anchor="middle" font-size="12" fill="${TEXT}">sample entropy (nats)</text>`;
+
+    const dx = x(DATA_H);
+    s += `<line x1="${dx}" y1="${M.top}" x2="${dx}" y2="${M.top + innerH}" stroke="${TEXT}" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>`;
+    s += `<text x="${dx}" y="${M.top - 10}" text-anchor="middle" font-size="11" fill="${TEXT}" font-weight="600">data H = ${DATA_H}</text>`;
+
+    ROWS.forEach((p, i) => {
+      const yc = M.top + rowH * i + rowH / 2;
+      const yTop = yc - barH / 2;
+      const x1 = x(p.lo), x2 = x(p.hi);
+      const color = p.highlight ? ACCENT : TEXT;
+      const labelColor = p.highlight ? ACCENT : TEXT;
+      const labelWeight = p.highlight ? 600 : 400;
+      s += `<text x="${M.left - 14}" y="${yc + 4}" text-anchor="end" font-size="13" fill="${labelColor}" font-weight="${labelWeight}">${p.name}</text>`;
+      s += `<rect x="${x1}" y="${yTop}" width="${x2 - x1}" height="${barH}" fill="${color}" opacity="${p.highlight ? 0.85 : 0.75}" rx="2"/>`;
+      s += `<text x="${x1 - 6}" y="${yc + 4}" text-anchor="end" font-size="10" fill="${MUTED}">${p.lo}</text>`;
+      s += `<text x="${x2 + 6}" y="${yc + 4}" text-anchor="start" font-size="10" fill="${MUTED}">${p.hi}</text>`;
+      const span = (p.hi - p.lo).toFixed(2);
+      if (x2 - x1 > 36) {
+        s += `<text x="${(x1 + x2) / 2}" y="${yc + 4}" text-anchor="middle" font-size="10" fill="#fff" font-weight="600">\u0394 ${span}</text>`;
+      }
+    });
+
+    document.getElementById("entropy-ranges-chart").innerHTML = s;
+  })();
+  </script>
+
+  <p>To be clear, this means that the typical entropy variance between models and baselines in recent results is permissive enough to show that <code>gpt2-small</code> is better than <code>gpt2-xl</code>. So, now we can ask: does this same entropy tradeoff occur in flow models and diffusion models?</p>
+
   <h4 id="recent-work-gains">Entropy differences explain high-NFE gains from recent works</h4>
-  <p>Let's compile three recent flow model papers and their diffusion baselines with reported NFE=1024 on OWT. The right plots the same data, but places points chronologically.</p>
+  <p>Let's compile three recent SOTA flow model papers (<a href="https://arxiv.org/pdf/2602.16813">FMLM</a>, <a href="https://arxiv.org/pdf/2604.09784">DFM</a>, <a href="https://arxiv.org/pdf/2604.11748">LangFlow</a>) and their diffusion baselines (<a href="https://arxiv.org/pdf/2506.10892">Duo</a>, <a href="https://arxiv.org/abs/2406.07524">MDLM</a>, <a href="https://arxiv.org/abs/2310.16834">SEDD</a>) with reported NFE=1024 on OWT (this is the same data as in the first figure of this blog):</p>
   <div class="tabbed-panel" data-tabs>
     <div class="plot-controls" role="tablist" aria-label="Recent flow model results display">
-      <button class="active" type="button" role="tab" aria-selected="true" aria-controls="recent-results-video" data-tab-target="recent-results-video">Plot</button>
-      <button type="button" role="tab" aria-selected="false" aria-controls="recent-results-table" data-tab-target="recent-results-table">Table</button>
+      <button class="active" type="button" role="tab" aria-selected="true" aria-controls="recent-results-table" data-tab-target="recent-results-table">Table</button>
+      <button type="button" role="tab" aria-selected="false" aria-controls="recent-results-video" data-tab-target="recent-results-video">Plot</button>
     </div>
-    <div id="recent-results-video" class="tab-panel active" role="tabpanel">
-      <video controls muted playsinline width="100%">
-        <source src="assets/results-chronological-sedd_absorb-mdlm-duo-sweep-light.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <p class="media-caption">Recent high-NFE (NFE=1024) flow and diffusion results improve in generative perplexity while moving toward lower-entropy samples.</p>
-    </div>
-    <div id="recent-results-table" class="tab-panel" role="tabpanel" hidden>
+    <div id="recent-results-table" class="tab-panel active" role="tabpanel">
       <table>
         <thead>
           <tr>
             <th>model</th>
-            <th style="text-align: right;">gen. ppl</th>
+            <th style="text-align: right;">gen. PPL</th>
             <th style="text-align: right;">entropy</th>
           </tr>
         </thead>
@@ -802,48 +997,74 @@
       </table>
       <p class="media-caption">Reported OWT results at NFE=1024 show lower generative perplexity paired with lower entropy across later methods.</p>
     </div>
+    <div id="recent-results-video" class="tab-panel" role="tabpanel" hidden>
+      <video muted playsinline width="100%">
+        <source src="assets/results-chronological-light.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <p class="media-caption">Generative perplexity and entropy for recent flow and diffusion language models, shown chronologically (NFE=1024).</p>
+    </div>
   </div>
-  <p>As you can see, both generative perplexity and entropy are decreasing over time with each new paper release. Every result since Duo reports a lower gen. ppl and entropy than the results it compares against. This makes it hard to compare these methods because there is an inherent tradeoff to gen. ppl and entropy, and as showed earlier, tiny differences in entropy can lead to large differences in generative perplexity.</p>
-  <p>Just like in autoregressive models, we can sample from Duo with a temperature. If we, just as with the GPT-2 models, plot generative perplexity vs. entropy as we change the sampling temperature, we can show that since Duo, all gains in generative perplexity can be attributed to just reducing the entropy.</p>
+  <p>As you can see, both generative perplexity and entropy are decreasing over time with each new paper release. Every result since Duo reports a lower gen. PPL and entropy than the results it compares against. This makes it hard to compare these methods because, as shown earlier, tiny differences in entropy can lead to large differences in generative perplexity.</p>
+
+  <p>For flow models, I'm honestly not sure what the best "entropy knob" is for us to do a sweep like in the last section. However, for the diffusion model baselines, we can use temperature as an entropy knob like in autoregressive models.  So, let's sweep the temperatures for each of the three diffusion baselines, to see if the gains over the last few years come from improved language modeling, or from models with lower entropy samples at the default sampling parameters.</p>
+
+  <figure>
+    <video data-custom-controls muted playsinline width="100%">
+      <source src="assets/results-chronological-sedd_absorb-mdlm-duo-sweep-light.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <figcaption>Sweeping sampling temperature for the three diffusion baselines (SEDD-absorbing, MDLM, Duo) traces out the gen. PPL vs. entropy curve for each.</figcaption>
+  </figure>
+
+  <p>As you can see, the improvements in generative perplexity are much more marginal than they appear on a first read. Comparing LangFlow to SEDD-absorb without adjusting the temperatures seems like a nearly 3x decrease in gen. PPL, but an entropy-matched SEDD-absorb baseline is only ~10% higher gen. PPL.</p>
+
+  <p>To be clear, this is <em>not</em> saying that there has not been progress in flow models or diffusions. Getting flow models to work at all is progress, and they are actually better with less NFEs. The important point is that reporting confusing evals will slow the field down as more people work on improving flow models.</p>
+
   <h4 id="entropy-proposal">Proposal to fix the entropy problem</h4>
-  <p>Fixing this is straightforward: sweep PPL and entropy as we have done here and as is suggested by <a href="https://arxiv.org/pdf/2510.22510">CANDI</a>. Include the entire curve in the results. If you are reporting a scalar gen. ppl quantity, report interpolated gen. PPL at the entropy of the data (5.463 for OWT). This completely eliminates any variance attributable to difference in entropy.</p>
+  <p>Fixing this entropy-sensitivity problem is straightforward: control for the confounder. One way is to sweep PPL and entropy as we have done here and include the entire curve in the results, as originally suggested by <a href="https://arxiv.org/pdf/2510.22510">CANDI</a> (great work). If you are reporting a scalar gen. PPL quantity, report interpolated gen. PPL at the entropy of the data. This completely eliminates any variance attributable to difference in entropy.</p>
+
   <h3 id="scorer-bias">2. The best-scoring model is not the best language model, but the most <code>gpt2-large</code>-like</h3>
-  <p>Now, if you paid close attention to the previous section, you may have noticed that <code>gpt2-large</code> is still slightly better than <code>gpt2-xl</code> even when entropy matched. Why is this? It is because -- even when fixing the entropy problem -- the model with the best generative perplexity is <em>not</em> the one that models the data the best, but the one that matches the scorer the best (in this blog, and in the field generally, <code>gpt2-large</code>). For models that are poor models of the data, this doesn't matter much as <code>gpt2-large</code> might as well be an oracle. But as the models improve, this will become more and more important.</p>
-  <p><code>gpt2-large</code> is an imperfect model of language. Even just comparing to <code>gpt2-xl</code>, it has lower accuracy and higher PPL on every measured benchmark:</p>
+
+  <p>Now, if you paid close attention to the previous section, you may have noticed that even when entropy-matching, <code>gpt2-large</code> is slightly better than <code>gpt2-xl</code>. Why is this? It is because -- even when fixing the entropy problem -- the model with the best generative perplexity is <em>not</em> the one that models the data the best, but the one that matches the scorer the best (in this blog, and in the field generally, <code>gpt2-large</code>). For models that are poor models of the data, this doesn't matter much as <code>gpt2-large</code> might as well be an oracle. But as the models improve, this will become more and more important.</p>
+
+  <p>Of course, <code>gpt2-large</code> is an imperfect model of language. Even just comparing to <code>gpt2-xl</code>, it has lower accuracy and higher PPL on every measured benchmark:</p>
   <figure>
     <img src="assets/gpt2-table.png" alt="gpt2 results">
     <figcaption>From <a href="https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf">Language Models are Unsupervised Multitask Learners</a>.</figcaption>
   </figure>
-  <p>However, as shown earlier, <code>gpt2-large</code> gives a better gen. ppl to its own samples than to <code>gpt2-xl</code> samples. In fact, <code>gpt2-large</code> assigns a higher probability to its own entropy-matched samples than to actual samples of the data. This is unsurprising: by definition, the highest probability (lowest gen. PPL) strings are those greedily (<code>t=0</code>) generated by the scoring model.</p>
+  <p>However, as shown earlier, <code>gpt2-large</code> gives a better gen. PPL to its own samples than to <code>gpt2-xl</code> samples. In fact, <code>gpt2-large</code> assigns a higher probability to its own entropy-matched samples than to actual samples of the data. This is unsurprising: by definition, the highest probability (lowest gen. PPL) strings are those greedily (<code>t=0</code>) generated by the scoring model.</p>
   <h4 id="punish-correctness">Generative perplexity can punish correctness</h4>
+  <p>You can dream up many clear examples to show that the current evaluation is penalizing "correct" behavior. Here is one clear example: <code>gpt2-large</code> assigns low probability to correct answers of arithmetic problems. Across 1000 randomly-sampled 5-digit multiplication problems, I queried <code>gpt2-large</code> to measure the generative perplexity of two completions: its own greedy (<code>t=0</code>) completion and the correct completion. It is given 50 in-context examples. The histogram of the generative perplexities across the 1000 randomly-sampled problems are shown below. <code>gpt2-large</code> assigns an aggregate PPL of 37.9 to the correct answer, and an aggregate PPL of 11.70 to its own greedy completion which is correct 0% of the time. This means that a model which can do perfect arithmetic would have a <em>much worse</em> generative PPL than a model which matches the incorrect answers of <code>gpt2-large</code>.</p>
   <figure>
     <img src="assets/mult-histogram.png" alt="mult histogram">
     <figcaption>Generative perplexity assigned by <code>gpt2-large</code> to correct multiplication answers versus its own greedy, incorrect completions across 1000 problems.</figcaption>
   </figure>
-  <p>You can dream up many clear examples to show that the current evaluation is penalizing "correct" behavior. Here is one clear example: <code>gpt2-large</code> assigns much higher probability to incorrect completions to arithmetic problems than correct completions. Across 1000 5-digit multiplication problems, I queried <code>gpt2-large</code> to measure the generative perplexity of two completions: it's own greedy (<code>t=0</code>) completion and the correct completion. It is shown 50 in-context examples. The histogram of the generative perplexities across the 1000 randomly-sampled problems are shown above. <code>gpt2-large</code> assigns an aggregate PPL of 37.9 to the correct answer, and an aggregate PPL of 11.70 to it's own greedy completion which is correct 0% of the time. This means that a model which can do perfect arithmetic would have a <em>much worse</em> generative PPL than a model which matches the incorrect answers of <code>gpt2-large</code>.</p>
-  <h4 id="ar-bias">Generative perplexity is biased towards autoregressive models</h4>
-  <p>Further, since you would expect models with the same architecture/training to have more correlated errors than models with different architectures/training, this means that geneartive perplexity is architecturally biased towards left-to-right autoregressive transformers.</p>
 
-  <p>To show this, I trained two 179M parameter autoregressive transformers on OpenWebText: one in the standard left-to-right fashion, and one training from right-to-left. For each checkpoint, we run two evals:</p>
-  <!--  then do a temperature sweep like in above sections to deter  (literally just reversed the tokens in the data loader each batch). We find two checkpoints that have ~the same validation perplexity. Because left-to-right AR is fundamentally easier, this is ~25k steps for right-to-left and ~20k steps for left-to-right. Then, we can plot the entropy v. temperature curve, and note that the right-to-left model is worse compared to the equivalent (by validation ppl) left-to-right model. -->
+  <h4 id="ar-bias">Generative perplexity is biased towards autoregressive models</h4>
+
+  <p>Further, since you would expect models with the same architecture/training to have more correlated errors than models with different architectures/training, generative perplexity is architecturally biased towards left-to-right autoregressive transformers (because <code>gpt2-large</code> is a left-to-right autoregressive transformer).</p>
+
+  <p>To show this, I trained two 179M parameter autoregressive transformers on OpenWebText: one in the standard left-to-right fashion, and one training from right-to-left (literally just added a <code>[::-1]</code> in the dataloader). For each checkpoint, we run two evals:</p>
 
   <ol>
     <li>Validation perplexity on held-out OpenWebText data (standard autoregressive validation)</li>
-    <li>Generative perplexity under `gpt2-large` at the entropy of the data. To do this, we sweep sampling temperatures like in earlier sections to control for entropy (256 sequences for each temperature).</li>
+    <li>Generative perplexity under <code>gpt2-large</code> at the entropy of the data. To do this, we sweep sampling temperatures like in earlier sections to control for entropy (we sample 512 sequences for each temperature).</li>
   </ol>
 
-  <p><em>A priori</em>, you would expect learning right-to-left to be a bit harder (TODO: cite papers), so validation perplexity should be higher for a given training step. If we treat validation perplexity as our gold standard, then any difference in the ratio between validation perplexity and generative perplexity reveals an unwanted generative perplexity bias.</p>
+  <p><em>A priori</em>, you would expect learning right-to-left to be a bit slower (<a href="https://arxiv.org/pdf/2507.01335v3">LEDOM: Reverse Language Model</a>). If we treat validation perplexity as our gold standard, then any difference in the ratio between validation perplexity and generative perplexity reveals an unwanted generative perplexity bias. This is exactly what we find:</p>
 
   <figure>
     <img src="assets/for-rev.png" alt="forward v. reverse">
     <figcaption>For matched validation perplexity, the left-to-right autoregressive model receives a better generative perplexity score than the right-to-left model.</figcaption>
   </figure>
 
-  <p>Note two things in the above figure. First, we do find that at any given step count (10k, 15k, 20k), the left-to-right model has a higher validation perplexity on held-out data, as expected. Second, and more importantly, for any given OWT validation perplexity, the generative perplexity is > 3 nats higher, <strong>revealing a bias for left-to-right autoregressive models.</strong></p>
+  <p>Importantly, we are controlling for the fact that the R->L model learns slower: the 30k R->L checkpoint has a lower validation perplexity loss than the 20k L->R checkpoint, yet its generative perplexity is over 3 nats higher, <strong>revealing a bias for left-to-right autoregressive models.</strong></p>
 
   <h4 id="scorer-proposal">Proposal to fix the <code>gpt2-large</code> bias</h4>
   <p>Fixing this is not straightforward: it is inherent to the idea of using another model as the ground truth. But, if we are going to treat a language model as the ground truth language distribution, we might as well use the better one: <code>gpt2-xl</code>.</p>
-  <h3 id="intra-sample-diversity">3. Entropy only measures intra-sample diversity: inter-sample diversity is an after thought</h3>
+
+  <h3 id="intra-sample-diversity">3. Entropy only measures intra-sample diversity: inter-sample diversity is an afterthought</h3>
   <p>In some recent flow model papers, entropy is referred to as a "diversity" measure. However, this entropy is computed within each generated sequence and then averaged across generated sequences:</p>
   <p>\[
   \frac{1}{M}\sum_{m=1}^{M}
@@ -851,29 +1072,48 @@
   -\sum_{v \in V} \hat p_m(v)\log \hat p_m(v)
   \right)
   \]</p>
-  <p>where \(\hat p_m(v)\) is the empirical frequency of token \(v\) in generated sample \(m\). This means that if a model generated the same exact sequence every sample, and that sequence has low generative perplexity and high entropy, then it would seem like an incredibly strong model under these two metrics.</p>
-  <p>To give an example, if the model recited the following sequence from OWT every single sample, it's PPL would be 4.283 with an entropy of 5.42 -- less than half of the PPL of <code>gpt2-xl</code> at the same entropy:</p>
+  <p>where \(\hat p_m(v)\) is the empirical frequency of token \(v\) in generated sample \(m\). This means that <strong>if a model generated the same exact sequence every sample, and that sequence has low generative perplexity and high entropy, then it would seem like an incredibly strong model under these two metrics </strong>.</p>
+  <p>To give an example, if the model recited the following sequence from OWT <em>every single sample</em>, its PPL would be 4.283 with an entropy of 5.42 -- less than half of the gen. PPL of <code>gpt2-xl</code> at the same entropy (don't read it, just putting it here to show that generating a single, only-somewhat-coherent sentence is enough to get SOTA gen. PPL/entropy):</p>
   <blockquote>
-    <p>Rice, 42, was the highest-ranking officer of the six police officers charged in Gray's arrest and death. Prosecutors had alleged that Rice and others caused Gray's death by failing to secure him in a seat belt in the back of the van, where Gray suffered severe spinal cord injuries last year.\n\nRice was suspended without pay from May 1, 2015, when he was charged by the state's attorney's office, until July 18 of this year, when Circuit Judge Barry Williams found Rice not guilty of all charges.\n\n\"Being suspended without pay for over a year has been financially devastating to Lt. Rice and his family,\" said Michael Belsky, Rice's attorney.\n\nWilliams said prosecutors failed to meet their burden of proving the charges against Rice beyond a reasonable doubt, instead asking the court to rely on \"presumptions or assumptions\" \u2014 something it cannot do. He said the court \"cannot be swayed by sympathy, prejudice or public opinion.\"\n\nCAPTION Baltimore State's Attorney Marilyn Mosby talks about why her team decided to drop the charges against the officers in the Freddie Gray case. (Kevin Richardson/Baltimore Sun video) Baltimore State's Attorney Marilyn Mosby talks about why her team decided to drop the charges against the officers in the Freddie Gray case. (Kevin Richardson/Baltimore Sun video) CAPTION \"I think most of the blame falls to the prosecutor who failed to prosecute the case and brought cases that she didn't have the evidence for,\" Gov. Larry Hogan said. (Erin Cox/Baltimore Sun video) \"I think most of the blame falls to the prosecutor who failed to prosecute the case and brought cases that she didn't have the evidence for,\" Gov. Larry Hogan said. (Erin Cox/Baltimore Sun video)\n\nMayor Stephanie Rawlings-Blake has said Rice now faces an administrative review.\n\nGray, 25, died April 19, 2015, one week after his arrest. His death sparked weeks of protests and activism against police brutality, and two nights of looting and rioting.\n\nLast month, the spending panel authorized $87,705 in back pay for Officer Caesar Goodson Jr., the driver of the van in which Gray sustained his injuries. He, too, was cleared of all charges at trial. Williams also acquitted Officer Edward Nero, and prosecutors dropped all charges against the other three police officers.\n\nLbroadwater@baltsun.com\n\nTwitter.com/lukebroadwater&lt;|endoftext|&gt;MIAMI, August 9 \u2013 The Miami HEAT announced their 2016-17 preseason schedule today, which is highlighted by the team\u2019s three home games at AmericanAirlines Arena. The HEAT will open the preseason on the road on Tuesday, October 4, when they take on the Washington Wizards at 7PM. They will make their first appearance in Miami a week later, when they host the Brooklyn Nets at 7:30PM on Tuesday, October 11. They will also face off with the Orlando Magic in Miami on October 18 at 7:30PM, and conclude the home preseason schedule vs. the Philadelphia 76ers on October 21 at 7:30PM.\n\nTickets for the three home games at AmericanAirlines Arena are on sale now and can be purchased by logging on to HEAT.com, Ticketmaster.com, by visiting any Ticketmaster outlet, or by calling 1-800-4NBA-TIX. Tickets can also be purchased at the AmericanAirlines Arena Ticket Office Monday through Friday from 10AM to 5PM. Ticket prices start at $10 plus applicable fees.\n\nIn addition to the three home games at AmericanAirlines Arena, the HEAT will host two neutral site games vs. the Minnesota Timberwolves. Miami returns to the Sprint Center in Kansas City, MO, for the sixth time on October 8. Tickets to that game are available by visiting SprintCenter.com, Price Chopper Box Office at Sprint Center or by calling (888) 929-7849. The HEAT will also return to the KFC Yum! Center in Louisville, KY, for the third straight season, on October 15. Tickets are available at the KFC Yum! Center Box Office, all Ticketmaster outlets, Ticketmaster.com or by calling (800) 745-3000. Miami will also play road contests against the San Antonio Spurs on October 14, and the Charlotte Hornets on October 21.\n\nThe complete broadcast schedule for the preseason will be released at a later date.\n\nThe preseason schedule is as follows:\n\nDATE OPPONENT LOCATION TIME TICKETS Oct. 4 at Washington Verizon Center, Washington, DC 7:00 PM Oct. 8 vs. Minnesota Sprint Center, Kansas City, MO 7:30 PM Oct. 11 vs. Brooklyn AmericanAirlines Arena, Miami, FL 7:30 PM Buy Tickets Oct. 14 at San Antonio AT&amp;T Center, San Antonio, TX 7:30 PM Oct. 15 vs. Minnesota KFC Yum! Center,</p>
+    <p>Rice, 42, was the highest-ranking officer of the six police officers charged in Gray's arrest and death. Prosecutors had alleged that Rice and others caused Gray's death by failing to secure him in a seat belt in the back of the van, where Gray suffered severe spinal cord injuries last year.</p>
+    <p>Rice was suspended without pay from May 1, 2015, when he was charged by the state's attorney's office, until July 18 of this year, when Circuit Judge Barry Williams found Rice not guilty of all charges.</p>
+    <p>"Being suspended without pay for over a year has been financially devastating to Lt. Rice and his family," said Michael Belsky, Rice's attorney.</p>
+    <p>Williams said prosecutors failed to meet their burden of proving the charges against Rice beyond a reasonable doubt, instead asking the court to rely on "presumptions or assumptions" &mdash; something it cannot do. He said the court "cannot be swayed by sympathy, prejudice or public opinion."</p>
+    <p>CAPTION Baltimore State's Attorney Marilyn Mosby talks about why her team decided to drop the charges against the officers in the Freddie Gray case. (Kevin Richardson/Baltimore Sun video) Baltimore State's Attorney Marilyn Mosby talks about why her team decided to drop the charges against the officers in the Freddie Gray case. (Kevin Richardson/Baltimore Sun video) CAPTION "I think most of the blame falls to the prosecutor who failed to prosecute the case and brought cases that she didn't have the evidence for," Gov. Larry Hogan said. (Erin Cox/Baltimore Sun video) "I think most of the blame falls to the prosecutor who failed to prosecute the case and brought cases that she didn't have the evidence for," Gov. Larry Hogan said. (Erin Cox/Baltimore Sun video)</p>
+    <p>Mayor Stephanie Rawlings-Blake has said Rice now faces an administrative review.</p>
+    <p>Gray, 25, died April 19, 2015, one week after his arrest. His death sparked weeks of protests and activism against police brutality, and two nights of looting and rioting.</p>
+    <p>Last month, the spending panel authorized $87,705 in back pay for Officer Caesar Goodson Jr., the driver of the van in which Gray sustained his injuries. He, too, was cleared of all charges at trial. Williams also acquitted Officer Edward Nero, and prosecutors dropped all charges against the other three police officers.</p>
+    <p>Lbroadwater@baltsun.com</p>
+    <p>Twitter.com/lukebroadwater&lt;|endoftext|&gt;MIAMI, August 9 &ndash; The Miami HEAT announced their 2016-17 preseason schedule today, which is highlighted by the team&rsquo;s three home games at AmericanAirlines Arena. The HEAT will open the preseason on the road on Tuesday, October 4, when they take on the Washington Wizards at 7PM. They will make their first appearance in Miami a week later, when they host the Brooklyn Nets at 7:30PM on Tuesday, October 11. They will also face off with the Orlando Magic in Miami on October 18 at 7:30PM, and conclude the home preseason schedule vs. the Philadelphia 76ers on October 21 at 7:30PM.</p>
+    <p>Tickets for the three home games at AmericanAirlines Arena are on sale now and can be purchased by logging on to HEAT.com, Ticketmaster.com, by visiting any Ticketmaster outlet, or by calling 1-800-4NBA-TIX. Tickets can also be purchased at the AmericanAirlines Arena Ticket Office Monday through Friday from 10AM to 5PM. Ticket prices start at $10 plus applicable fees.</p>
+    <p>In addition to the three home games at AmericanAirlines Arena, the HEAT will host two neutral site games vs. the Minnesota Timberwolves. Miami returns to the Sprint Center in Kansas City, MO, for the sixth time on October 8. Tickets to that game are available by visiting SprintCenter.com, Price Chopper Box Office at Sprint Center or by calling (888) 929-7849. The HEAT will also return to the KFC Yum! Center in Louisville, KY, for the third straight season, on October 15. Tickets are available at the KFC Yum! Center Box Office, all Ticketmaster outlets, Ticketmaster.com or by calling (800) 745-3000. Miami will also play road contests against the San Antonio Spurs on October 14, and the Charlotte Hornets on October 21.</p>
+    <p>The complete broadcast schedule for the preseason will be released at a later date.</p>
+    <p>The preseason schedule is as follows:</p>
+    <p>DATE OPPONENT LOCATION TIME TICKETS Oct. 4 at Washington Verizon Center, Washington, DC 7:00 PM Oct. 8 vs. Minnesota Sprint Center, Kansas City, MO 7:30 PM Oct. 11 vs. Brooklyn AmericanAirlines Arena, Miami, FL 7:30 PM Buy Tickets Oct. 14 at San Antonio AT&amp;T Center, San Antonio, TX 7:30 PM Oct. 15 vs. Minnesota KFC Yum! Center,</p>
   </blockquote>
-  <p>Obviously, this is very unlikely to occur in any reasonable setup. The point is that <strong>entropy is not measuring diversity of samples at all</strong>, only diversity within a sample.</p>
-  <p>The field is aware of this. In <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>, they report self-BLEU scores (geometric average of ngram overlap) in the appendix to check for "mode collapse". This is very useful but now interpretation of results relies on 3 variables: gen. ppl, per-sample entropy, and self-BLEU, which makes it hard to tell when a new method is an improvement or just trading off diversity for quality.</p>
+  <p>Obviously, this example is very unlikely to occur in any reasonable setup. The point is that <strong>entropy is not measuring diversity of samples at all</strong>, only diversity within a sample. There could very well be a tradeoff between sample diversity and gen. PPL, just like there is a tradeoff between sample entropy and gen. PPL.</p>
+
   <h4 id="diversity-proposal">Proposal to measure inter-sample diversity</h4>
-  <p>Report self-BLEU as in Flow Language Models. This is not perfect, but it does act as a crude measure of diversity.</p>
+  <p><a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a> reports self-<a href="https://aclanthology.org/P02-1040.pdf">BLEU</a> scores (geometric average of ngram overlap) in the appendix. This is a clear improvement and will flag mode collapses, but now interpretation of results relies on 3 variables instead of the (already problematic) 2: gen. PPL, per-sample entropy, and self-BLEU.</p>
+
+  <p>So, report self-BLEU scores. But, as discussed in the next section, I think there are cleaner, bigger changes which can be made.</p>
+
   <h2 id="fixes">The fixes</h2>
-  <p>As mentioned throughout, there are many ways to easily improve these evals, and the field is already working towards them. As mentioned earlier, <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a> reports self-BLEU scores, <a href="https://arxiv.org/pdf/2604.11748">LangFlow</a> reports PPL bounds on actual validation data. Here, we give a few concrete ideas which address the earlier outlined issues.</p>
-  <h3 id="small-fixes">Small changes: report entropy-matched gen. ppl, self-BLEU, and use <code>gpt2-xl</code> as the scorer</h3>
-  <p>As mentioned at the end of each section, the three problems can be ameliorated through small changes.</p>
-  <p>As we showed, you can dramatically change the PPL of a model by reducing its entropy a small amount. To make interpreting results easily, we should report gen. ppl <em>at the entropy of the data</em>. This avoids any variance between methods attributable to difference in entropy.</p>
-  <p>Additionally, we showed that gen. ppl and entropy do not measure inter-sample diversity at all. To address this, as in <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>, report self-BLEU scores.</p>
-  <p>Finally, we showed that using any model as a scorer means that it gives higher scores to models which make the same mistakes. And since we do not have access to the true data generating distribution of language, we must settle for an imperfect scorer. With this being the case, we might as well use the <em>better</em> drop-in replacement model of language: <code>gpt2-xl</code> instead of <code>gpt2-large</code>.</p>
-  <h3 id="larger-fixes">Larger changes: Report PPL bounds and focus on downstream metrics</h3>
-  <p>The changes above are patching an imperfect framework. I think a bigger improvement is to report PPL bounds on actual data (as in <a href="https://arxiv.org/pdf/2604.11748">LangFlow</a>) and to focus on downstream metrics (like Sudoku in <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>). Calculating PPL bounds on real data sidesteps all of the outlined problems. One issue is that calculating this PPL bound is quite slow, the gap between the bound and the true PPL is unknown, and also new models must derive their own PPL bounds. Work in this area (faster, more general, tighter bounds) is great.</p>
-  <p>Furthermore, why do we care about PPL in the first place? On one hand, it is very natural: it is a function of the probability of sequences under the model, it gives ~number of tokens that the model is guessing between with equal probability. On the other hand, we want these models to <em>do</em> useful things: solve our problems, answer questions. So, by focusing on these downstream metrics which only require drawing samples, we can go beyond this gen. ppl fixation.</p>
+
+  <p>As mentioned throughout, there are ways to somewhat ameliorate the three discussed issues: report the entropy vs. generative perplexity frontier, use <code>gpt2-xl</code> as the scorer, and report self-BLEU.</p>
+  
+  <p>Here, I'll list two larger changes that the field is moving towards which don't patch the gen. PPL / entropy framework, but move past them.</p>
+
+  <h3 id="ppl-bounds">Derive and report PPL bounds</h3>
+  <p>Recently, <a href="https://arxiv.org/pdf/2604.11748">LangFlow</a> derived a validation perplexity bound for their model. Calculating PPL bounds on real data sidesteps all of the outlined problems. One issue is that calculating this PPL bound is quite slow, new models must derive their own PPL bounds, and the gap between the upper bound and the true PPL is unknown (working on this!). Work in this area (faster, more general, tighter bounds) is great.</p>
+
+  <h3 id="downstream-metrics">Focus on downstream metrics</h3>
+  <p>Why do we care about PPL in the first place? On one hand, it is very natural: it is a function of the probability of sequences under the model, and gives the effective number of equally likely next-token choices implied by the model's average log loss. On the other hand, we want these models to <em>do</em> useful things: solve problems, answer questions. So, by focusing on these downstream metrics which only require drawing samples, we can go beyond this gen. PPL fixation (to be fair, <a href="https://arxiv.org/pdf/2603.24477">pretraining perplexity is very predictive of downstream performance</a>). <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a> does this well: reporting Sudoku results in addition to their gen. PPL results.</p>
+
   <h2 id="open-questions">Open questions</h2>
   <p>In writing this up, there are a few things I couldn't get a satisfying answer to.</p>
-  <h3 id="scorer-independence">1. Why are flow model gen. ppl scorers largely independent of the scorer</h3>
-  <p>If we run generate tokens with a list of models and score them with every model, we get the plot below (left). Note that this confounds sample entropy and does not control for the problem above.</p>
+  <h3 id="scorer-independence">1. Why are flow model gen. PPL scorers largely independent of the scorer</h3>
+  <p>If we generate tokens with a list of models and score them with every model, we get the plot below (left). Note that this confounds sample entropy and does not control for the problem above.</p>
   <figure>
     <img src="assets/grouped_ppl_by_generator.png" alt="scorers">
     <figcaption>Generative perplexity scores vary across scorers for most generators, but some flow models show surprisingly little scorer-level spread.</figcaption>
@@ -881,7 +1121,7 @@
   <p>As you can see, there is lots of variance across the scorers for a given generator for all but 3 models: <code>gpt2</code>, <code>FLM</code>, and <code>LangFlow</code>.</p>
   <p>Why is this? I ran per-token scoring and for these models, it isn't that there is more agreement per token (lower variance), but rather that the disagreement is there (high variance) but it seems to cancel out when averaged across tokens. I don't have an intuitive explanation for why this is or what it means.</p>
   <h3 id="flow-entropy-ppl-tradeoff">2. What is the best way to tradeoff entropy v. ppl in flow models?</h3>
-  <p>In autoregressive models and (some) masked diffusion models, it is trivial to tradeoff entropy and gen. ppl: just change the temperature. However, in a flow model, I'm not sure what the relevant lever to pull is.</p>
+  <p>In autoregressive models and (some) masked diffusion models, it is trivial to tradeoff entropy and gen. PPL: just change the temperature. However, in a flow model, I'm not sure what the relevant lever to pull is.</p>
 </article>
 <script>
   (() => {
@@ -910,6 +1150,157 @@
 </script>
 <script>
   (() => {
+    document.querySelectorAll("article video[data-custom-controls]").forEach(video => {
+      const parent = video.parentElement;
+      if (getComputedStyle(parent).position === "static") parent.style.position = "relative";
+
+      const controls = document.createElement("div");
+      controls.className = "custom-video-controls";
+
+      const progress = document.createElement("input");
+      progress.type = "range";
+      progress.min = "0";
+      progress.max = "1000";
+      progress.step = "any";
+      progress.value = "0";
+      progress.setAttribute("aria-label", "Video progress");
+
+      const resetButton = document.createElement("button");
+      resetButton.type = "button";
+      resetButton.innerHTML = "&#x21BA;";
+      resetButton.setAttribute("aria-label", "Reset video");
+
+      controls.append(progress, resetButton);
+      video.insertAdjacentElement("afterend", controls);
+
+      function positionControls() {
+        controls.style.left = video.offsetLeft + "px";
+        controls.style.top = (video.offsetTop + video.offsetHeight - 14) + "px";
+        controls.style.width = video.offsetWidth + "px";
+      }
+      positionControls();
+      new ResizeObserver(positionControls).observe(video);
+      window.addEventListener("resize", positionControls);
+      video.addEventListener("loadedmetadata", positionControls);
+
+      function showControls() {
+        controls.classList.add("show-controls");
+      }
+
+      function hideControls() {
+        if (!isScrubbing) controls.classList.remove("show-controls");
+      }
+
+      let isScrubbing = false;
+      let wasPlayingBeforeScrub = false;
+      let progressAnimationFrame;
+      const max = Number(progress.max);
+
+      function updateProgress() {
+        if (isScrubbing) return;
+        if (!video.duration) return;
+        progress.value = String((video.currentTime / video.duration) * max);
+        updateProgressFill();
+      }
+
+      function seekToProgress() {
+        if (!video.duration) return;
+        video.currentTime = (progress.valueAsNumber / max) * video.duration;
+        updateProgressFill();
+      }
+
+      function seekToPointer(event) {
+        const rect = progress.getBoundingClientRect();
+        const ratio = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+        progress.value = String(ratio * max);
+        seekToProgress();
+      }
+
+      function updateProgressFill() {
+        progress.style.setProperty("--progress-percent", `${(progress.valueAsNumber / max) * 100}%`);
+      }
+
+      function animateProgress() {
+        updateProgress();
+        progressAnimationFrame = requestAnimationFrame(animateProgress);
+      }
+
+      function startProgressAnimation() {
+        cancelAnimationFrame(progressAnimationFrame);
+        animateProgress();
+      }
+
+      function stopProgressAnimation() {
+        cancelAnimationFrame(progressAnimationFrame);
+        updateProgress();
+      }
+
+      video.addEventListener("loadedmetadata", updateProgress);
+      video.addEventListener("play", startProgressAnimation);
+      video.addEventListener("pause", stopProgressAnimation);
+      video.addEventListener("ended", stopProgressAnimation);
+      video.addEventListener("mouseenter", showControls);
+      video.addEventListener("mouseleave", () => {
+        if (!controls.matches(":hover")) hideControls();
+      });
+      controls.addEventListener("mouseenter", showControls);
+      controls.addEventListener("mouseleave", () => {
+        if (!video.matches(":hover")) hideControls();
+      });
+      progress.addEventListener("focus", showControls);
+      progress.addEventListener("blur", hideControls);
+
+      progress.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        isScrubbing = true;
+        showControls();
+        wasPlayingBeforeScrub = !video.paused;
+        video.pause();
+        progress.setPointerCapture(event.pointerId);
+        seekToPointer(event);
+      });
+
+      progress.addEventListener("pointermove", event => {
+        if (!isScrubbing) return;
+        seekToPointer(event);
+      });
+
+      progress.addEventListener("input", () => {
+        if (!isScrubbing) seekToProgress();
+      });
+
+      progress.addEventListener("pointerup", event => {
+        seekToPointer(event);
+        isScrubbing = false;
+        updateProgress();
+        if (wasPlayingBeforeScrub) video.play();
+        if (!video.matches(":hover") && !controls.matches(":hover")) hideControls();
+      });
+
+      progress.addEventListener("pointercancel", () => {
+        isScrubbing = false;
+        updateProgress();
+        if (wasPlayingBeforeScrub) video.play();
+        if (!video.matches(":hover") && !controls.matches(":hover")) hideControls();
+      });
+
+      progress.addEventListener("change", () => {
+        if (isScrubbing) return;
+        seekToProgress();
+        updateProgress();
+      });
+
+      resetButton.addEventListener("click", () => {
+        video.currentTime = 0;
+        progress.value = "0";
+        updateProgressFill();
+        video.play();
+      });
+
+      updateProgressFill();
+      if (!video.paused) startProgressAnimation();
+    });
+
     const videos = document.querySelectorAll("article video");
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
@@ -924,10 +1315,6 @@
 
     videos.forEach(video => {
       observer.observe(video);
-      video.addEventListener("wheel", event => {
-        event.preventDefault();
-        window.scrollBy({ top: event.deltaY, left: event.deltaX });
-      }, { passive: false });
     });
   })();
 </script>
