@@ -779,6 +779,9 @@
       <li><strong>Generative perplexity (gen. PPL):</strong> Calculate the perplexity of samples under a pretrained model (almost always <code>gpt2-large</code>): \(\exp\left(-\frac{1}{T}\sum_{t=1}^T \log p_{\text{GPT-2 large}}(x_t \mid x_{&lt;t})\right)\). This is analogous to, but distinct from, the standard validation perplexity.</li>
       <li><strong>Entropy:</strong> Compute the empirical token entropy (\(-\sum_i p_i \log p_i\)) of each generated sample, then average across samples. This is to ensure that the generated samples are not degenerate (e.g. <em>"aaaaa..."</em> has low gen. PPL but also an entropy of 0).</li>
     </ol>
+
+    <p>There is an inherent tradeoff between these two metrics. It is easy to generate low entropy, low gen. PPL sequences (e.g. <em>"aaaaa..."</em>). So papers will report generative perplexity for samples with entropy within a "reasonable range". But as we will show, this "reasonable range" is enough to make nearly any conclusion about model quality possible.</p>
+
     <h4>Pseudocode for the standard evals</h4>
     <pre><code class="language-python python-code"><span class="keyword">def</span> <span class="function">validation_perplexity</span>(model, validation_samples):
     <span class="string">"""Standard autoregressive evaluation: report perplexity on held-out data."""</span>
