@@ -40,29 +40,29 @@
             </div>
             <div class="featured-content">
               <h3>flashoptim in jax</h3>
-              <p>a jax-native implementation of flashoptim with fused pallas kernels and buffer donation, matching pytorch's memory and exceeding its speed.</p>
+              <p>a jax-native implementation of flashoptim with fused pallas kernels, matching pytorch's memory and exceeding its speed.</p>
               <span class="featured-tag">2026</span>
             </div>
           </a>
 
-          <a href="nanogpt/" class="featured-card">
+          <a href="pretrain-speedruns/" class="featured-card">
             <div class="featured-img-wrapper">
-              <img src="../assets/nanogpt_speedrun.png" alt="NanoGPT Speedrun"/>
+              <img src="../assets/nanogpt_speedrun.png" alt="Pretraining speedrun leaderboard"/>
             </div>
             <div class="featured-content">
-              <h3>nanogpt speedrunning record</h3>
-              <p>two nanogpt leaderboard submissions: a test-time training "notable run" and a triton-kernel record.</p>
+              <h3>pretraining speedrun records</h3>
+              <p>weekend speedrunning records across modded-nanogpt, openai parameter golf, and slowrun.</p>
               <span class="featured-tag">2026</span>
             </div>
           </a>
 
-          <a href="parameter-golf/" class="featured-card">
+          <a href="flow-evals/" class="featured-card">
             <div class="featured-img-wrapper">
-              <img src="https://github.com/user-attachments/assets/3772d5d3-a29f-4e63-bb08-417311635e2d" alt="Parameter Golf ablation chart"/>
+              <img src="flow-evals/assets/results-chronological-light-flow-stars.png" alt="Flow evals perplexity and entropy chart"/>
             </div>
             <div class="featured-content">
-              <h3>openai parameter golf record</h3>
-              <p>a record submission (bpb=1.195) to openai's parameter golf using per-document lora test-time training.</p>
+              <h3>fixing flow model evals</h3>
+              <p>why generative perplexity and entropy are misleading, and a few concrete fixes.</p>
               <span class="featured-tag">2026</span>
             </div>
           </a>
@@ -113,8 +113,28 @@
 
             <div class="project-item">
               <div class="project-info">
+                <h4>pretraining speedrun records</h4>
+                <p>A compact list of recent weekend speedrun records across modded-nanogpt, OpenAI Parameter Golf, and Slowrun.</p>
+              </div>
+              <div class="project-actions">
+                <a href="pretrain-speedruns/">page</a>
+              </div>
+            </div>
+
+            <div class="project-item">
+              <div class="project-info">
+                <h4>fixing flow model evals</h4>
+                <p>Why generative perplexity and entropy are misleading for flow language models, and a few concrete fixes.</p>
+              </div>
+              <div class="project-actions">
+                <a href="flow-evals/">blog post</a>
+              </div>
+            </div>
+
+            <div class="project-item">
+              <div class="project-info">
                 <h4>flashoptim in jax</h4>
-                <p>A JAX-native reimplementation of FlashOptim, achieving the same memory compression and speed as the PyTorch original through fused Pallas kernels and buffer donation.</p>
+                <p>A JAX-native reimplementation of FlashOptim, achieving the same memory compression and speed as the PyTorch original through fused Pallas kernels.</p>
               </div>
               <div class="project-actions">
                 <a href="flashoptim-jax/">blog post</a>
@@ -122,18 +142,16 @@
               </div>
             </div>
 
-            <!--
-            <div class="project-item">
+            <!-- <div class="project-item">
               <div class="project-info">
                 <h4>m-layer mechanistic interpretability</h4>
-                <p>Reverse-engineering the exact circuits learned by M-layer networks — which replace element-wise nonlinearities with matrix exponentials — for identity and sinusoidal functions.</p>
+                <p>Reverse-engineering the circuits learned by M-layer networks -- which replace element-wise nonlinearities with matrix exponentials -- across identity, sine, and spiral tasks.</p>
               </div>
               <div class="project-actions">
                 <a href="m-layer/">blog post</a>
                 <a href="https://github.com/samacqua/m-layer-experiments" target="_blank">github</a>
               </div>
-            </div>
-            -->
+            </div> -->
 
             <div class="project-item">
               <div class="project-info">
