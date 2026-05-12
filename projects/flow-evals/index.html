@@ -265,6 +265,17 @@
 
     figure.narrow { max-width: 720px; }
 
+    .two-panel-figure {
+      max-width: 960px;
+    }
+
+    .two-panel-images {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      align-items: center;
+    }
+
     figure img,
     article > div img {
       width: 100%;
@@ -289,6 +300,12 @@
       position: absolute;
       z-index: 2;
       height: 28px;
+    }
+
+    @media (max-width: 700px) {
+      .two-panel-images {
+        grid-template-columns: 1fr;
+      }
     }
 
     .custom-video-controls input[type="range"] {
@@ -729,6 +746,7 @@
   <a href="#issues" target="_self">Issues</a>
   <a class="toc-h3" href="#entropy-ppl-tradeoff" target="_self">1. Entropy/PPL tradeoff</a>
   <a class="toc-h4" href="#gpt2-generative-perplexity" target="_self">GPT-2 setup</a>
+  <a class="toc-h4" href="#interpreting-results" target="_self">Interpreting results</a>
   <a class="toc-h4" href="#entropy-proposal" target="_self">Entropy proposal</a>
   <a class="toc-h3" href="#scorer-bias" target="_self">2. Scorer bias</a>
   <a class="toc-h4" href="#punish-correctness" target="_self">Punish correctness</a>
@@ -771,6 +789,8 @@
     </video>
     <figcaption>The core problem: changing sampling temperature slightly for older diffusion baselines traces out a gen. PPL vs. entropy curve that eclipses recent results: completely inverting the ordering of which model is best. For details on this plot, keep reading.</figcaption>
   </figure>
+
+  <p><strong>Meta note:</strong> I purposefully focus on a result that is not the main figure for most papers -- 1024 integration steps -- because I'm arguing we should abandon gen. ppl -- not that any specific paper is particularly problematic. <strong>All of these points hold in the few step setting.</strong></p>
 
   <h3 id="flow-eval-footnote">Background: how to measure <em>generative perplexity</em> and <em>sample entropy</em></h3>
   <aside class="metric-footnote">
@@ -1127,8 +1147,33 @@
 
   <p>To be clear, this means that <strong>the typical entropy variance between models and baselines in recent results is permissive enough to show that <code>gpt2-small</code> is better than <code>gpt2-xl</code></strong>.</p>
 
+  <h4 id="interpreting-results">What this means for interpreting results</h4>
+  <figure>
+    <img src="assets/fig1s.png" alt="Figure 1 result summaries from ELF, FMLM, and DFM">
+    <figcaption>The main figure for three recent flow model lanugage modeling papers. From left to right: <a href="https://arxiv.org/pdf/2605.10938">ELF: Embedded Language Flows</a>, <a href="https://arxiv.org/pdf/2602.16813">Flow Map Language Models</a>, and <a href="https://arxiv.org/pdf/2604.09784">Discrete Flow Matching</a>. <em>None of these control for sample entropy</em>.</figcaption>
+  </figure>
+  <p>In the three most prominent papers on language modeling with flow models, the main figure (<strong>Figure 1</strong>) reports gen. PPL without controlling for sample entropy. Above, we showed that:</p>
+  
+  <ul>
+    <li>It is trivial to improve gen. PPL by decreasing entropy (via sampling temperature)</li>
+    <li>Not controlling for entropy leads to bizarre conclusions (like <code>gpt2-small</code> is better than <code>gpt2-xl</code>)</li>
+    <li>So, you should match entropy to recover expected scaling laws</li>
+  </ul>
+  
+  <p>If you buy this argument that you should control for sample entropy, this means that (using the main figures) <strong>it is impossible to make any meaningful comparison between the models.</strong></p>
+
+  <p>The "improvement" from model to model could very well be coming only from differences in entropy, as demonstrated earlier. Finding the sample entropy of these results to faithfully compare them is left as an exercise for the reader.</p>
+
   <h4 id="entropy-proposal">Proposal to fix the entropy problem</h4>
-  <p>Fixing this entropy-sensitivity problem is straightforward: control for the confounder. One way is to sweep PPL and entropy as we have done here and include the entire curve in the results, as originally suggested by <a href="https://arxiv.org/pdf/2510.22510">CANDI</a> (great work). If you are reporting a scalar gen. PPL quantity, report interpolated gen. PPL at the entropy of the data. This completely eliminates any variance attributable to difference in entropy.</p>
+  <figure class="two-panel-figure">
+    <div class="two-panel-images">
+      <img src="assets/candi_sweep.png" alt="CANDI generative perplexity and sample entropy sweep on OpenWebText">
+      <img src="assets/elf_sweep.png" alt="ELF generative perplexity and entropy sweep">
+    </div>
+    <figcaption><em>Some</em> papers report generative perplexity across entropy sweeps. <a href="https://arxiv.org/pdf/2510.22510">CANDI</a> (left) was the first to push for reporting the frontier of gen. PPL and entropy. <a href="https://arxiv.org/pdf/2605.10938">ELF: Embedded Language Flows</a> (right) is a recent flow model paper which reports the frontier for ablations, but not for their main results.</figcaption>
+  </figure>
+
+  <p>Fixing this entropy-sensitivity problem is straightforward: control for the confounder. One way is to sweep PPL and entropy as we did earlier and include the entire curve in the results, as in <a href="https://arxiv.org/pdf/2510.22510">CANDI</a> and <a href="https://arxiv.org/pdf/2605.10938">ELF: Embedded Language Flows</a> (well, ELF reports the frontier for ablations, but the main results do not control for entropy!). If you are reporting a scalar gen. PPL quantity, report interpolated gen. PPL at the entropy of the data. This completely eliminates any variance attributable to difference in entropy.</p>
 
   <h3 id="scorer-bias">2. The best-scoring model is not the best language model, but the most <code>gpt2-large</code>-like</h3>
 
