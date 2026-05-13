@@ -790,7 +790,7 @@
     <figcaption>The core problem: changing sampling temperature slightly for older diffusion baselines traces out a gen. PPL vs. entropy curve that eclipses recent results: completely inverting the ordering of which model is best. For details on this plot, keep reading.</figcaption>
   </figure>
 
-  <p><strong>Meta note:</strong> I purposefully focus on a result that is not the main figure for most papers -- 1024 integration steps -- because I'm arguing we should abandon gen. ppl -- not that any specific paper is particularly problematic. <strong>All of these points hold in the few step setting.</strong></p>
+  <p><strong>Meta note:</strong> I purposefully focus on a result that is not the main figure for most papers (1024 integration steps) because it makes comparisons to AR models and discrete diffusions easier. <strong>All of the main points hold in the few step setting.</strong></p>
 
   <h3 id="flow-eval-footnote">Background: how to measure <em>generative perplexity</em> and <em>sample entropy</em></h3>
   <aside class="metric-footnote">
@@ -949,7 +949,7 @@
 
   <h4 id="gpt2-generative-perplexity">Why match entropy: experiments with GPT-2</h4>
 
-  <p>The <a href="https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf" target="_blank" rel="noopener">GPT-2 family</a> of models established a very clean scaling trend: as we scale from <code>gpt2-small</code> to <code>gpt2-medium</code> to <code>gpt2-large</code> to <code>gpt2-xl</code>, the validation perplexity and accuracy smoothly improve on all measured domains. However, if we sample from these models at default settings and measure generative perplexity, the scaling is no longer clean: <code>gpt2-small</code> is better than <code>gpt2-medium</code>, and <code>gpt2-large</code> is better than <code>gpt2-xl</code>.</p>
+  <p>The <a href="https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf" target="_blank" rel="noopener">GPT-2 family</a> of models established a very clean scaling trend: as we scale from <code>gpt2-small</code> to <code>gpt2-medium</code> to <code>gpt2-large</code> to <code>gpt2-xl</code>, the validation perplexity and accuracy smoothly improve on all measured domains. However, if we sample from the GPT-2 models at default settings and measure generative perplexity, the scaling is no longer clean: <code>gpt2-small</code> is better than <code>gpt2-medium</code>, and <code>gpt2-large</code> is better than <code>gpt2-xl</code>.</p>
 
   <div class="tabbed-panel" data-tabs>
     <div class="plot-controls" role="tablist" aria-label="GPT-2 intro display">
